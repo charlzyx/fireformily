@@ -1,0 +1,46 @@
+{
+  "name": "fireformily",
+  "version": "1.0.0",
+  "private": true,
+  "module": "dist/esm/index.js",
+  "typings": "dist/esm/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "father build",
+    "deploy": "npm run docs:build && npm run docs:deploy",
+    "docs:build": "dumi build",
+    "docs:deploy": "gh-pages -d docs-dist",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint --fix 'src/**'",
+    "start": "dumi dev",
+    "test": "umi-test",
+    "test:coverage": "umi-test --coverage"
+  },
+  "dependencies": {
+    "@formily/antd": "^2.2.0",
+    "@formily/core": "^2.2.0",
+    "@formily/react": "^2.2.0",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "antd": "^4.22.5",
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@rlx/eslint-config-react": "^2.1.1",
+    "@testing-library/jest-dom": "^5.15.1",
+    "@testing-library/react": "^13.0.0",
+    "@types/jest": "^27.0.3",
+    "@umijs/fabric": "^2.8.1",
+    "@umijs/test": "^3.0.5",
+    "dumi": "^1.1.0",
+    "father": "^4.0.0-rc.2",
+    "gh-pages": "^3.0.0",
+    "lint-staged": "^10.0.7",
+    "prettier": "^2.2.1",
+    "yorkie": "^2.0.0"
+  }
+}
