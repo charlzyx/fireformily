@@ -30,7 +30,7 @@ export const useAction = () => {
           (() => Promise.resolve(record));
         return loader(record).then((data: any) => {
           console.log('loader data', data);
-          return data ? field.setValue(toJS(data)) : field.setValue({});
+          return data != undefined ? field.setValue(toJS(data)) : data;
         });
       },
       cancel: () => {
