@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ArrayTable,
   DatePicker,
@@ -10,9 +9,11 @@ import {
 } from '@formily/antd';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
+import React from 'react';
 
 import { createForm } from '@formily/core';
-import { FormProvider, createSchemaField } from '@formily/react';
+import { createSchemaField, FormProvider } from '@formily/react';
+import { PopActions } from '../PopActions';
 import { QueryForm, QueryList, QueryTable } from '../QueryList';
 
 const SchemaField = createSchemaField({
@@ -26,26 +27,68 @@ const SchemaField = createSchemaField({
     Editable,
     QueryTable,
     ArrayTable,
+    PopActions,
     Space,
   },
 });
 
 const form = createForm();
 
-const actions = {
-  load: (record: any) => {
+const service = ({ pagination, query, ...others }: any) => {
+  console.log('request', { query, pagination, others });
+  const { pageSize, current } = pagination;
+  const { q1, q2 } = query;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        total: 44,
+        list: Array.from({
+          length: current * pageSize < 44 ? pageSize : 44 % pageSize,
+        })
+          .map((_, idx) => {
+            return {
+              name: `[${q1 || 'q1'}]${idx}...${current}`,
+              id: idx + current * pageSize,
+              ex: [
+                {
+                  name: `ex [${q1 || 'q1'}]${idx}...${current}`,
+                  id: `ex [${q2 || 'q2'}]${idx}...${current}`,
+                },
+              ],
+            };
+          })
+          .filter(Boolean),
+      });
+    }, 200);
+  });
+};
+
+const batch = {
+  load: (record: any, ...others: any[]) => {
+    console.log('load ...args', { record, others });
     return Promise.resolve(record);
   },
-  cancel: () => {
+  cancel: (...args: any[]) => {
+    console.log('cancel ...args', args);
     return Promise.resolve();
   },
-  submit: (data: any, record: any) => {
-    const neoRecord = {
-      ...record,
-      name: data.name,
-      id: data.id,
-    };
-    return Promise.resolve(neoRecord);
+  submit: (data: any, record: any, ...others: any) => {
+    console.log('submit ...args', { data, record, others });
+    return Promise.resolve();
+  },
+};
+const actions = {
+  load: (record: any, ...others: any[]) => {
+    console.log('load ...args', { record, others });
+    return Promise.resolve(record);
+  },
+  cancel: (...args: any[]) => {
+    console.log('cancel ...args', args);
+    return Promise.resolve();
+  },
+  submit: (data: any, record: any, ...others: any) => {
+    console.log('submit ...args', { data, record, others });
+    return Promise.resolve();
   },
 };
 
@@ -53,33 +96,10 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
   type: 'object',
   properties: {
     querylist: {
-      type: 'object',
+      type: 'void',
       'x-component': 'QueryList',
       'x-component-props': {
-        service: ({ current, pageSize, q1, q2, ...others }: any) => {
-          console.log('current, pageSize', current, pageSize, others);
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                total: 44,
-                data: Array.from({ length: pageSize })
-                  .map((_, idx) => {
-                    return {
-                      name: `[${q1 || 'q1'}]${idx}...${current}`,
-                      id: `[${q2 || 'q2'}]${idx}...${current}`,
-                      ex: [
-                        {
-                          name: `ex [${q1 || 'q1'}]${idx}...${current}`,
-                          id: `ex [${q2 || 'q2'}]${idx}...${current}`,
-                        },
-                      ],
-                    };
-                  })
-                  .filter(Boolean),
-              });
-            }, 200);
-          });
-        },
+        service: service,
       },
       properties: {
         query: {
@@ -92,62 +112,42 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-decorator': 'FormItem',
               'x-component': 'Input',
             },
-            q2: {
-              title: 'q2',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Input',
-            },
-            select1: {
-              title: 'select1',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Select',
-            },
-            select2: {
-              title: 'select2',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Select',
-            },
-            input5: {
-              title: 'input5',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Input',
-            },
-            '[startTime, endTime]': {
-              title: '时间',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-decorator-props': {
-                gridSpan: 2,
-              },
-              'x-component': 'DatePicker.RangePicker',
-            },
-            q7: {
-              title: 'q7',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Input',
-            },
           },
         },
-        toolbar: {
+        titlebar: {
           title: '新增',
-          type: 'object',
-          'x-component': 'QueryTable.Toolbar',
+          type: 'void',
+          'x-component': 'QueryTable.Titlebar',
           properties: {
+            selection: {
+              type: 'void',
+              'x-component': 'QueryTable.Selection',
+              properties: {
+                batchExp: {
+                  type: 'object',
+                  title: '批量导出',
+                  'x-component': 'PopActions.Popover',
+                  'x-component-props': {
+                    actions: batch,
+                  },
+                },
+                batchDelete: {
+                  type: 'object',
+                  title: '批量删除',
+                  'x-component': 'PopActions.Popconfirm',
+                  'x-component-props': {
+                    actions: batch,
+                  },
+                },
+              },
+            },
             popover: {
               title: 'Popover 新增',
               type: 'object',
               'x-content': 'Popover content',
-              'x-component': 'QueryTable.Action.Popover',
+              'x-component': 'PopActions.Popover',
               'x-component-props': {
                 actions: actions,
-                btn: {
-                  type: 'primary',
-                },
               },
               properties: {
                 name: {
@@ -170,9 +170,12 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               title: 'Popconfirm 新增',
               type: 'object',
               'x-content': 'Popconfirm content',
-              'x-component': 'QueryTable.Action.Popconfirm',
+              'x-component': 'PopActions.Popconfirm',
               'x-component-props': {
                 actions: actions,
+                btn: {
+                  size: 'default',
+                },
               },
               properties: {
                 name: {
@@ -195,7 +198,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               title: 'Modal 新增',
               type: 'object',
               'x-content': 'Modal content',
-              'x-component': 'QueryTable.Action.Modal',
+              'x-component': 'PopActions.Modal',
               'x-component-props': {
                 actions: actions,
               },
@@ -220,9 +223,12 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               title: 'Drawer 新增',
               type: 'object',
               'x-content': 'Drawer content',
-              'x-component': 'QueryTable.Action.Drawer',
+              'x-component': 'PopActions.Drawer',
               'x-component-props': {
                 actions: actions,
+                btn: {
+                  type: 'primary',
+                },
               },
               properties: {
                 name: {
@@ -249,75 +255,32 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component': 'QueryTable',
           'x-component-props': {
             scroll: { x: '100%' },
-            selectable: true,
+            rowSelection: true,
           },
           items: {
             type: 'object',
             properties: {
-              expand: {
+              column1: {
                 type: 'void',
-                'x-component': 'QueryTable.Expand',
+                'x-component': 'QueryTable.Column',
+                'x-component-props': {
+                  width: 80,
+                  title: '排序',
+                  align: 'center',
+                },
                 properties: {
-                  ex: {
-                    type: 'array',
-                    'x-decorator': 'FormItem',
-                    'x-component': 'ArrayTable',
-                    'x-component-props': {
-                      scroll: { x: '100%' },
-                    },
-                    items: {
-                      type: 'object',
-                      properties: {
-                        column1: {
-                          type: 'void',
-                          'x-component': 'ArrayTable.Column',
-                          'x-component-props': { width: 200, title: 'EXID' },
-                          properties: {
-                            id: {
-                              type: 'string',
-                              'x-decorator': 'FormItem',
-                              'x-component': 'Input',
-                            },
-                          },
-                        },
-                        column2: {
-                          type: 'void',
-                          'x-component': 'QueryTable.Column',
-                          'x-component-props': { width: 200, title: 'EXNAME' },
-                          properties: {
-                            name: {
-                              type: 'string',
-                              'x-decorator': 'FormItem',
-                              'x-component': 'Input',
-                            },
-                          },
-                        },
-                      },
-                    },
+                  sort: {
+                    type: 'void',
+                    'x-component': 'QueryTable.SortHandle',
                   },
                 },
               },
-              // column1: {
-              //   type: 'void',
-              //   'x-component': 'QueryTable.Column',
-              //   'x-component-props': {
-              //     width: 50,
-              //     title: 'Sort',
-              //     align: 'center',
-              //   },
-              //   properties: {
-              //     sort: {
-              //       type: 'void',
-              //       'x-component': 'QueryTable.SortHandle',
-              //     },
-              //   },
-              // },
               column2: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
                   width: 80,
-                  title: 'Index',
+                  title: '序号',
                   align: 'center',
                 },
                 properties: {
@@ -331,7 +294,10 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               column4: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
-                'x-component-props': { width: 200, title: 'NAME' },
+                'x-component-props': {
+                  width: 200,
+                  title: '姓名',
+                },
                 properties: {
                   name: {
                     type: 'string',
@@ -344,7 +310,15 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               column3: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
-                'x-component-props': { width: 200, title: 'ID' },
+                'x-component-props': {
+                  width: 200,
+                  title: 'ID',
+                  sorter: true,
+                  filters: `{{$records ? $records.map(record => {
+                    return { text: record.id, value: record.id }
+                  }): []}}`,
+                  onFilter: (value: string, record: any) => record.id !== value,
+                },
                 properties: {
                   id: {
                     type: 'string',
@@ -356,20 +330,17 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               },
               column5: {
                 type: 'void',
-                'x-component': 'QueryTable.Column',
+                'x-component': 'QueryTable.Operations',
                 'x-component-props': {
                   title: '操作',
-                  type: 'actions',
-                  maxItems: 1,
-                  width: 140,
                   fixed: 'right',
                 },
                 properties: {
                   popover: {
-                    title: 'Popover 编辑',
+                    title: 'Popover',
                     type: 'object',
                     'x-content': 'Popover content',
-                    'x-component': 'QueryTable.Action.Popover',
+                    'x-component': 'PopActions.Popover',
                     'x-component-props': {
                       actions: actions,
                     },
@@ -391,10 +362,10 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     },
                   },
                   popconfirm: {
-                    title: 'Popconfirm 编辑',
+                    title: 'Popconfirm',
                     type: 'object',
                     'x-content': 'Popconfirm content',
-                    'x-component': 'QueryTable.Action.Popconfirm',
+                    'x-component': 'PopActions.Popconfirm',
                     'x-component-props': {
                       actions: actions,
                     },
@@ -419,7 +390,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     title: 'Modal 编辑',
                     type: 'object',
                     'x-content': 'Modal content',
-                    'x-component': 'QueryTable.Action.Modal',
+                    'x-component': 'PopActions.Modal',
                     'x-component-props': {
                       actions: actions,
                     },
@@ -444,7 +415,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     title: 'Drawer 编辑',
                     type: 'object',
                     'x-content': 'Drawer content',
-                    'x-component': 'QueryTable.Action.Drawer',
+                    'x-component': 'PopActions.Drawer',
                     'x-component-props': {
                       actions: actions,
                     },
@@ -504,6 +475,58 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
             //   'x-component': 'QueryTable.Addition',
             //   title: '添加条目',
             // },
+            expand: {
+              type: 'void',
+              'x-component': 'QueryTable.Expand',
+              properties: {
+                subitems: {
+                  type: 'void',
+                  'x-component': 'QueryList',
+                  properties: {
+                    ex: {
+                      type: 'array',
+                      'x-decorator': 'FormItem',
+                      'x-component': 'QueryTable',
+                      'x-component-props': {
+                        scroll: { x: '100%' },
+                      },
+                      items: {
+                        type: 'object',
+                        properties: {
+                          column1: {
+                            type: 'void',
+                            'x-component': 'QueryTable.Column',
+                            'x-component-props': { width: 200, title: 'EXID' },
+                            properties: {
+                              id: {
+                                type: 'string',
+                                'x-decorator': 'FormItem',
+                                'x-component': 'Input',
+                              },
+                            },
+                          },
+                          column2: {
+                            type: 'void',
+                            'x-component': 'QueryTable.Column',
+                            'x-component-props': {
+                              width: 200,
+                              title: 'EXNAME',
+                            },
+                            properties: {
+                              name: {
+                                type: 'string',
+                                'x-decorator': 'FormItem',
+                                'x-component': 'Input',
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },

@@ -1,33 +1,46 @@
-/* eslint-disable no-shadow */
-import { useField } from '@formily/react';
-import { TableProps } from 'antd';
-import React, { useMemo, useState } from 'react';
+import { RecordScope, RecursionField, useFieldSchema } from '@formily/react';
+import { Divider, Space } from 'antd';
+import React from 'react';
+import { useQueryList$ } from '../../shared';
+import { isSelectionComponent } from './utils';
 
-export const useSelection = (
-  rowSelection?: TableProps<any>['rowSelection'],
-) => {
-  // QueryTable 所在的 field
-  const field = useField();
-  const [rowKeys, setRowKeys] = useState<React.Key[]>(
-    field?.data?.selectedRowKeys || [],
+export const useSelection = () => {
+  const ctx = useQueryList$();
+  const schema = useFieldSchema();
+
+  const selectionsComsumer = schema.reduceProperties(
+    (selections, subSchema, key) => {
+      if (isSelectionComponent(subSchema)) {
+        selections.push(
+          <RecordScope
+            key={key}
+            getRecord={() => {
+              return {
+                selectedRowKeys: ctx?._cofnig?._selectedRowKeys ?? [],
+                selectedRows: ctx?._cofnig?._selectedRows ?? [],
+              };
+            }}
+            getIndex={() => {
+              return -1;
+            }}
+          >
+            <Space split={<Divider type="vertical"></Divider>}>
+              {subSchema.mapProperties((propSchema, propKey) => {
+                return (
+                  <RecursionField
+                    key={propKey}
+                    schema={propSchema}
+                    name={propKey}
+                  />
+                );
+              })}
+            </Space>
+          </RecordScope>,
+        );
+      }
+      return selections;
+    },
+    [] as any[],
   );
-
-  const selection = useMemo(() => {
-    const config: TableProps<any>['rowSelection'] = {
-      type: 'checkbox',
-      selectedRowKeys: rowKeys,
-      onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
-        setRowKeys(selectedRowKeys);
-        field.setState((s) => {
-          s.data = s.data || {};
-          s.data.selectedRowKeys = selectedRowKeys;
-          s.data.selectedRows = selectedRows;
-        });
-      },
-      ...rowSelection,
-    };
-    return config;
-  }, [field, rowKeys, rowSelection]);
-
-  return selection;
+  return selectionsComsumer.length > 0 ? selectionsComsumer : null;
 };

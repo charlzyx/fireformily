@@ -1,100 +1,149 @@
-/* eslint-disable no-shadow */
-import { ArrayBase as AntdArrayBase, ArrayBaseMixins } from '@formily/antd';
-import { usePrefixCls } from '@formily/antd/lib/__builtins__';
+import {
+  ColumnHeightOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import { ArrayBase, ArrayBaseMixins } from '@formily/antd';
+import { usePrefixCls } from '@formily/antd/esm/__builtins__';
 import { ArrayField } from '@formily/core';
-import { RecursionField, observer, useField } from '@formily/react';
-import { Alert, Space } from 'antd';
-import Table from 'antd/lib/table';
+import { observer, useField } from '@formily/react';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Dropdown,
+  Menu,
+  PaginationProps,
+  Space,
+  Table,
+  Typography,
+} from 'antd';
 import React, { Fragment, useEffect, useRef } from 'react';
-import { useQueryListContext } from '../ctx';
-import { Action } from '../RecordActions';
+import { useQueryList$ } from '../shared';
 import {
   useAddition,
+  useColumnsAndSourceRender,
+  useRowSelection,
   useSelection,
   useSortable,
-  useTableColumns,
-  useTableExpandable,
-  useTableSources,
-  useToolbar,
 } from './hooks';
-import { ObPagination } from './ObPagination';
-import { ComposedQueryTable, isColumnComponent } from './shared';
+import { useExpandable } from './hooks/useExpandable';
 
-const ArrayBase = AntdArrayBase as typeof AntdArrayBase &
-  Required<typeof AntdArrayBase>;
+interface IQueryTableProps extends React.ComponentProps<typeof Table> {}
 
-export const QueryTable: ComposedQueryTable = observer((props) => {
-  const ref = useRef<HTMLDivElement>(null);
+export const QueryTable: React.FC<IQueryTableProps> &
+  ArrayBaseMixins & {
+    Titlebar?: React.FC<React.PropsWithChildren<{}>>;
+    Operations?: React.FC<React.PropsWithChildren<{}>>;
+    Expand?: React.FC<React.PropsWithChildren<{}>>;
+    Column?: React.FC<React.PropsWithChildren<{}>>;
+    Selection?: React.FC<React.PropsWithChildren<{}>>;
+  } = observer((props: IQueryTableProps) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperCls = usePrefixCls('formily-array-table');
+
+  const ctx = useQueryList$();
   const field = useField<ArrayField>();
-  const prefixCls = usePrefixCls('formily-array-table');
+
   const dataSource = Array.isArray(field.value) ? field.value.slice() : [];
-  const sources = useTableSources();
-  const columns = useTableColumns(field, sources);
-  const { registryAddress } = useQueryListContext();
-
-  const sortbody = useSortable(ref);
-
-  const addition = useAddition();
-  const toolbar = useToolbar();
-
-  const selection = useSelection(props.rowSelection);
-
-  const expandable = useTableExpandable(props.expandable);
 
   const defaultRowKey = (record: any) => {
-    const key = dataSource.indexOf(record);
-    return key;
+    return dataSource.indexOf(record);
   };
 
+  const sortableBody = useSortable(wrapperRef);
+
+  const [columns, renderSources] = useColumnsAndSourceRender(field);
+
+  const addtion = useAddition();
+
+  const expandable = useExpandable(props.expandable);
+
+  const selection = useRowSelection(
+    props.rowKey || defaultRowKey,
+    props.rowSelection,
+  );
+
   useEffect(() => {
-    registryAddress!('list', field.address.toString());
+    if (!ctx) return;
+    ctx._address!.table = field.address.toString();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field.address]);
+  }, [ctx, field?.address?.toString()]);
+
+  useEffect(() => {
+    if (!ctx?.service) return;
+    if (field && !field.data) {
+      field.data = {};
+      field.data.pagination = {
+        current: 1,
+        pageSize: 10,
+      } as PaginationProps;
+    }
+  }, [ctx, field]);
+
+  useEffect(() => {
+    if (!ctx) return;
+    const conf = ctx._cofnig;
+    columns.forEach((item) => {
+      if (conf._columns!.findIndex((x) => x.key === item.dataIndex) === -1) {
+        conf._columns!.push({
+          label: item.title as string,
+          key: item.dataIndex as string,
+        });
+        conf._showColumns!.push(item.dataIndex as string);
+      }
+    });
+  }, [columns, ctx]);
 
   return (
-    <div ref={ref} className={prefixCls}>
-      {toolbar}
-      {props.selectable && selection.selectedRowKeys?.length ? (
-        <Alert
-          style={{ marginTop: '6px', marginBottom: '6px' }}
-          type="info"
-          message={<Space>选中{selection.selectedRowKeys?.length}项</Space>}
-        ></Alert>
-      ) : null}
+    <div ref={wrapperRef} className={wrapperCls}>
       <ArrayBase>
         <Table
-          size="small"
-          bordered
           rowKey={defaultRowKey}
           {...props}
+          size={ctx?._cofnig?._size as any}
           expandable={expandable}
-          rowSelection={props.selectable ? selection : undefined}
-          components={{ body: sortbody }}
-          onChange={() => {}}
-          pagination={false}
+          rowSelection={props.rowSelection ? selection : undefined}
+          onRow={(row, idx) => {
+            const pre = props?.onRow?.(row, idx) || {};
+            (pre as any)['data-row-sort-index'] = idx;
+            return pre;
+          }}
           columns={columns}
+          loading={props.loading || ctx?._loading}
+          components={{ body: sortableBody }}
           dataSource={dataSource}
-        />
-        <div style={{ marginTop: 5, marginBottom: 5 }}>
-          <ObPagination></ObPagination>
-        </div>
-        {sources.map((column, key) => {
-          //专门用来承接对Column的状态管理
-          if (!isColumnComponent(column.schema)) return;
-          return React.createElement(RecursionField, {
-            name: column.name,
-            schema: column.schema,
-            onlyRenderSelf: true,
-            key,
-          });
-        })}
-        {addition}
+          pagination={field?.data?.pagination ?? false}
+          onChange={(pagination, filters, sorter, extra) => {
+            // console.log('---onTableChange', {
+            //   pagination,
+            //   filters,
+            //   sorter,
+            //   extra,
+            // });
+            field.setData({ pagination, filters, sorter, extra });
+            if (extra.action === 'paginate') {
+              ctx?._trigger?.();
+            } else if (extra.action === 'sort' && ctx?.sortRemote) {
+              ctx?._trigger?.();
+            } else if (extra.action === 'filter' && ctx?.sortRemote) {
+              ctx?._trigger?.();
+            }
+          }}
+        ></Table>
+        {renderSources()}
+        {addtion}
       </ArrayBase>
     </div>
   );
 });
 
-QueryTable.displayName = 'QueryTable';
+ArrayBase?.mixin?.(QueryTable);
+
+QueryTable.Operations = () => {
+  return <Fragment />;
+};
 
 QueryTable.Column = () => {
   return <Fragment />;
@@ -104,15 +153,124 @@ QueryTable.Expand = () => {
   return <Fragment />;
 };
 
-QueryTable.Toolbar = (porps) => {
-  return <div style={{ padding: `8px 0` }}>{porps.children}</div>;
+QueryTable.Selection = () => {
+  return <Fragment />;
 };
 
-ArrayBase?.mixin?.(QueryTable);
+const Titlebar = observer((props: any) => {
+  const field = useField();
+  const ctx = useQueryList$();
+  if (!ctx) return null;
+  const conf = ctx?._cofnig;
+  const sizeMenu = (
+    <Menu
+      selectable
+      onSelect={(item) => {
+        conf._size = item.key as any;
+        // item.key
+      }}
+      defaultValue={conf._size}
+      items={[
+        { label: '默认', key: 'default' },
+        { label: '中等', key: 'middle' },
+        { label: '紧凑', key: 'small' },
+      ]}
+    ></Menu>
+  );
 
-const Addition: ArrayBaseMixins['Addition'] = (props) => {
-  return <ArrayBase.Addition method="unshift" {...props}></ArrayBase.Addition>;
-};
+  const selction = useSelection();
 
-QueryTable.Addition = Addition;
-QueryTable.Action = Action;
+  const colsMenu = (
+    <Menu
+      selectable
+      multiple
+      items={conf._columns.map((item) => {
+        const maybe = conf._showColumns!.findIndex((x) => x === item.key);
+        const checked = maybe > -1;
+        const onClick = (e: any) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (checked) {
+            conf._showColumns.splice(maybe, 1);
+          } else {
+            conf._showColumns.push(item.key);
+          }
+        };
+        return {
+          label: (
+            <Space onClick={onClick}>
+              <Checkbox checked={checked}></Checkbox>
+              {item.label}
+            </Space>
+          ),
+          key: item.key,
+        };
+      })}
+    ></Menu>
+  );
+
+  return (
+    <Space
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '8px',
+      }}
+    >
+      <Typography.Title level={5}>
+        {field.title || props.title}
+      </Typography.Title>
+      {conf._selectedRowKeys.length ? (
+        <Alert
+          style={{ marginTop: '4px', marginBottom: '4px' }}
+          type="info"
+          message={
+            <Space size="small" split={<Divider type="vertical"></Divider>}>
+              <Button type="text" size="small">
+                选中 {conf._selectedRowKeys.length} 项
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  conf._selectClear?.();
+                }}
+                type="link"
+              >
+                取消选择
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  conf._selectReverse?.();
+                }}
+                type="link"
+              >
+                反向选择
+              </Button>
+              {selction}
+            </Space>
+          }
+        ></Alert>
+      ) : null}
+      <Space>
+        <Space>{props.children}</Space>
+        <Space size="large">
+          <ReloadOutlined
+            onClick={() => {
+              ctx?._refresh?.();
+            }}
+            loop={ctx?._loading}
+          />
+          <Dropdown key="size" overlay={sizeMenu}>
+            <ColumnHeightOutlined />
+          </Dropdown>
+          <Dropdown key="columns" overlay={colsMenu}>
+            <SettingOutlined />
+          </Dropdown>
+        </Space>
+      </Space>
+    </Space>
+  );
+});
+
+QueryTable.Titlebar = Titlebar;

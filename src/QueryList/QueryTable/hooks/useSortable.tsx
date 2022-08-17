@@ -1,19 +1,22 @@
-import React, { useCallback, useMemo } from 'react';
-import { useField, useFieldSchema } from '@formily/react';
-import { ArrayField } from '@formily/core';
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
-import { hasSortable } from '../shared';
 import { usePrefixCls } from '@formily/antd/lib/__builtins__';
+import { ArrayField } from '@formily/core';
+import { useField, useFieldSchema } from '@formily/react';
+import { toJS } from '@formily/reactive';
+import React, { useCallback, useMemo } from 'react';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { useQueryList$ } from '../../shared';
+import { hasSortable } from './utils';
 
 const SortableRow = SortableElement((props: any) => <tr {...props} />);
 const SortableBody = SortableContainer((props: any) => <tbody {...props} />);
 
 const RowComp = (props: any) => {
-  return <SortableRow index={props['data-row-key'] || 0} {...props} />;
+  return <SortableRow index={props['data-row-sort-index'] || 0} {...props} />;
 };
 
 const addTdStyles = (node: HTMLElement, prefixCls: string) => {
   const helper = document.body.querySelector(`.${prefixCls}-sort-helper`);
+  // console.log('helper', helper);
   if (helper) {
     const tds = node.querySelectorAll('td');
     requestAnimationFrame(() => {
@@ -30,29 +33,57 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
   const prefixCls = usePrefixCls('formily-array-table');
   const field = useField<ArrayField>();
   const schema = useFieldSchema();
+
   const withSortable = useMemo(() => {
     return hasSortable(schema);
   }, [schema]);
 
+  const ctx = useQueryList$();
+
   const WrapperComp = useCallback(
-    (wrapperProps: any) => (
-      <SortableBody
-        useDragHandle
-        lockAxis="y"
-        helperClass={`${prefixCls}-sort-helper`}
-        helperContainer={() => {
-          return parentRef.current?.querySelector('tbody');
-        }}
-        onSortStart={({ node }: any) => {
-          addTdStyles(node as HTMLElement, prefixCls);
-        }}
-        onSortEnd={({ oldIndex, newIndex }: any) => {
-          field.move(oldIndex, newIndex);
-        }}
-        {...wrapperProps}
-      />
-    ),
-    [field, parentRef, prefixCls],
+    (wrapperProps: any) => {
+      return (
+        <SortableBody
+          useDragHandle
+          lockAxis="y"
+          helperClass={`${prefixCls}-sort-helper`}
+          helperContainer={() => {
+            return parentRef.current?.querySelector('tbody');
+          }}
+          onSortStart={({ node }: any) => {
+            addTdStyles(node as HTMLElement, prefixCls);
+          }}
+          onSortEnd={({ oldIndex, newIndex }: any) => {
+            const action = field.componentProps?.onSort;
+            if (typeof action === 'function') {
+              const ret = action(oldIndex, newIndex, toJS(field.value));
+              if (ret instanceof Promise) {
+                field.setLoading(true);
+                field.move(oldIndex, newIndex);
+                ret
+                  .then((sholudFresh) => {
+                    if (sholudFresh) {
+                      ctx?._refresh?.();
+                    }
+                    field.setLoading(false);
+                  })
+                  .catch(() => {
+                    // 反向操作
+                    field.move(newIndex, oldIndex);
+                    field.setLoading(false);
+                  });
+              } else {
+                field.move(oldIndex, newIndex);
+              }
+            } else {
+              field.move(oldIndex, newIndex);
+            }
+          }}
+          {...wrapperProps}
+        />
+      );
+    },
+    [ctx, field, parentRef, prefixCls],
   );
 
   const body = {

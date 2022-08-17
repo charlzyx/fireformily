@@ -1,13 +1,12 @@
-/* eslint-disable no-shadow */
 import { RecursionField, useFieldSchema } from '@formily/react';
 import React from 'react';
-import { isAdditionComponent } from '../shared';
+import { isAdditionComponent } from './utils';
 
 export const useAddition = () => {
   const schema = useFieldSchema();
-  return schema.reduceProperties((addition, schema, key) => {
-    if (isAdditionComponent(schema)) {
-      return <RecursionField schema={schema} name={key} />;
+  return schema.reduceProperties((addition, subSchema, key) => {
+    if (isAdditionComponent(subSchema)) {
+      return <RecursionField schema={subSchema} name={key} />;
     }
     return addition;
   }, null);
