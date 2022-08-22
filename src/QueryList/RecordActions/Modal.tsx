@@ -7,7 +7,8 @@ import { TActionProps } from './shared';
 export const Modal = (props: TActionProps<typeof AntdModal>) => {
   const action = useAction();
   const { field } = action;
-  const { form, visible, load, reset, footer, loading } = usePopAction(action);
+  const { form, btnProps, visible, load, reset, footer, loading } =
+    usePopAction(action, 'middle');
 
   return (
     <>
@@ -29,13 +30,7 @@ export const Modal = (props: TActionProps<typeof AntdModal>) => {
         {form}
         {field.content}
       </AntdModal>
-      <Button
-        type="link"
-        size="small"
-        {...props?.btn}
-        loading={loading}
-        onClick={load}
-      >
+      <Button {...btnProps} {...props?.btn} loading={loading} onClick={load}>
         {(field.title as string) || '编辑'}
       </Button>
     </>

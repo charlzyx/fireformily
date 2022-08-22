@@ -4,4 +4,3 @@ export { useSortable } from './useSortable';
 export { useTableColumns } from './useTableColumns';
 export { useTableExpandable } from './useTableExpandable';
 export { useTableSources } from './useTableSources';
-export { useToolbar } from './useToolbar';

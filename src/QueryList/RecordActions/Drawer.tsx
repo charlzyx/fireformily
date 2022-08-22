@@ -7,7 +7,8 @@ import { TActionProps } from './shared';
 export const Drawer = (props: TActionProps<typeof AntdDrawer>) => {
   const action = useAction();
   const { field } = action;
-  const { form, load, visible, reset, footer, loading } = usePopAction(action);
+  const { form, load, visible, btnProps, reset, footer, loading } =
+    usePopAction(action, 'middle');
 
   return (
     <>
@@ -34,13 +35,7 @@ export const Drawer = (props: TActionProps<typeof AntdDrawer>) => {
         {form}
         {field.content}
       </AntdDrawer>
-      <Button
-        type="link"
-        size="small"
-        {...props?.btn}
-        loading={loading}
-        onClick={load}
-      >
+      <Button {...btnProps} {...props?.btn} loading={loading} onClick={load}>
         {(field.title as string) || '编辑'}
       </Button>
     </>

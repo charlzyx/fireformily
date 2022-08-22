@@ -1,4 +1,4 @@
-import { FormGrid, FormLayout } from '@formily/antd';
+import { ArrayBase, FormGrid, FormLayout } from '@formily/antd';
 import { RecursionField } from '@formily/react';
 import { Popover as AntdPopover, Button, Space } from 'antd';
 import { useCallback, useMemo, useState } from 'react';
@@ -18,6 +18,16 @@ export const usePopAction = (
 
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const array = ArrayBase.useArray?.();
+
+  const btnProps: React.ComponentProps<typeof Button> = useMemo(() => {
+    return array
+      ? {
+          size: 'small',
+          type: 'link',
+        }
+      : {};
+  }, [array]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -36,7 +46,6 @@ export const usePopAction = (
     actions
       .submit()
       .then((neoRecord: any) => {
-        console.log('---submit');
         setVisible(false);
         return neoRecord;
       })
@@ -78,12 +87,16 @@ export const usePopAction = (
           marginBottom: '16px',
         }}
       >
-        <Button loading={loading} size={buttonSize} onClick={reset}>
+        <Button
+          loading={loading}
+          size={buttonSize || btnProps.size}
+          onClick={reset}
+        >
           {cancelText || '取消'}
         </Button>
         <Button
           loading={loading}
-          size={buttonSize}
+          size={buttonSize || btnProps.size}
           onClick={submit}
           type="primary"
         >
@@ -91,7 +104,7 @@ export const usePopAction = (
         </Button>
       </Space>
     );
-  }, [buttonSize, cancelText, loading, okText, reset, submit]);
+  }, [btnProps.size, buttonSize, cancelText, loading, okText, reset, submit]);
 
   return {
     form,
@@ -103,5 +116,6 @@ export const usePopAction = (
     load,
     submit,
     reset,
+    btnProps,
   };
 };

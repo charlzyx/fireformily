@@ -32,6 +32,32 @@ const SchemaField = createSchemaField({
 
 const form = createForm();
 
+const service = ({ current, pageSize, q1, q2, ...others }: any) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        total: 44,
+        data: Array.from({
+          length: current * pageSize < 44 ? pageSize : 44 % pageSize,
+        })
+          .map((_, idx) => {
+            return {
+              name: `[${q1 || 'q1'}]${idx}...${current}`,
+              id: `[${q2 || 'q2'}]${idx}...${current}`,
+              ex: [
+                {
+                  name: `ex [${q1 || 'q1'}]${idx}...${current}`,
+                  id: `ex [${q2 || 'q2'}]${idx}...${current}`,
+                },
+              ],
+            };
+          })
+          .filter(Boolean),
+      });
+    }, 200);
+  });
+};
+
 const actions = {
   load: (record: any) => {
     return Promise.resolve(record);
@@ -45,7 +71,8 @@ const actions = {
       name: data.name,
       id: data.id,
     };
-    return Promise.resolve(neoRecord);
+    // return Promise.resolve(neoRecord);
+    return Promise.resolve();
   },
 };
 
@@ -56,35 +83,18 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
       type: 'object',
       'x-component': 'QueryList',
       'x-component-props': {
-        service: ({ current, pageSize, q1, q2, ...others }: any) => {
-          console.log('current, pageSize', current, pageSize, others);
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                total: 44,
-                data: Array.from({ length: pageSize })
-                  .map((_, idx) => {
-                    return {
-                      name: `[${q1 || 'q1'}]${idx}...${current}`,
-                      id: `[${q2 || 'q2'}]${idx}...${current}`,
-                      ex: [
-                        {
-                          name: `ex [${q1 || 'q1'}]${idx}...${current}`,
-                          id: `ex [${q2 || 'q2'}]${idx}...${current}`,
-                        },
-                      ],
-                    };
-                  })
-                  .filter(Boolean),
-              });
-            }, 200);
-          });
-        },
+        service: service,
       },
       properties: {
         query: {
           type: 'object',
           'x-component': 'QueryForm',
+          'x-component-props': {
+            grid: {
+              maxRows: 2,
+              maxColumns: 3,
+            },
+          },
           properties: {
             q1: {
               title: 'q1',
@@ -110,12 +120,6 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-decorator': 'FormItem',
               'x-component': 'Select',
             },
-            input5: {
-              title: 'input5',
-              type: 'string',
-              'x-decorator': 'FormItem',
-              'x-component': 'Input',
-            },
             '[startTime, endTime]': {
               title: '时间',
               type: 'string',
@@ -125,12 +129,24 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               },
               'x-component': 'DatePicker.RangePicker',
             },
-            q7: {
-              title: 'q7',
+            input5: {
+              title: 'input5',
               type: 'string',
               'x-decorator': 'FormItem',
               'x-component': 'Input',
             },
+            input6: {
+              title: 'input6',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'Input',
+            },
+            // q7: {
+            //   title: 'q7',
+            //   type: 'string',
+            //   'x-decorator': 'FormItem',
+            //   'x-component': 'Input',
+            // },
           },
         },
         toolbar: {
@@ -145,9 +161,6 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-component': 'QueryTable.Action.Popover',
               'x-component-props': {
                 actions: actions,
-                btn: {
-                  type: 'primary',
-                },
               },
               properties: {
                 name: {
@@ -173,6 +186,9 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-component': 'QueryTable.Action.Popconfirm',
               'x-component-props': {
                 actions: actions,
+                btn: {
+                  size: 'default',
+                },
               },
               properties: {
                 name: {
@@ -223,6 +239,9 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-component': 'QueryTable.Action.Drawer',
               'x-component-props': {
                 actions: actions,
+                btn: {
+                  type: 'primary',
+                },
               },
               properties: {
                 name: {
@@ -360,13 +379,13 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 'x-component-props': {
                   title: '操作',
                   type: 'actions',
-                  maxItems: 1,
-                  width: 140,
+                  maxItems: 2,
+                  width: 260,
                   fixed: 'right',
                 },
                 properties: {
                   popover: {
-                    title: 'Popover 编辑',
+                    title: 'Popover',
                     type: 'object',
                     'x-content': 'Popover content',
                     'x-component': 'QueryTable.Action.Popover',
@@ -391,7 +410,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     },
                   },
                   popconfirm: {
-                    title: 'Popconfirm 编辑',
+                    title: 'Popconfirm',
                     type: 'object',
                     'x-content': 'Popconfirm content',
                     'x-component': 'QueryTable.Action.Popconfirm',

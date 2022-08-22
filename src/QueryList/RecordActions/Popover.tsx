@@ -7,10 +7,8 @@ import { usePopAction } from './usePopAction';
 export const Popover = (props: TActionProps<typeof AntdPopover>) => {
   const action = useAction();
   const { field } = action;
-  const { form, reset, footer, load, loading, visible } = usePopAction(
-    action,
-    'small',
-  );
+  const { form, reset, btnProps, footer, load, loading, visible } =
+    usePopAction(action, 'small');
 
   return (
     <AntdPopover
@@ -32,13 +30,7 @@ export const Popover = (props: TActionProps<typeof AntdPopover>) => {
         }
       }}
     >
-      <Button
-        type="link"
-        size="small"
-        {...props.btn}
-        loading={loading}
-        onClick={load}
-      >
+      <Button {...btnProps} {...props.btn} loading={loading} onClick={load}>
         {(field.title as string) || '编辑'}
       </Button>
     </AntdPopover>

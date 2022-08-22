@@ -27,6 +27,7 @@ export interface IQueryListContext {
     total: number;
     data: any[];
   }>;
+  autoload?: boolean;
   form?: Form;
   query?: Field;
   list?: ArrayField;
@@ -91,6 +92,7 @@ export const QueryListProvider = (
         s.componentProps = s.componentProps || {};
         s.componentProps.loading = true;
       });
+
     return service!({ ...page, ...query })
       .then((resp) => {
         formRef.current
@@ -143,6 +145,7 @@ export const QueryListProvider = (
     <QueryListContext.Provider
       value={{
         ...defaults,
+        autoload: props.autoload,
         form,
         query: queryField,
         list: listField,

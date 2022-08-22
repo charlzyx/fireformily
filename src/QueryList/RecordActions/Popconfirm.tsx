@@ -7,10 +7,8 @@ import { TActionProps } from './shared';
 export const Popconfirm = (props: TActionProps<typeof AntdPopconfirm>) => {
   const action = useAction();
   const { field } = action;
-  const { form, load, submit, reset, loading, visible } = usePopAction(
-    action,
-    'small',
-  );
+  const { form, btnProps, load, submit, reset, loading, visible } =
+    usePopAction(action, 'small');
 
   return (
     <AntdPopconfirm
@@ -34,13 +32,7 @@ export const Popconfirm = (props: TActionProps<typeof AntdPopconfirm>) => {
       }}
       visible={visible}
     >
-      <Button
-        type="link"
-        size="small"
-        {...props?.btn}
-        loading={loading}
-        onClick={load}
-      >
+      <Button {...btnProps} {...props?.btn} loading={loading} onClick={load}>
         {(field.title as string) || '编辑'}
       </Button>
     </AntdPopconfirm>

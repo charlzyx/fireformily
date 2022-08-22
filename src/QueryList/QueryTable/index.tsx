@@ -3,9 +3,9 @@ import { ArrayBase as AntdArrayBase, ArrayBaseMixins } from '@formily/antd';
 import { usePrefixCls } from '@formily/antd/lib/__builtins__';
 import { ArrayField } from '@formily/core';
 import { RecursionField, observer, useField } from '@formily/react';
-import { Alert, Space } from 'antd';
+import { Alert, Button, Divider, Space } from 'antd';
 import Table from 'antd/lib/table';
-import React, { Fragment, useEffect, useRef } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef } from 'react';
 import { useQueryListContext } from '../ctx';
 import { Action } from '../RecordActions';
 import {
@@ -15,7 +15,6 @@ import {
   useTableColumns,
   useTableExpandable,
   useTableSources,
-  useToolbar,
 } from './hooks';
 import { ObPagination } from './ObPagination';
 import { ComposedQueryTable, isColumnComponent } from './shared';
@@ -27,7 +26,9 @@ export const QueryTable: ComposedQueryTable = observer((props) => {
   const ref = useRef<HTMLDivElement>(null);
   const field = useField<ArrayField>();
   const prefixCls = usePrefixCls('formily-array-table');
-  const dataSource = Array.isArray(field.value) ? field.value.slice() : [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const dataSource = field.value;
+  //  Array.isArray(field.value) ? field.value.slice() : [];
   const sources = useTableSources();
   const columns = useTableColumns(field, sources);
   const { registryAddress } = useQueryListContext();
@@ -35,16 +36,10 @@ export const QueryTable: ComposedQueryTable = observer((props) => {
   const sortbody = useSortable(ref);
 
   const addition = useAddition();
-  const toolbar = useToolbar();
 
-  const selection = useSelection(props.rowSelection);
+  const [rowKey, selection] = useSelection(props.rowKey, props.rowSelection);
 
   const expandable = useTableExpandable(props.expandable);
-
-  const defaultRowKey = (record: any) => {
-    const key = dataSource.indexOf(record);
-    return key;
-  };
 
   useEffect(() => {
     registryAddress!('list', field.address.toString());
@@ -53,20 +48,44 @@ export const QueryTable: ComposedQueryTable = observer((props) => {
 
   return (
     <div ref={ref} className={prefixCls}>
-      {toolbar}
       {props.selectable && selection.selectedRowKeys?.length ? (
         <Alert
-          style={{ marginTop: '6px', marginBottom: '6px' }}
+          style={{ marginTop: '4px', marginBottom: '4px' }}
           type="info"
-          message={<Space>选中{selection.selectedRowKeys?.length}项</Space>}
+          message={
+            <Space size="small" split={<Divider type="vertical"></Divider>}>
+              <Button type="text" size="small">
+                选中 {selection.selectedRowKeys?.length} 项
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  selection.clear();
+                }}
+                type="link"
+              >
+                取消选择
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  selection.reverse();
+                }}
+                type="link"
+              >
+                反向选择
+              </Button>
+            </Space>
+          }
         ></Alert>
       ) : null}
+
       <ArrayBase>
         <Table
           size="small"
           bordered
-          rowKey={defaultRowKey}
           {...props}
+          rowKey={rowKey as any}
           expandable={expandable}
           rowSelection={props.selectable ? selection : undefined}
           components={{ body: sortbody }}
@@ -94,8 +113,6 @@ export const QueryTable: ComposedQueryTable = observer((props) => {
   );
 });
 
-QueryTable.displayName = 'QueryTable';
-
 QueryTable.Column = () => {
   return <Fragment />;
 };
@@ -104,8 +121,18 @@ QueryTable.Expand = () => {
   return <Fragment />;
 };
 
-QueryTable.Toolbar = (porps) => {
-  return <div style={{ padding: `8px 0` }}>{porps.children}</div>;
+QueryTable.Toolbar = (props) => {
+  return (
+    <Space
+      style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: '8px',
+      }}
+    >
+      {props.children}
+    </Space>
+  );
 };
 
 ArrayBase?.mixin?.(QueryTable);

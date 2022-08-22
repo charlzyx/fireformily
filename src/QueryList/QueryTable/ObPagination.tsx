@@ -74,7 +74,8 @@ export const ObPagination: React.FC = observer((props: IPaginationProps) => {
     >
       <div style={{ marginRight: '8px' }}>
         第 {(current - startIndex) * pageSize + 1}-
-        {(current - startIndex + 1) * pageSize} 条, 总共 {total} 条
+        {Math.min((current - startIndex + 1) * pageSize, total)} 条, 总共{' '}
+        {total} 条
       </div>
       <div>
         <Pagination
