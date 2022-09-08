@@ -1,6 +1,3 @@
 export { useAddition } from './useAddition';
-export { useSelection } from './useSelection';
+export { useColumnsAndSourceRender } from './useColumnsAndSourceRender';
 export { useSortable } from './useSortable';
-export { useTableColumns } from './useTableColumns';
-export { useTableExpandable } from './useTableExpandable';
-export { useTableSources } from './useTableSources';

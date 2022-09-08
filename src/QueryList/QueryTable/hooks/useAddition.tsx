@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 import { RecursionField, useFieldSchema } from '@formily/react';
 import React from 'react';
-import { isAdditionComponent } from '../shared';
+import { isAdditionComponent } from './shared';
 
 export const useAddition = () => {
   const schema = useFieldSchema();

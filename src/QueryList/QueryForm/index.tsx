@@ -1,8 +1,10 @@
+import { SyncOutlined } from '@ant-design/icons';
 import { FormButtonGroup, FormGrid, FormLayout } from '@formily/antd';
 import { observer, useField, useForm } from '@formily/react';
-import { Button } from 'antd';
-import React, { useEffect, useMemo, useRef } from 'react';
-import { useQueryListContext } from '../ctx';
+import { Button, Space, Typography } from 'antd';
+import React, { useEffect } from 'react';
+import { useQueryList$ } from '../shared';
+import { useCollapseGrid } from './useCollapseGrid';
 
 const layouts: React.ComponentProps<typeof FormLayout> = {
   breakpoints: [680],
@@ -10,43 +12,6 @@ const layouts: React.ComponentProps<typeof FormLayout> = {
   labelAlign: ['left', 'right'],
   labelCol: [24, 6],
   wrapperCol: [24, 10],
-};
-
-const useCollapseGrid = (conf: React.ComponentProps<typeof FormGrid> = {}) => {
-  const maxRows = conf.maxRows || 2;
-  const grid = useMemo(() => {
-    return FormGrid.createFormGrid({
-      maxColumns: conf.maxColumns || 4,
-      maxWidth: conf.maxWidth || 320,
-      maxRows,
-      shouldVisible: (node, myGrid) => {
-        if (node.index === grid.childSize - 1) return true;
-        if (myGrid.maxRows === Infinity) return true;
-        return node.shadowRow! < maxRows + 1;
-      },
-    });
-  }, [conf.maxColumns, conf.maxWidth, maxRows]);
-
-  const computeRows = grid.fullnessLastColumn
-    ? grid.shadowRows - 1
-    : grid.shadowRows;
-
-  const expanded =
-    computeRows <= maxRows ? undefined : grid.maxRows === Infinity;
-
-  const toggle = () => {
-    if (grid.maxRows === Infinity) {
-      grid.maxRows = maxRows;
-    } else {
-      grid.maxRows = Infinity;
-    }
-  };
-
-  return {
-    grid,
-    expanded,
-    toggle,
-  };
 };
 
 type QueryFormProps = React.PropsWithChildren<{
@@ -61,34 +26,27 @@ export const QueryForm = observer((props: QueryFormProps) => {
   const field = useField();
   const form = useForm();
   const { grid, expanded, toggle } = useCollapseGrid(props.grid!);
-  const { reset, refresh, query, list, registryAddress, autoload } =
-    useQueryListContext();
+  const ctx = useQueryList$();
+  const { _loading, _refresh, _reset, _trigger } = ctx || {};
 
   const onReset = () => {
-    reset!();
-    form.reset(field.address, { forceClear: true, validate: false });
+    if (_loading) return;
+    _reset?.();
+    if (ctx) {
+      form.reset(ctx._address?.query, { forceClear: true, validate: false });
+    }
   };
 
   const onSubmit = () => {
-    return refresh!();
+    if (_loading) return;
+    return _trigger?.();
   };
 
-  const autoloadDone = useRef(false);
-
   useEffect(() => {
-    registryAddress?.('query', field.address.toString());
-
+    if (!ctx) return;
+    ctx._address!.query = field.address.toString();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field.address]);
-
-  useEffect(() => {
-    const canload =
-      autoloadDone.current === false && autoload !== false && list && query;
-    if (canload) {
-      refresh!();
-      autoloadDone.current = true;
-    }
-  }, [autoload, list, query, refresh]);
+  }, [ctx, field?.address?.toString()]);
 
   const renderActions = () => {
     return (
@@ -138,5 +96,22 @@ export const QueryForm = observer((props: QueryFormProps) => {
         </FormGrid.GridColumn>
       </FormGrid>
     </FormLayout>
-  ) : null;
+  ) : (
+    <Space
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <Typography.Title>{field.title || ''}</Typography.Title>
+      {_refresh ? (
+        <SyncOutlined
+          onClick={() => {
+            _refresh();
+          }}
+        />
+      ) : null}
+    </Space>
+  );
 });
