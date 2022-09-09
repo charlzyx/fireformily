@@ -2,7 +2,9 @@ import {
   ArrayTable,
   DatePicker,
   Editable,
+  FormGrid,
   FormItem,
+  FormLayout,
   Input,
   Select,
   Space,
@@ -13,31 +15,12 @@ import React from 'react';
 
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
-import { PopActions } from '../PopActions';
-import { QueryForm, QueryList, QueryTable } from '../QueryList';
+import { PopActions, QueryForm, QueryList, QueryTable } from 'fireformily';
 
-const SchemaField = createSchemaField({
-  components: {
-    QueryList,
-    QueryForm,
-    FormItem,
-    Input,
-    Select,
-    DatePicker,
-    Editable,
-    QueryTable,
-    ArrayTable,
-    PopActions,
-    Space,
-  },
-});
-
-const form = createForm();
-
-const service = ({ pagination, query, ...others }: any) => {
-  console.log('request', { query, pagination, others });
+const service = ({ pagination, params, ...others }: any) => {
+  console.log('request', { params, pagination, others });
   const { pageSize, current } = pagination;
-  const { q1, q2 } = query;
+  const { input1, input2 } = params;
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -47,12 +30,12 @@ const service = ({ pagination, query, ...others }: any) => {
         })
           .map((_, idx) => {
             return {
-              name: `[${q1 || 'q1'}]${idx}...${current}`,
+              name: `[${input1 || 'input1'}]${idx}...${current}`,
               id: idx + current * pageSize,
               ex: [
                 {
-                  name: `ex [${q1 || 'q1'}]${idx}...${current}`,
-                  id: `ex [${q2 || 'q2'}]${idx}...${current}`,
+                  name: `ex [${input1 || 'input1'}]${idx}...${current}`,
+                  id: `ex [${input1 || 'input2'}]${idx}...${current}`,
                 },
               ],
             };
@@ -92,6 +75,31 @@ const actions = {
   },
 };
 
+const SchemaField = createSchemaField({
+  components: {
+    QueryList,
+    QueryForm,
+    FormItem,
+    Input,
+    Select,
+    FormGrid,
+    FormLayout,
+    DatePicker,
+    Editable,
+    QueryTable,
+    ArrayTable,
+    PopActions,
+    Space,
+  },
+  scope: {
+    service,
+    actions,
+    batch,
+  },
+});
+
+const form = createForm();
+
 const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
   type: 'object',
   properties: {
@@ -99,15 +107,68 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
       type: 'void',
       'x-component': 'QueryList',
       'x-component-props': {
-        service: service,
+        size: 'small',
+        service: '{{service}}',
+        syncUrl: true,
       },
       properties: {
         query: {
           type: 'object',
           'x-component': 'QueryForm',
+          'x-decorator': 'FormLayout',
+          'x-decorator-props': {
+            layout: 'vertical',
+          },
           properties: {
-            q1: {
-              title: 'q1',
+            input: {
+              title: '输入框',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'Input',
+            },
+            select1: {
+              title: '选择',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'Select',
+              enum: [
+                { label: '是', value: 'YES' },
+                { label: '否', value: 'NO' },
+              ],
+            },
+            select2: {
+              title: '选择',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'Select',
+              enum: [
+                { label: '是', value: 'YES' },
+                { label: '否', value: 'NO' },
+              ],
+            },
+            date: {
+              title: '日期',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'DatePicker',
+            },
+            '[start, end]': {
+              title: '日期区间',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-decorator-props': {
+                gridSpan: 2,
+              },
+              'x-component': 'DatePicker.RangePicker',
+            },
+            input2: {
+              title: '输入框2',
+              type: 'string',
+              'x-decorator': 'FormItem',
+              'x-component': 'Input',
+            },
+            input3: {
+              title: '输入框3',
               type: 'string',
               'x-decorator': 'FormItem',
               'x-component': 'Input',
@@ -115,7 +176,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           },
         },
         titlebar: {
-          title: '新增',
+          title: '查询列表',
           type: 'void',
           'x-component': 'QueryTable.Titlebar',
           properties: {
@@ -128,7 +189,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   title: '批量导出',
                   'x-component': 'PopActions.Popover',
                   'x-component-props': {
-                    actions: batch,
+                    actions: '{{batch}}',
                   },
                 },
                 batchDelete: {
@@ -136,7 +197,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   title: '批量删除',
                   'x-component': 'PopActions.Popconfirm',
                   'x-component-props': {
-                    actions: batch,
+                    actions: '{{batch}}',
                   },
                 },
               },
@@ -147,7 +208,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-content': 'Popover content',
               'x-component': 'PopActions.Popover',
               'x-component-props': {
-                actions: actions,
+                actions: '{{actions}}',
               },
               properties: {
                 name: {
@@ -172,7 +233,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-content': 'Popconfirm content',
               'x-component': 'PopActions.Popconfirm',
               'x-component-props': {
-                actions: actions,
+                actions: '{{actions}}',
                 btn: {
                   size: 'default',
                 },
@@ -200,7 +261,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-content': 'Modal content',
               'x-component': 'PopActions.Modal',
               'x-component-props': {
-                actions: actions,
+                actions: '{{actions}}',
               },
               properties: {
                 name: {
@@ -225,7 +286,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-content': 'Drawer content',
               'x-component': 'PopActions.Drawer',
               'x-component-props': {
-                actions: actions,
+                actions: '{{actions}}',
                 btn: {
                   type: 'primary',
                 },
@@ -260,7 +321,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           items: {
             type: 'object',
             properties: {
-              column1: {
+              sort: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
@@ -275,7 +336,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   },
                 },
               },
-              column2: {
+              index: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
@@ -290,8 +351,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   },
                 },
               },
-
-              column4: {
+              name: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
@@ -307,7 +367,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   },
                 },
               },
-              column3: {
+              id: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
@@ -328,7 +388,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   },
                 },
               },
-              column5: {
+              operations: {
                 type: 'void',
                 'x-component': 'QueryTable.Operations',
                 'x-component-props': {
@@ -342,7 +402,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     'x-content': 'Popover content',
                     'x-component': 'PopActions.Popover',
                     'x-component-props': {
-                      actions: actions,
+                      actions: '{{actions}}',
                     },
                     properties: {
                       name: {
@@ -367,7 +427,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     'x-content': 'Popconfirm content',
                     'x-component': 'PopActions.Popconfirm',
                     'x-component-props': {
-                      actions: actions,
+                      actions: '{{actions}}',
                     },
                     properties: {
                       name: {
@@ -392,7 +452,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     'x-content': 'Modal content',
                     'x-component': 'PopActions.Modal',
                     'x-component-props': {
-                      actions: actions,
+                      actions: '{{actions}}',
                     },
                     properties: {
                       name: {
@@ -417,7 +477,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                     'x-content': 'Drawer content',
                     'x-component': 'PopActions.Drawer',
                     'x-component-props': {
-                      actions: actions,
+                      actions: '{{actions}}',
                     },
                     properties: {
                       name: {
@@ -438,43 +498,9 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                   },
                 },
               },
-              // column6: {
-              //   type: 'void',
-              //   'x-component': 'QueryTable.Column',
-              //   'x-component-props': {
-              //     title: 'Operations',
-              //     width: 200,
-              //     fixed: 'right',
-              //   },
-              //   properties: {
-              //     item: {
-              //       type: 'void',
-              //       'x-component': 'FormItem',
-              //       properties: {
-              //         remove: {
-              //           type: 'void',
-              //           'x-component': 'QueryTable.Remove',
-              //         },
-              //         moveDown: {
-              //           type: 'void',
-              //           'x-component': 'QueryTable.MoveDown',
-              //         },
-              //         moveUp: {
-              //           type: 'void',
-              //           'x-component': 'QueryTable.MoveUp',
-              //         },
-              //       },
-              //     },
-              //   },
-              // },
             },
           },
           properties: {
-            // add: {
-            //   type: 'void',
-            //   'x-component': 'QueryTable.Addition',
-            //   title: '添加条目',
-            // },
             expand: {
               type: 'void',
               'x-component': 'QueryTable.Expand',

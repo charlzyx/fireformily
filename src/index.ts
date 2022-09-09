@@ -1,2 +1,4 @@
 import './global.less';
-export { default as Play } from './Play';
+
+export { PopActions } from './PopActions';
+export { QueryForm, QueryList, QueryTable } from './QueryList';

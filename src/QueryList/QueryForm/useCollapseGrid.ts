@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 export const useCollapseGrid = (
   conf: React.ComponentProps<typeof FormGrid> = {},
 ) => {
-  const maxRows = conf.maxRows || 2;
+  const maxRows = conf.maxRows || 1;
   const grid = useMemo(() => {
     return FormGrid.createFormGrid({
       maxColumns: conf.maxColumns || 4,

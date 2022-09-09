@@ -1,7 +1,7 @@
 import { ObjectField } from '@formily/core';
+import useUrlState from '@ahooksjs/use-url-state';
 import { useForm } from '@formily/react';
 import { autorun, observable } from '@formily/reactive';
-import qs from 'qs';
 import React, {
   createContext,
   useCallback,
@@ -24,19 +24,23 @@ export interface IQueryListContext<
     sorter?: {};
     filters?: {};
     params?: Params;
-    currentDataSource?: Record[];
+    extra?: {
+      currentDataSource?: Record[];
+    };
   }) => Promise<{
     list: Record[];
     total: number;
   }>;
-  /** 是否将查询参数同步到 url search 上 */
-  syncUrlParams?: boolean;
   /** 首次自动刷新 */
   autoload?: boolean;
   /** filter 是否是远程 */
   filterRemote?: boolean;
   /** sort 是否是远程 */
   sortRemote?: boolean;
+  /** size 大小 */
+  size: 'default' | 'middle' | 'small';
+  /** 是否将查询参数同步到url上 */
+  syncUrl?: boolean;
   /** 是否正在刷新 */
   _loading?: boolean;
   /** 内部使用: 发起请求, Promise */
@@ -71,22 +75,18 @@ export interface IQueryListContext<
 
 const QueryListContext = createContext<IQueryListContext | null>(null);
 
-const syncUrlSearch = (params: Record<string, any> = {}) => {
-  const { search } = window.location;
-  const pre = qs.parse(search);
-  window.location.search = qs.stringify({ ...pre, ...params });
-};
-
 export interface QueryListProviderProps
   extends Pick<
     IQueryListContext,
-    'service' | 'syncUrlParams' | 'autoload' | 'filterRemote' | 'sortRemote'
+    'service' | 'syncUrl' | 'autoload' | 'filterRemote' | 'sortRemote' | 'size'
   > {}
 
 export const QueryListProvider = React.memo(
   (props: React.PropsWithChildren<QueryListProviderProps>) => {
     const form = useForm();
     const memo = useRef({});
+    const [urlState, setUrlState] = useUrlState();
+    const syncUrlDone = useRef(false);
 
     const autoloaded = useRef(false);
 
@@ -98,8 +98,20 @@ export const QueryListProvider = React.memo(
       (params: any) => {
         const { service } = methods.current;
         memo.current = params;
-        if (props.syncUrlParams) {
-          syncUrlSearch(params);
+        // console.log('at service props.syncUrl', props.syncUrl);
+        if (props.syncUrl) {
+          const {
+            pagination: { pageSize, current },
+            params: query,
+          } = params || {};
+
+          setUrlState((pre) => {
+            const empty = { ...pre };
+            Object.keys(empty).forEach((key) => {
+              empty[key] = undefined;
+            });
+            return { ...empty, ...query, pageSize, current };
+          });
         }
         $value.current._loading = true;
         return service!(params)
@@ -118,7 +130,7 @@ export const QueryListProvider = React.memo(
             $value.current._loading = false;
           });
       },
-      [form, props.syncUrlParams],
+      [form, props.syncUrl, setUrlState],
     );
 
     const _trigger: IQueryListContext['_trigger'] = useCallback(() => {
@@ -131,7 +143,7 @@ export const QueryListProvider = React.memo(
       //   tableField,
       // });
       return _service!({
-        query: queryField?.value,
+        params: queryField?.value,
         ...(tableField?.data as any),
       });
     }, [_service, form]);
@@ -142,15 +154,27 @@ export const QueryListProvider = React.memo(
     }, [_service]);
 
     const _reset: IQueryListContext['_reset'] = useCallback(() => {
-      const params = memo.current;
+      const tableField = $value?.current?._address?.table;
+      if (tableField) {
+        form
+          .query(tableField)
+          .take()
+          ?.setState((s) => {
+            s.data = s.data || {};
+            s.data.pagination = s.data.pagination || {};
+            s.data.pagination.current = 1;
+          });
+      }
+
       // do reset
-      return _service!(params);
-    }, [_service]);
+      return _trigger!();
+    }, [_trigger, form]);
 
     const $value = useRef<IQueryListContext>(
       observable({
         ...props,
         service: props.service ? _service : undefined,
+        syncUrl: props.syncUrl,
         _refresh: props.service ? _refresh : undefined,
         _reset: props.service ? _reset : undefined,
         _trigger: props.service ? _trigger : undefined,
@@ -159,7 +183,7 @@ export const QueryListProvider = React.memo(
           table: '',
         },
         _cofnig: {
-          _size: 'default',
+          _size: props.size ?? 'default',
           _columns: [],
           _showColumns: [],
           _selectedRows: [],
@@ -169,6 +193,40 @@ export const QueryListProvider = React.memo(
         },
       }),
     );
+
+    useEffect(() => {
+      // console.log('at init props.syncUrl', props.syncUrl);
+      if (!props.syncUrl) return;
+      if (syncUrlDone.current) return;
+      const { _address } = $value.current;
+      const { pageSize, current, ...params } = urlState || {};
+      // console.log('urlSync ', { pageSize, current, params });
+
+      if (pageSize && _address?.table) {
+        form
+          .query(_address.table)
+          .take()
+          ?.setState((s) => {
+            s.data = s.data || {};
+            s.data.pagination = s.data.pagination || {};
+            s.data.pagination.pageSize = Number(urlState.pageSize);
+            s.data.pagination.current = Number(urlState.current);
+          });
+      }
+      if (params && Object.keys(params).length > 0 && _address?.query) {
+        form
+          .query(_address.query)
+          .take()
+          ?.setState((s) => {
+            s.value = { ...s.value, ...params };
+          });
+      }
+      if (_address?.table) {
+        setTimeout(() => {
+          syncUrlDone.current = true;
+        }, 0);
+      }
+    }, [form, props.syncUrl, urlState]);
 
     useEffect(() => {
       if (!methods.current.service) return;
@@ -202,7 +260,10 @@ export const QueryListProvider = React.memo(
       if ($val.sortRemote !== props.sortRemote) {
         $val.sortRemote = props.sortRemote;
       }
-    }, [props.autoload, props.filterRemote, props.sortRemote]);
+      if ($val.syncUrl !== props.syncUrl) {
+        $val.syncUrl = props.syncUrl;
+      }
+    }, [props.autoload, props.filterRemote, props.sortRemote, props.syncUrl]);
 
     return (
       <QueryListContext.Provider value={$value.current}>
