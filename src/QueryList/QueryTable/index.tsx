@@ -77,10 +77,13 @@ export const QueryTable: React.FC<IQueryTableProps> &
       field.data = {};
       field.data.pagination = {
         current: 1,
+        ...props.pagination,
         pageSize: 10,
+        showTotal: (total, range) =>
+          `第 ${range[0]}-${range[1]} 条, 共 ${total} 条数据`,
       } as PaginationProps;
     }
-  }, [ctx, field]);
+  }, [ctx, field, props.pagination]);
 
   useEffect(() => {
     if (!ctx) return;
