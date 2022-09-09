@@ -82,7 +82,6 @@ export const usePopAction = () => {
     if (loading) return;
     const loader = methods.current.load || noop;
     setLoading(true);
-    console.log('open scope', scope);
     return loader(scope?.$record, scope?.$index, scope?.$records)
       .then((data) => {
         field.setState((s) => {
