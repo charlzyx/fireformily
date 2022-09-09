@@ -17,13 +17,28 @@ export const Drawer = (props: React.ComponentProps<typeof AntdDrawer>) => {
           reset();
           props?.onClose?.(e);
         }}
+        // /**
+        //  * @deprecated `visible` is deprecated which will be removed in next major version. Please use
+        //  *   `open` instead.
+        //  */
+        // visible={visible}
+        // /**
+        //  * @deprecated `afterVisibleChange` is deprecated which will be removed in next major version.
+        //  *   Please use `afterOpenChange` instead.
+        //  */
+        // afterVisibleChange={(show) => {
+        //   if (!show) {
+        //     reset();
+        //   }
+        //   props?.afterOpenChange?.(show);
+        // }}
+        open={visible}
         afterOpenChange={(show) => {
           if (!show) {
             reset();
           }
           props?.afterOpenChange?.(show);
         }}
-        open={visible}
         footer={footer}
       >
         {header}

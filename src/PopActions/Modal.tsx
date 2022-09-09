@@ -20,6 +20,11 @@ export const Modal = (props: React.ComponentProps<typeof AntdModal>) => {
           // next tick
           reset();
         }}
+        /**
+         * @deprecated `visible` is deprecated which will be removed in next major version. Please use
+         *   `open` instead.
+         */
+        // visible={visible}
         open={visible}
         title={props.title || field.title}
         footer={footer}
