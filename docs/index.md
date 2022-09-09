@@ -1,7 +1,7 @@
 ---
 hero:
   title: fireformily
-  desc: '@formily/antd 增强组件'
+  desc: '@formily/antd pro?'
   actions:
     - text: 灵感来源
       link: https://antd.formilyjs.org/zh-CN/components/form-grid#%E6%9F%A5%E8%AF%A2%E8%A1%A8%E5%8D%95%E5%AE%9E%E7%8E%B0%E6%A1%88%E4%BE%8B
