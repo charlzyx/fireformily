@@ -6,7 +6,7 @@
   "typings": "dist/esm/index.d.ts",
   "repositoy": {
     "type": "git",
-    "url": "git+https://github.com/charlzyx/fireformily.git"
+    "url": "https://github.com/charlzyx/fireformily.git"
   },
   "files": [
     "dist"
