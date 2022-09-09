@@ -35,3 +35,7 @@ export const isAdditionComponent = (schema: Schema) => {
 export const isExpandComponent = (schema: Schema) => {
   return schema['x-component']?.indexOf('Expand') > -1;
 };
+
+export const isSelectionComponent = (schema: Schema) => {
+  return schema['x-component']?.indexOf('Selection') > -1;
+};

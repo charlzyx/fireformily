@@ -10,6 +10,7 @@ import React, {
   useRef,
 } from 'react';
 
+const noop = () => {};
 export interface IQueryListContext<
   Record extends any = any,
   Params extends any = any,
@@ -30,10 +31,12 @@ export interface IQueryListContext<
   }>;
   /** 是否将查询参数同步到 url search 上 */
   syncUrlParams?: boolean;
-  /** 页码开始下标, 默认 0 */
-  pageStart?: number;
   /** 首次自动刷新 */
   autoload?: boolean;
+  /** filter 是否是远程 */
+  filterRemote?: boolean;
+  /** sort 是否是远程 */
+  sortRemote?: boolean;
   /** 是否正在刷新 */
   _loading?: boolean;
   /** 内部使用: 发起请求, Promise */
@@ -46,6 +49,23 @@ export interface IQueryListContext<
   _address?: {
     query: string;
     table: string;
+  };
+  /** 内部配置 */
+  _cofnig: {
+    /** 内部使用: size 大小 */
+    _size: 'default' | 'middle' | 'small';
+    /** 内部使用: column 可见性选项列表 */
+    _columns: { label: string; key: React.Key }[];
+    /** 内部使用: 需要隐藏的columns */
+    _showColumns: React.Key[];
+    /** 内部使用: 选中列 */
+    _selectedRows: Record[];
+    /** 内部使用: 选中列keys */
+    _selectedRowKeys: React.Key[];
+    /** 内部使用: 清理选中 */
+    _selectClear?: () => void;
+    /** 内部使用: 反向选择 */
+    _selectReverse?: () => void;
   };
 }
 
@@ -60,7 +80,7 @@ const syncUrlSearch = (params: Record<string, any> = {}) => {
 export interface QueryListProviderProps
   extends Pick<
     IQueryListContext,
-    'service' | 'syncUrlParams' | 'autoload' | 'pageStart'
+    'service' | 'syncUrlParams' | 'autoload' | 'filterRemote' | 'sortRemote'
   > {}
 
 export const QueryListProvider = React.memo(
@@ -106,10 +126,10 @@ export const QueryListProvider = React.memo(
       const queryField = form.query(queryAddress!).take() as ObjectField;
       const tableAddress = $value.current._address!.table;
       const tableField = form.query(tableAddress!).take() as ObjectField;
-      console.log('_address', $value.current._address, {
-        queryField,
-        tableField,
-      });
+      // console.log('_address', $value.current._address, {
+      //   queryField,
+      //   tableField,
+      // });
       return _service!({
         query: queryField?.value,
         ...(tableField?.data as any),
@@ -137,6 +157,15 @@ export const QueryListProvider = React.memo(
         _address: {
           query: '',
           table: '',
+        },
+        _cofnig: {
+          _size: 'default',
+          _columns: [],
+          _showColumns: [],
+          _selectedRows: [],
+          _selectedRowKeys: [],
+          _selectClear: noop,
+          _selectReverse: noop,
         },
       }),
     );
@@ -167,10 +196,13 @@ export const QueryListProvider = React.memo(
       if ($val.autoload !== props.autoload) {
         $val.autoload = props.autoload;
       }
-      if (props.pageStart && $val.pageStart !== props.pageStart) {
-        $val.pageStart = props.pageStart;
+      if ($val.filterRemote !== props.filterRemote) {
+        $val.filterRemote = props.filterRemote;
       }
-    }, [props.autoload, props.pageStart]);
+      if ($val.sortRemote !== props.sortRemote) {
+        $val.sortRemote = props.sortRemote;
+      }
+    }, [props.autoload, props.filterRemote, props.sortRemote]);
 
     return (
       <QueryListContext.Provider value={$value.current}>

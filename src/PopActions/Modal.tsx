@@ -1,9 +1,10 @@
-import { Button, Modal as AntdModal } from 'antd';
+import { Modal as AntdModal } from 'antd';
 import React from 'react';
+import { Open } from './Open';
 import { usePopAction } from './shared';
 
 export const Modal = (props: React.ComponentProps<typeof AntdModal>) => {
-  const { visible, body, field, footer, header, loading, open, reset } =
+  const { visible, body, field, scope, footer, header, loading, open, reset } =
     usePopAction();
 
   return (
@@ -26,9 +27,7 @@ export const Modal = (props: React.ComponentProps<typeof AntdModal>) => {
         {header}
         {body}
       </AntdModal>
-      <Button loading={loading} onClick={open}>
-        {(field.title as string) || '编辑'}
-      </Button>
+      <Open open={open} field={field} loading={loading} scope={scope}></Open>
     </>
   );
 };

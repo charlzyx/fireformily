@@ -35,7 +35,7 @@ const SchemaField = createSchemaField({
 const form = createForm();
 
 const service = ({ pagination, query, ...others }: any) => {
-  console.log('service', { query, pagination });
+  console.log('request', { query, pagination, others });
   const { pageSize, current } = pagination;
   const { q1, q2 } = query;
   return new Promise((resolve) => {
@@ -48,7 +48,7 @@ const service = ({ pagination, query, ...others }: any) => {
           .map((_, idx) => {
             return {
               name: `[${q1 || 'q1'}]${idx}...${current}`,
-              id: `[${q2 || 'q2'}]${idx}...${current}`,
+              id: idx + current * pageSize,
               ex: [
                 {
                   name: `ex [${q1 || 'q1'}]${idx}...${current}`,
@@ -63,20 +63,31 @@ const service = ({ pagination, query, ...others }: any) => {
   });
 };
 
-const actions = {
-  load: (record: any) => {
+const batch = {
+  load: (record: any, ...others: any[]) => {
+    console.log('load ...args', { record, others });
     return Promise.resolve(record);
   },
-  cancel: () => {
+  cancel: (...args: any[]) => {
+    console.log('cancel ...args', args);
     return Promise.resolve();
   },
-  submit: (data: any, record: any) => {
-    const neoRecord = {
-      ...record,
-      name: data.name,
-      id: data.id,
-    };
-    // return Promise.resolve(neoRecord);
+  submit: (data: any, record: any, ...others: any) => {
+    console.log('submit ...args', { data, record, others });
+    return Promise.resolve();
+  },
+};
+const actions = {
+  load: (record: any, ...others: any[]) => {
+    console.log('load ...args', { record, others });
+    return Promise.resolve(record);
+  },
+  cancel: (...args: any[]) => {
+    console.log('cancel ...args', args);
+    return Promise.resolve();
+  },
+  submit: (data: any, record: any, ...others: any) => {
+    console.log('submit ...args', { data, record, others });
     return Promise.resolve();
   },
 };
@@ -103,11 +114,33 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
             },
           },
         },
-        toolbar: {
+        titlebar: {
           title: '新增',
           type: 'void',
-          'x-component': 'QueryTable.Toolbar',
+          'x-component': 'QueryTable.Titlebar',
           properties: {
+            selection: {
+              type: 'void',
+              'x-component': 'QueryTable.Selection',
+              properties: {
+                batchExp: {
+                  type: 'object',
+                  title: '批量导出',
+                  'x-component': 'PopActions.Popover',
+                  'x-component-props': {
+                    actions: batch,
+                  },
+                },
+                batchDelete: {
+                  type: 'object',
+                  title: '批量删除',
+                  'x-component': 'PopActions.Popconfirm',
+                  'x-component-props': {
+                    actions: batch,
+                  },
+                },
+              },
+            },
             popover: {
               title: 'Popover 新增',
               type: 'object',
@@ -222,6 +255,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component': 'QueryTable',
           'x-component-props': {
             scroll: { x: '100%' },
+            rowSelection: true,
           },
           items: {
             type: 'object',
@@ -230,8 +264,8 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
-                  width: 50,
-                  title: 'Sort',
+                  width: 80,
+                  title: '排序',
                   align: 'center',
                 },
                 properties: {
@@ -246,7 +280,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 'x-component': 'QueryTable.Column',
                 'x-component-props': {
                   width: 80,
-                  title: 'Index',
+                  title: '序号',
                   align: 'center',
                 },
                 properties: {
@@ -260,7 +294,10 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               column4: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
-                'x-component-props': { width: 200, title: 'NAME' },
+                'x-component-props': {
+                  width: 200,
+                  title: '姓名',
+                },
                 properties: {
                   name: {
                     type: 'string',
@@ -273,7 +310,15 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               column3: {
                 type: 'void',
                 'x-component': 'QueryTable.Column',
-                'x-component-props': { width: 200, title: 'ID' },
+                'x-component-props': {
+                  width: 200,
+                  title: 'ID',
+                  sorter: true,
+                  filters: `{{$records ? $records.map(record => {
+                    return { text: record.id, value: record.id }
+                  }): []}}`,
+                  onFilter: (value: string, record: any) => record.id !== value,
+                },
                 properties: {
                   id: {
                     type: 'string',
@@ -288,7 +333,6 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 'x-component': 'QueryTable.Operations',
                 'x-component-props': {
                   title: '操作',
-                  width: 260,
                   fixed: 'right',
                 },
                 properties: {

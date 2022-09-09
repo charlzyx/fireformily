@@ -4,7 +4,7 @@ import { RecursionField, useField, useFieldSchema } from '@formily/react';
 import { Table } from 'antd';
 import React, { useMemo } from 'react';
 
-import { isExpandComponent } from './shared';
+import { isExpandComponent } from './utils';
 
 const ArrayBase = AntdArrayBase as Required<typeof AntdArrayBase>;
 
@@ -25,8 +25,9 @@ export const useExpandable = (
   const expandable: TExpandable = useMemo(() => {
     if (!expandSchema) return undefined;
     return {
+      ...props,
       expandedRowRender: (record, index, indent, expanded) => {
-        console.log('renwer', expandSchema);
+        // console.log('renwer', expandSchema);
         return (
           <ArrayBase.Item
             index={index}
@@ -40,7 +41,6 @@ export const useExpandable = (
           </ArrayBase.Item>
         );
       },
-      ...props,
     };
   }, [arrayField?.value, expandSchema, props]);
 

@@ -1,10 +1,12 @@
-import { Button, Popover as AntdPopover } from 'antd';
+import { Popover as AntdPopover } from 'antd';
 import React from 'react';
+import { Open } from './Open';
 import { usePopAction } from './shared';
 
 export const Popover = (props: React.ComponentProps<typeof AntdPopover>) => {
-  const { body, field, footer, header, loading, open, reset, visible } =
+  const { body, field, scope, footer, header, loading, open, reset, visible } =
     usePopAction();
+  // console.log('--popovver', { visible });
 
   return (
     <AntdPopover
@@ -26,9 +28,7 @@ export const Popover = (props: React.ComponentProps<typeof AntdPopover>) => {
         }
       }}
     >
-      <Button loading={loading} onClick={open}>
-        {(field.title as string) || '编辑'}
-      </Button>
+      <Open open={open} field={field} loading={loading} scope={scope}></Open>
     </AntdPopover>
   );
 };

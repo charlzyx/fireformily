@@ -54,6 +54,13 @@ const noop = () => Promise.resolve({});
 export const usePopAction = () => {
   const scope = useExpressionScope();
   const field = useField();
+  // console.log(
+  //   '--scope',
+  //   { index: JSON.stringify(scope?.$index) },
+  //   { record: JSON.stringify(scope?.$record) },
+  //   { lookup: JSON.stringify(scope?.$lookup) },
+  //   { records: JSON.stringify(scope?.$records) },
+  // );
 
   const actions = field?.componentProps?.actions as Actions;
 
@@ -75,6 +82,7 @@ export const usePopAction = () => {
     if (loading) return;
     const loader = methods.current.load || noop;
     setLoading(true);
+    console.log('open scope', scope);
     return loader(scope?.$record, scope?.$index, scope?.$records)
       .then((data) => {
         field.setState((s) => {
@@ -85,7 +93,7 @@ export const usePopAction = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [field, loading, scope?.$index, scope?.$record, scope?.$records]);
+  }, [field, loading, scope]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
@@ -157,5 +165,16 @@ export const usePopAction = () => {
     );
   }, [loading, reset, submit]);
 
-  return { submit, field, reset, open, visible, loading, body, header, footer };
+  return {
+    submit,
+    field,
+    reset,
+    open,
+    visible,
+    loading,
+    body,
+    header,
+    footer,
+    scope,
+  };
 };

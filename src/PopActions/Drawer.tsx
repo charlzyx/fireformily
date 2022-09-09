@@ -1,9 +1,10 @@
-import { Button, Drawer as AntdDrawer } from 'antd';
+import { Drawer as AntdDrawer } from 'antd';
 import React from 'react';
+import { Open } from './Open';
 import { usePopAction } from './shared';
 
 export const Drawer = (props: React.ComponentProps<typeof AntdDrawer>) => {
-  const { body, field, footer, header, loading, open, reset, visible } =
+  const { body, field, footer, header, loading, scope, open, reset, visible } =
     usePopAction();
 
   return (
@@ -28,9 +29,7 @@ export const Drawer = (props: React.ComponentProps<typeof AntdDrawer>) => {
         {header}
         {body}
       </AntdDrawer>
-      <Button loading={loading} onClick={open}>
-        {(field.title as string) || '编辑'}
-      </Button>
+      <Open open={open} field={field} loading={loading} scope={scope}></Open>
     </>
   );
 };

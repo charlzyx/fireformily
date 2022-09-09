@@ -1,22 +1,19 @@
 /* eslint-disable no-shadow */
+import DownOutlined from '@ant-design/icons/DownOutlined';
 import { ArrayBase as AntdArrayBase } from '@formily/antd';
 import { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
-import {
-  RecursionField,
-  Schema,
-  useField,
-  useFieldSchema,
-} from '@formily/react';
+import { RecursionField, Schema, useFieldSchema } from '@formily/react';
 import { isArr } from '@formily/shared';
 import { Dropdown, Menu, Space } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
 import React from 'react';
+import { useQueryList$ } from '../../shared';
 
 import {
   isAdditionComponent,
   isColumnComponent,
   isOperationsComponent,
-} from './shared';
+} from './utils';
 
 const ArrayBase = AntdArrayBase as Required<typeof AntdArrayBase>;
 
@@ -85,7 +82,9 @@ const renderOperations = (
         })}
         {propLength > max ? (
           <Dropdown overlay={menu!}>
-            <a>...</a>
+            <a>
+              <DownOutlined />
+            </a>
           </Dropdown>
         ) : null}
       </Space>
@@ -93,8 +92,8 @@ const renderOperations = (
   );
 };
 
-export const useColumnsAndSourceRender = () => {
-  const arrayField = useField<ArrayField>();
+export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
+  const ctx = useQueryList$();
   const schema = useFieldSchema();
   const parseSources = (schema: Schema): ObservableColumnSource[] => {
     if (
@@ -138,8 +137,18 @@ export const useColumnsAndSourceRender = () => {
 
   const columns = sources.reduce(
     (buf, { name, columnProps, schema, display }, key) => {
+      // hidden by user select
+      if (
+        ctx &&
+        ctx._cofnig &&
+        ctx?._cofnig._showColumns!.length > 0 &&
+        ctx?._cofnig._showColumns?.findIndex(
+          (dataIndex) => dataIndex === name,
+        ) === -1
+      ) {
+        return buf;
+      }
       if (display === 'hidden') return buf;
-      console.log('isOperationsComponent', schema);
       if (isOperationsComponent(schema)) {
         return buf.concat({
           fixed: true,
@@ -154,9 +163,13 @@ export const useColumnsAndSourceRender = () => {
       }
 
       if (!isColumnComponent(schema)) return buf;
+
       return buf.concat({
         ...columnProps,
-        key,
+        filters: Array.isArray(columnProps.filters)
+          ? columnProps.filters
+          : undefined,
+        key: name,
         dataIndex: name,
         render: (value: any, record: any) => {
           const index = arrayField?.value?.indexOf(record);
@@ -183,6 +196,7 @@ export const useColumnsAndSourceRender = () => {
     return sources.map((column, key) => {
       //专门用来承接对Column的状态管理
       if (!isColumnComponent(column.schema)) return null;
+
       return (
         <RecursionField
           key={key}
@@ -194,7 +208,7 @@ export const useColumnsAndSourceRender = () => {
     });
   };
 
-  console.log('--columns', { columns, sources });
+  // console.log('--columns', { columns, sources });
 
   return [columns, renderSources] as const;
 };

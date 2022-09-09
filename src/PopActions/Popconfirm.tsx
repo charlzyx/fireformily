@@ -1,11 +1,12 @@
-import { Button, Popconfirm as AntdPopconfirm } from 'antd';
+import { Popconfirm as AntdPopconfirm } from 'antd';
 import React from 'react';
+import { Open } from './Open';
 import { usePopAction } from './shared';
 
 export const Popconfirm = (
   props: React.ComponentProps<typeof AntdPopconfirm>,
 ) => {
-  const { body, field, header, loading, open, reset, submit, visible } =
+  const { body, field, header, loading, scope, open, reset, submit, visible } =
     usePopAction();
 
   return (
@@ -13,7 +14,8 @@ export const Popconfirm = (
       {...props}
       title={
         <>
-          <h4>{header}</h4>
+          <h4>{field.title || header}</h4>
+          {field.title ? null : header}
           {body}
         </>
       }
@@ -29,9 +31,7 @@ export const Popconfirm = (
       }}
       open={visible}
     >
-      <Button loading={loading} onClick={open}>
-        {(field.title as string) || '编辑'}
-      </Button>
+      <Open open={open} field={field} loading={loading} scope={scope}></Open>
     </AntdPopconfirm>
   );
 };

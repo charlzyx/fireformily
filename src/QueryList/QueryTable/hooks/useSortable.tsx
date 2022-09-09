@@ -5,13 +5,13 @@ import { toJS } from '@formily/reactive';
 import React, { useCallback, useMemo } from 'react';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { useQueryList$ } from '../../shared';
-import { hasSortable } from './shared';
+import { hasSortable } from './utils';
 
 const SortableRow = SortableElement((props: any) => <tr {...props} />);
 const SortableBody = SortableContainer((props: any) => <tbody {...props} />);
 
 const RowComp = (props: any) => {
-  return <SortableRow index={props['data-row-key'] || 0} {...props} />;
+  return <SortableRow index={props['data-row-sort-index'] || 0} {...props} />;
 };
 
 const addTdStyles = (node: HTMLElement, prefixCls: string) => {
