@@ -9,6 +9,7 @@ export default defineConfig({
   mode: 'site',
   outputPath: './doc-site',
   publicPath: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
   runtimePublicPath: true,
   navs: [
     {
