@@ -89,22 +89,5 @@ export const QueryForm = observer((props: QueryFormProps) => {
         {renderActions()}
       </FormGrid.GridColumn>
     </FormGrid>
-  ) : (
-    <Space
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Typography.Title>{field.title || ''}</Typography.Title>
-      {_refresh ? (
-        <SyncOutlined
-          onClick={() => {
-            _refresh();
-          }}
-        />
-      ) : null}
-    </Space>
-  );
+  ) : null;
 });

@@ -1,3 +1,4 @@
+import { ArrayBase } from '@formily/antd';
 import { isVoidField } from '@formily/core';
 import {
   RecursionField,
@@ -15,6 +16,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useQueryList$ } from '../QueryList/shared';
 
 const nextTick = () =>
   new Promise((resolve) => {
@@ -23,6 +25,10 @@ const nextTick = () =>
     }, 0);
   });
 
+export interface IButtonType {
+  size?: React.ComponentProps<typeof Button>['size'];
+  type?: React.ComponentProps<typeof Button>['type'];
+}
 /**
  * https://github.com/alibaba/formily/discussions/3207
  */
@@ -54,6 +60,7 @@ const noop = () => Promise.resolve({});
 export const usePopAction = () => {
   const scope = useExpressionScope();
   const field = useField();
+  const ctx = useQueryList$();
   // console.log(
   //   '--scope',
   //   { index: JSON.stringify(scope?.$index) },
@@ -126,12 +133,13 @@ export const usePopAction = () => {
       .then(() => {
         setVisible(false);
         /** nexttick */
-        nextTick().then(preReset);
+        return nextTick().then(preReset);
       })
       .finally(() => {
         setLoading(false);
+        ctx?._refresh?.();
       });
-  }, [field, loading, scope?.$index, scope?.$record, scope?.$records]);
+  }, [ctx, field, loading, scope?.$index, scope?.$record, scope?.$records]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;

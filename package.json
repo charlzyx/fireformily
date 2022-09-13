@@ -21,12 +21,13 @@
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.0",
     "@ant-design/icons": "^4.7.0",
-    "@formily/antd": "^2.2.3",
-    "@formily/core": "^2.2.3",
-    "@formily/react": "^2.2.3",
-    "@types/react": "^18.0.18",
+
+    "@formily/antd": "^2.2.4",
+    "@formily/core": "^2.2.4",
+    "@formily/react": "^2.2.4",
+    "@types/react": "^18.0.19",
     "@types/react-dom": "^18.0.6",
-    "antd": "^4.23.0",
+    "antd": "^4.23.1",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -34,7 +35,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
-    "@types/jest": "^29.0.0",
+    "@types/jest": "^29.0.1",
     "@umijs/fabric": "^3.0.0",
     "@umijs/test": "^4.0.19",
     "dumi": "^1.1.47",

@@ -1,9 +1,11 @@
 import { Popover as AntdPopover } from 'antd';
 import React from 'react';
 import { Open } from './Open';
-import { usePopAction } from './shared';
+import { IButtonType, usePopAction } from './shared';
 
-export const Popover = (props: React.ComponentProps<typeof AntdPopover>) => {
+export const Popover = (
+  props: React.ComponentProps<typeof AntdPopover> & IButtonType,
+) => {
   const { body, field, scope, footer, header, loading, open, reset, visible } =
     usePopAction();
   // console.log('--popovver', { visible });

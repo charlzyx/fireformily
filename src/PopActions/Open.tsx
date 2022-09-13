@@ -16,17 +16,20 @@ export const Open = (
 
   const click = loading ? noop : open;
 
-  return inArray ? (
-    <a
-      onClick={(e) => {
-        e.preventDefault();
-        click();
-      }}
+  return (
+    <Button
+      onClick={click}
+      size={
+        inArray
+          ? 'small' || field?.componentProps?.size
+          : field.componentProps?.size
+      }
+      type={
+        inArray
+          ? 'link' || field?.componentProps?.type
+          : field.componentProps?.type
+      }
     >
-      {field?.title}
-    </a>
-  ) : (
-    <Button onClick={click} {...field?.componentProps?.button}>
       {field?.title}
     </Button>
   );
