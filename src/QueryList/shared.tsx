@@ -25,6 +25,7 @@ export interface IQueryListContext<
     filters?: {};
     params?: Params;
     extra?: {
+      action: 'filter' | 'sort' | 'paginate';
       currentDataSource?: Record[];
     };
   }) => Promise<{
