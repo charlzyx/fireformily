@@ -2,7 +2,7 @@ import { ArrayBase as AntdArrayBase } from '@formily/antd';
 import { ArrayField } from '@formily/core';
 import { RecursionField, useField, useFieldSchema } from '@formily/react';
 import { Table } from 'antd';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { isExpandComponent } from './utils';
 
@@ -27,9 +27,10 @@ export const useExpandable = (
     return {
       ...props,
       expandedRowRender: (record, index, indent, expanded) => {
-        // console.log('renwer', expandSchema);
         return (
           <ArrayBase.Item
+            // 就硬刷新
+            key={expanded ? `expand-${new Date()}` : `hidden-${index}`}
             index={index}
             record={() => arrayField?.value?.[index]}
           >

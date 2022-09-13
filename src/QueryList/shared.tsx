@@ -1,6 +1,6 @@
 import { ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
-import { useForm } from '@formily/react';
+import { useExpressionScope, useForm } from '@formily/react';
 import { autorun, observable } from '@formily/reactive';
 import React, {
   createContext,
@@ -41,6 +41,8 @@ export interface IQueryListContext<
   size: 'default' | 'middle' | 'small';
   /** 是否将查询参数同步到url上 */
   syncUrl?: boolean;
+  /** 分页大小, 默认 10 */
+  pageSize?: number;
   /** 是否正在刷新 */
   _loading?: boolean;
   /** 内部使用: 发起请求, Promise */
@@ -53,6 +55,12 @@ export interface IQueryListContext<
   _address?: {
     query: string;
     table: string;
+  };
+  /** 父级作用域 */
+  _scope?: {
+    $record?: any;
+    $index?: number;
+    $records?: any[];
   };
   /** 内部配置 */
   _cofnig: {
@@ -78,7 +86,13 @@ const QueryListContext = createContext<IQueryListContext | null>(null);
 export interface QueryListProviderProps
   extends Pick<
     IQueryListContext,
-    'service' | 'syncUrl' | 'autoload' | 'filterRemote' | 'sortRemote' | 'size'
+    | 'service'
+    | 'pageSize'
+    | 'syncUrl'
+    | 'autoload'
+    | 'filterRemote'
+    | 'sortRemote'
+    | 'size'
   > {}
 
 export const QueryListProvider = React.memo(
@@ -87,6 +101,7 @@ export const QueryListProvider = React.memo(
     const memo = useRef({});
     const [urlState, setUrlState] = useUrlState();
     const syncUrlDone = useRef(false);
+    const scope = useExpressionScope();
 
     const autoloaded = useRef(false);
 
@@ -114,7 +129,7 @@ export const QueryListProvider = React.memo(
           });
         }
         $value.current._loading = true;
-        return service!(params)
+        return service!({ ...params, scope })
           .then(({ list, total }) => {
             const tableAddress = $value.current._address!.table;
             const tableField = form.query(tableAddress!).take() as ObjectField;
@@ -130,7 +145,7 @@ export const QueryListProvider = React.memo(
             $value.current._loading = false;
           });
       },
-      [form, props.syncUrl, setUrlState],
+      [form, props.syncUrl, scope, setUrlState],
     );
 
     const _trigger: IQueryListContext['_trigger'] = useCallback(() => {
@@ -175,6 +190,7 @@ export const QueryListProvider = React.memo(
         ...props,
         service: props.service ? _service : undefined,
         syncUrl: props.syncUrl,
+        pageSize: props.pageSize,
         _refresh: props.service ? _refresh : undefined,
         _reset: props.service ? _reset : undefined,
         _trigger: props.service ? _trigger : undefined,
@@ -182,6 +198,7 @@ export const QueryListProvider = React.memo(
           query: '',
           table: '',
         },
+        _scope: scope,
         _cofnig: {
           _size: props.size ?? 'default',
           _columns: [],

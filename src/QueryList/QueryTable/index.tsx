@@ -77,7 +77,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
       field.data = {};
       field.data.pagination = {
         current: 1,
-        pageSize: 10,
+        pageSize: ctx.pageSize || 10,
         ...props.pagination,
         showTotal: (total: number, range: number[]) =>
           `第 ${range[0]}-${range[1]} 条, 共 ${total} 条数据`,
@@ -99,6 +99,8 @@ export const QueryTable: React.FC<IQueryTableProps> &
     });
   }, [columns, ctx]);
 
+  // console.log('------field?.data?.pagination', field?.data?.pagination);
+
   return (
     <div ref={wrapperRef} className={wrapperCls}>
       <ArrayBase>
@@ -117,7 +119,13 @@ export const QueryTable: React.FC<IQueryTableProps> &
           loading={props.loading || ctx?._loading}
           components={{ body: sortableBody }}
           dataSource={dataSource}
-          pagination={field?.data?.pagination ?? false}
+          pagination={
+            field?.data?.pagination
+              ? field.data.pagination.pageSize > field.data.pagination.total
+                ? false
+                : field.data.pagination
+              : false
+          }
           onChange={(pagination, filters, sorter, extra) => {
             // console.log('---onTableChange', {
             //   pagination,
