@@ -108,7 +108,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
           {...props}
           size={ctx?._cofnig?._size as any}
           expandable={expandable}
-          rowSelection={props.rowSelection ? selection : undefined}
+          rowSelection={selection}
           onRow={(row, idx) => {
             const pre = props?.onRow?.(row, idx) || {};
             (pre as any)['data-row-sort-index'] = idx;

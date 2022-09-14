@@ -201,7 +201,6 @@ const list: SchemaShape = {
   'x-component': 'QueryTable',
   'x-component-props': {
     scroll: { x: '100%' },
-    rowSelection: true,
     onSort: `{{onSort}}`,
   },
   items: {
