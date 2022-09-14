@@ -31,7 +31,18 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ## API
 
-### service
+## QueryList - 查詢列表
+
+  ```json
+  {
+    scope: {
+      $query: {},
+      $list: []
+    }
+  }
+  ```
+
+### QueryList#service - 查詢服務
 
 主要请求函数, 返回数据列表与总数, 入参包括查询表单, 分页、筛选、排序
 
@@ -60,7 +71,7 @@ type Service = (data:
 }) => Promise<{ list: Record[], total: number }>
 ```
 
-### 其他配置项
+### QueryList#props - 其他配置项
 
 ```ts
   /** 首次自动刷新, 不为 false 即默认开启 */
@@ -76,3 +87,28 @@ type Service = (data:
   /** 分页大小, 默认 10 */
   pageSize?: number;
 ```
+
+## QueryForm - 查詢條件表單
+
+## QueryTable - 查詢表格
+> ArrayBase.mixin(QueryTable)
+
+### QueryTable.Titlebar - 查詢表格標題欄
+
+### QueryTable.Selection - 表格多選容器
+  ```json
+  {
+    scope: {
+      $record: {
+        selectedRows: [],
+        selectedRowKeys: [],
+      }
+    }
+  }
+  ```
+### QueryTable.Column - 常規表格列
+
+### QueryTable.Operations - 操作列
+
+### QueryTable.Expandable - 嵌套子表格
+in properties

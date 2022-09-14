@@ -19,7 +19,7 @@ import {
   Table,
   Typography,
 } from 'antd';
-import React, { Fragment, useEffect, useRef } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef } from 'react';
 import { useQueryList$ } from '../shared';
 import {
   useAddition,
@@ -31,6 +31,8 @@ import {
 import { useExpandable } from './hooks/useExpandable';
 
 interface IQueryTableProps extends React.ComponentProps<typeof Table> {}
+
+export const showTotal = (total: number, range: number[]) => `第 ${range[-1]}-${range[1]} 条, 共 ${total} 条数据`;
 
 export const QueryTable: React.FC<IQueryTableProps> &
   ArrayBaseMixins & {
@@ -79,10 +81,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
       field.data.pagination = {
         current: 1,
         pageSize: ctx.pageSize || 10,
-        ...props.pagination,
-        showTotal: (total: number, range: number[]) =>
-          `第 ${range[0]}-${range[1]} 条, 共 ${total} 条数据`,
-      } as PaginationProps;
+     } as PaginationProps;
     }
   }, [ctx, field, props.pagination]);
 
@@ -99,6 +98,21 @@ export const QueryTable: React.FC<IQueryTableProps> &
       }
     });
   }, [columns, ctx]);
+
+  const getPagination = () => {
+    const xpage = field?.data?.pagination;
+    const ppage = props.pagination || {};
+    const ret = xpage
+      ? xpage.pageSize > xpage.total
+        ? false
+        : {
+          ...ppage,
+          ...xpage,
+          showTotal: (total: number, range: number[]) => `第 ${range[0]}-${range[1]} 条, 共 ${total} 条数据`,
+        }
+      : false
+    return ret;
+  };
 
   return (
     <div ref={wrapperRef} className={wrapperCls}>
@@ -118,13 +132,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
           loading={props.loading || ctx?._loading}
           components={{ body: sortableBody }}
           dataSource={dataSource}
-          pagination={
-            field?.data?.pagination
-              ? field.data.pagination.pageSize > field.data.pagination.total
-                ? false
-                : field.data.pagination
-              : false
-          }
+          pagination={getPagination()}
           onChange={(pagination, filters, sorter, extra) => {
             // console.log('---onTableChange', {
             //   pagination,
@@ -137,7 +145,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
               ctx?._trigger?.();
             } else if (extra.action === 'sort' && ctx?.sortRemote) {
               ctx?._trigger?.();
-            } else if (extra.action === 'filter' && ctx?.sortRemote) {
+            } else if (extra.action === 'filter' && ctx?.filterRemote) {
               ctx?._trigger?.();
             }
           }}

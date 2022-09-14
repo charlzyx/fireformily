@@ -34,20 +34,35 @@ export interface IButtonType {
  */
 export type Actions<Record = any, Data = Record> = {
   load?: (
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+    }
   ) => Promise<Data>;
   cancel?: (
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+    }
   ) => Promise<any>;
   submit?: (
-    data?: Data,
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    data: Data,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+    }
   ) => Promise<any>;
 };
 
@@ -67,10 +82,12 @@ export const usePopAction = () => {
   const ctx = useQueryList$();
   // console.log(
   //   '--scope',
-  //   { index: JSON.stringify(scope?.$index) },
-  //   { record: JSON.stringify(scope?.$record) },
-  //   { lookup: JSON.stringify(scope?.$lookup) },
-  //   { records: JSON.stringify(scope?.$records) },
+  //   // JSON.stringify(scope, null, 2)
+  //   // { scope: JSON.stringify(scope, null, 2) },
+  //   // { index: JSON.stringify(scope?.$index) },
+  //   // { record: JSON.stringify(scope?.$record) },
+  //   // { lookup: JSON.stringify(scope?.$lookup) },
+  //   // { records: JSON.stringify(scope?.$records) },
   // );
 
   const actions = field?.componentProps?.actions as Actions;
@@ -93,11 +110,7 @@ export const usePopAction = () => {
     if (loading) return;
     const loader = methods.current.load || noop;
     setLoading(true);
-    return loader(
-      scope?.$record,
-      scope?.$index,
-      scope?.$lookup || scope?.$records,
-    )
+    return loader(scope)
       .then((data) => {
         field.setState((s) => {
           s.value = data;
@@ -110,10 +123,7 @@ export const usePopAction = () => {
   }, [
     field,
     loading,
-    scope?.$index,
-    scope?.$lookup,
-    scope?.$record,
-    scope?.$records,
+    scope
   ]);
 
   const reset = useCallback(() => {
@@ -124,11 +134,7 @@ export const usePopAction = () => {
 
     return preReset()
       .then(() => {
-        return cancler(
-          scope?.$record,
-          scope?.$index,
-          scope?.$lookup || scope?.$records,
-        );
+        return cancler(scope);
       })
       .then(() => {
         setVisible(false);
@@ -139,10 +145,7 @@ export const usePopAction = () => {
   }, [
     field,
     loading,
-    scope?.$index,
-    scope?.$lookup,
-    scope?.$record,
-    scope?.$records,
+    scope
   ]);
 
   const submit = useCallback(() => {
@@ -156,10 +159,8 @@ export const usePopAction = () => {
       .then((data) => {
         return submiter(
           data,
-          scope?.$record,
-          scope?.$index,
-          scope?.$lookup || scope?.$records,
-        );
+          scope,
+       );
       })
       .then(() => {
         setVisible(false);

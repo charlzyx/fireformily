@@ -1,6 +1,6 @@
-import { ObjectField } from '@formily/core';
+import { ArrayField, ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
-import { useExpressionScope, useForm } from '@formily/react';
+import { useExpressionScope, ExpressionScope, useForm } from '@formily/react';
 import { autorun, observable } from '@formily/reactive';
 import React, {
   createContext,
@@ -84,6 +84,7 @@ export interface IQueryListContext<
 
 const QueryListContext = createContext<IQueryListContext | null>(null);
 
+
 export interface QueryListProviderProps
   extends Pick<
     IQueryListContext,
@@ -153,7 +154,7 @@ export const QueryListProvider = React.memo(
       const queryAddress = $value.current._address!.query;
       const queryField = form.query(queryAddress!).take() as ObjectField;
       const tableAddress = $value.current._address!.table;
-      const tableField = form.query(tableAddress!).take() as ObjectField;
+      const tableField = form.query(tableAddress!).take() as ArrayField;
       // console.log('_address', $value.current._address, {
       //   queryField,
       //   tableField,
@@ -285,7 +286,18 @@ export const QueryListProvider = React.memo(
 
     return (
       <QueryListContext.Provider value={$value.current}>
-        {props.children}
+        <ExpressionScope value={{
+          get $query() {
+            const queryAddress = $value.current._address?.query;
+            return queryAddress ? (form.query(queryAddress).take() as ObjectField).value: null
+          },
+          get $list() {
+            const tableAdress = $value.current._address?.table;
+            return tableAdress ? (form.query(tableAdress).take() as ArrayField).value: null
+          }
+        }}>
+          {props.children}
+        </ExpressionScope>
       </QueryListContext.Provider>
     );
   },

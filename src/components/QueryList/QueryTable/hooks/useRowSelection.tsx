@@ -27,7 +27,7 @@ const hasSelection = (queryListSchema?: TFieldSchema | null): boolean => {
         if (buf) return buf;
         const is = schema['x-component'] === 'QueryTable.Selection';
         if (is) {
-          console.log('schema', schema);
+          // console.log('schema', schema);
           return true;
         }
         if (schema.properties) {
@@ -59,7 +59,7 @@ export const useRowSelection = (
 
   const getSelection = useCallback(() => {
     if (!ctx) return undefined;
-    console.log('has', has);
+    // console.log('has', has);
     if (!has && !rowSelection) return undefined;
     const conf = ctx._cofnig;
 

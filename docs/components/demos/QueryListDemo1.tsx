@@ -50,7 +50,6 @@ const SchemaField = createSchemaField({
     service,
     onSort,
     actions,
-    dict,
   },
 });
 
@@ -257,13 +256,7 @@ const list: SchemaShape = {
         'x-component': 'QueryTable.Column',
         'x-component-props': {
           title: '状态',
-          filters: `{{$records ? $records.reduce((list, record) => {
-              if (list.find(x => x.value === record.status)) return list;
-              list.push({ text: dict.status ? dict.status.emap[record.status]: '--', value: record.status });
-              return list;
-            }, []): []}}`,
-          onFilter: (value: string, record: any) => record.status === value,
-        },
+       },
         properties: {
           status: {
             type: 'string',

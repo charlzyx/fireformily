@@ -116,20 +116,38 @@ interface Action<Record = any, Data = Record> {
 ```ts
 export type Actions<Record = any, Data = Record> = {
   load?: (
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+      // ...others
+    }
   ) => Promise<Data>;
   cancel?: (
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+      // ...others
+    }
   ) => Promise<any>;
   submit?: (
-    data?: Data,
-    record?: Record,
-    index?: number,
-    lookupOrRecords?: Record[] | object,
+    data: Data,
+    scope: {
+      $record?: Record,
+      $index?: number,
+      $lookup?: object,
+      $records?: Record[],
+      $query?: object,
+      $list?: Record[],
+      // ...others
+    }
   ) => Promise<any>;
 };
 

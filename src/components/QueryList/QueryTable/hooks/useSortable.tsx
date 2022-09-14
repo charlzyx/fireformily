@@ -1,6 +1,6 @@
 import { usePrefixCls } from '@formily/antd/lib/__builtins__';
 import { ArrayField } from '@formily/core';
-import { useField, useFieldSchema } from '@formily/react';
+import { useExpressionScope, useField, useFieldSchema } from '@formily/react';
 import { toJS } from '@formily/reactive';
 import React, { useCallback, useMemo } from 'react';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
@@ -33,6 +33,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
   const prefixCls = usePrefixCls('formily-array-table');
   const field = useField<ArrayField>();
   const schema = useFieldSchema();
+  const scope = useExpressionScope();
 
   const withSortable = useMemo(() => {
     return hasSortable(schema);
@@ -60,7 +61,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
                 oldIndex,
                 newIndex,
                 toJS(field.value),
-                ctx?._scope,
+                scope,
               );
               if (ret instanceof Promise) {
                 field.setLoading(true);
