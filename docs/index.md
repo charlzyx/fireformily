@@ -26,4 +26,4 @@ footer: Open-source MIT Licensed | Copyright © 2020<br />Powered by [dumi](http
 <hr />
 
 ## QueryList 👇
-<code src="./QueryList.tsx"></code>
+<code src="./components/QueryList.tsx"></code>

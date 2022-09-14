@@ -12,6 +12,7 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
   runtimePublicPath: true,
   navs: [
+    null,
     {
       title: 'GitHub',
       path: 'https://github.com/charlzyx/fireformily',
