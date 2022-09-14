@@ -3,8 +3,8 @@ hero:
   title: fireformily
   desc: '@formily/antd pro?'
   actions:
-    - text: 灵感来源
-      link: https://antd.formilyjs.org/zh-CN/components/form-grid#%E6%9F%A5%E8%AF%A2%E8%A1%A8%E5%8D%95%E5%AE%9E%E7%8E%B0%E6%A1%88%E4%BE%8B
+    - text: 查看组件 →
+      link: ./components
 features:
   - icon: https://gw.alipayobjects.com/zos/bmw-prod/881dc458-f20b-407b-947a-95104b5ec82b/k79dm8ih_w144_h144.png
     title: 开箱即用
@@ -24,6 +24,3 @@ footer: Open-source MIT Licensed | Copyright © 2020<br />Powered by [dumi](http
 
 - [交互参考](https://procomponents.ant.design/components/table?current=1&pageSize=5)
 <hr />
-
-## QueryList 👇
-<code src="./components/QueryList.tsx"></code>

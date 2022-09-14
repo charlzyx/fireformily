@@ -1,10 +1,11 @@
 import { Modal as AntdModal } from 'antd';
 import React from 'react';
 import { Open } from './Open';
-import { IButtonType, usePopAction } from './shared';
+import { Actions, IButtonType, usePopAction } from './shared';
 
 export const Modal = (
-  props: React.ComponentProps<typeof AntdModal> & IButtonType,
+  props: React.ComponentProps<typeof AntdModal> &
+    IButtonType & { actions: Actions },
 ) => {
   const { visible, body, field, scope, footer, header, loading, open, reset } =
     usePopAction();

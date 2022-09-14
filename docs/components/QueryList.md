@@ -14,7 +14,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 ## 布局结构
 ![querylist.jpg](./fireformily-querylist.jpg)
 
-> 这个解构可以照这样来理解, 至于 Toolbar 为什么在 QueryTbale 上， 是因为它跟 QueryTable 联动更多一些
+> 这个结构可以照这样来理解, 至于 Toolbar 为什么在 QueryTbale 上, 是因为它跟 QueryTable 联动更多一些
 
 ```tsx pure
 <QueryList service={service}>
@@ -27,15 +27,15 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ## 代码演示
 
-<code src="./QueryList.tsx"></code>
+<code src="./demos/QueryListDemo1.tsx"></code>
 
 ## API
 
 ### service
 
-主要请求函数，返回数据列表与总数, 入参包括查询表单，分页、筛选、排序
+主要请求函数, 返回数据列表与总数, 入参包括查询表单, 分页、筛选、排序
 
-入参与 [AntD#Table/onChange](https://ant.design/components/table-cn/#API) 保持一致， 追加了 `params` 即查询表单的参数
+入参与 [AntD#Table/onChange](https://ant.design/components/table-cn/#API) 保持一致, 追加了 `params` 即查询表单的参数
 
 
 ```ts
@@ -48,9 +48,9 @@ type Service = (data:
     current: number,
     pageSize: number
   },
-  /** 过滤参数，参考 AntD **/
+  /** 过滤参数, 参考 AntD **/
   filters: [],
-  /** 排序参数，参考 AntD **/
+  /** 排序参数, 参考 AntD **/
   sorter: {},
   /** 额外信息, 参考 AntD **/
   extra: {

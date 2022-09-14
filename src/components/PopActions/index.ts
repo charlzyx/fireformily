@@ -3,7 +3,7 @@ import { Modal } from './Modal';
 import { Popconfirm } from './Popconfirm';
 import { Popover } from './Popover';
 
-export const PopActions = Popconfirm as typeof Popconfirm & {
+export const PopActions = Modal as typeof Modal & {
   Popover: typeof Popover;
   Popconfirm: typeof Popconfirm;
   Modal: typeof Modal;

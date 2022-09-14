@@ -119,7 +119,7 @@ export const QueryListProvider = React.memo(
           const {
             pagination: { pageSize, current },
             params: query,
-          } = params || {};
+          } = params || { pagination: {} };
 
           setUrlState((pre) => {
             const empty = { ...pre };

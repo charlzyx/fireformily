@@ -22,5 +22,12 @@ export default defineConfig({
       path: 'https://github.com/alibaba/formily',
     },
   ],
+  proxy: {
+    '/api': {
+      target: 'https://randomuser.me/api',
+      changeOrigin: true,
+      pathRewrite: { '^/api' : '' },
+    }
+  }
   // more config: https://d.umijs.org/config
 });

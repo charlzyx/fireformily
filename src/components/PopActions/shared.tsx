@@ -33,18 +33,22 @@ export interface IButtonType {
  * https://github.com/alibaba/formily/discussions/3207
  */
 export type Actions<Record = any, Data = Record> = {
-  load?: (record?: Record, index?: number, records?: Record[]) => Promise<Data>;
+  load?: (
+    record?: Record,
+    index?: number,
+    lookupOrRecords?: Record[] | object,
+  ) => Promise<Data>;
   cancel?: (
     record?: Record,
     index?: number,
-    records?: Record[],
-  ) => Promise<Data>;
+    lookupOrRecords?: Record[] | object,
+  ) => Promise<any>;
   submit?: (
     data?: Data,
     record?: Record,
     index?: number,
-    records?: Record[],
-  ) => Promise<Record>;
+    lookupOrRecords?: Record[] | object,
+  ) => Promise<any>;
 };
 
 export interface IAction<Record = any, Data = Record> {
@@ -89,7 +93,11 @@ export const usePopAction = () => {
     if (loading) return;
     const loader = methods.current.load || noop;
     setLoading(true);
-    return loader(scope?.$record, scope?.$index, scope?.$records)
+    return loader(
+      scope?.$record,
+      scope?.$index,
+      scope?.$lookup || scope?.$records,
+    )
       .then((data) => {
         field.setState((s) => {
           s.value = data;
@@ -99,17 +107,28 @@ export const usePopAction = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [field, loading, scope]);
+  }, [
+    field,
+    loading,
+    scope?.$index,
+    scope?.$lookup,
+    scope?.$record,
+    scope?.$records,
+  ]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
     if (loading) return;
     const preReset = isVoidField(field) ? noop : () => field.reset();
-    const loader = methods.current.cancel || noop;
+    const cancler = methods.current.cancel || noop;
 
     return preReset()
       .then(() => {
-        return loader(scope?.$record, scope?.$index, scope?.$records);
+        return cancler(
+          scope?.$record,
+          scope?.$index,
+          scope?.$lookup || scope?.$records,
+        );
       })
       .then(() => {
         setVisible(false);
@@ -117,18 +136,30 @@ export const usePopAction = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [field, loading, scope?.$index, scope?.$record, scope?.$records]);
+  }, [
+    field,
+    loading,
+    scope?.$index,
+    scope?.$lookup,
+    scope?.$record,
+    scope?.$records,
+  ]);
 
   const submit = useCallback(() => {
     if (field.disabled) return;
     if (loading) return;
     const preSubmit = isVoidField(field) ? noop : () => field.submit();
     const preReset = isVoidField(field) ? noop : () => field.reset();
-    const loader = methods.current.submit || noop;
+    const submiter = methods.current.submit || noop;
 
     return preSubmit()
       .then((data) => {
-        return loader(data, scope?.$record, scope?.$index, scope?.$records);
+        return submiter(
+          data,
+          scope?.$record,
+          scope?.$index,
+          scope?.$lookup || scope?.$records,
+        );
       })
       .then(() => {
         setVisible(false);
@@ -139,7 +170,15 @@ export const usePopAction = () => {
         setLoading(false);
         ctx?._refresh?.();
       });
-  }, [ctx, field, loading, scope?.$index, scope?.$record, scope?.$records]);
+  }, [
+    ctx,
+    field,
+    loading,
+    scope?.$index,
+    scope?.$lookup,
+    scope?.$record,
+    scope?.$records,
+  ]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;

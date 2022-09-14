@@ -1,10 +1,11 @@
 import { Popconfirm as AntdPopconfirm } from 'antd';
 import React from 'react';
 import { Open } from './Open';
-import { IButtonType, usePopAction } from './shared';
+import { Actions, IButtonType, usePopAction } from './shared';
 
 export const Popconfirm = (
-  props: React.ComponentProps<typeof AntdPopconfirm> & IButtonType,
+  props: React.ComponentProps<typeof AntdPopconfirm> &
+    IButtonType & { actions: Actions },
 ) => {
   const { body, field, header, loading, scope, open, reset, submit, visible } =
     usePopAction();
