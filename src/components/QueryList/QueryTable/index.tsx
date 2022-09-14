@@ -6,7 +6,7 @@ import {
 import { ArrayBase, ArrayBaseMixins } from '@formily/antd';
 import { usePrefixCls } from '@formily/antd/esm/__builtins__';
 import { ArrayField } from '@formily/core';
-import { observer, useField } from '@formily/react';
+import { observer, useField, useFieldSchema } from '@formily/react';
 import {
   Alert,
   Button,
@@ -45,6 +45,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
 
   const ctx = useQueryList$();
   const field = useField<ArrayField>();
+  const fieldSchema = useFieldSchema();
 
   const dataSource = Array.isArray(field.value) ? field.value.slice() : [];
 
@@ -98,8 +99,6 @@ export const QueryTable: React.FC<IQueryTableProps> &
       }
     });
   }, [columns, ctx]);
-
-  // console.log('------field?.data?.pagination', field?.data?.pagination);
 
   return (
     <div ref={wrapperRef} className={wrapperCls}>
@@ -189,7 +188,7 @@ const Titlebar = observer((props: any) => {
     ></Menu>
   );
 
-  const selction = useSelection();
+  const selections = useSelection();
 
   const colsMenu = (
     <Menu
@@ -225,45 +224,47 @@ const Titlebar = observer((props: any) => {
       style={{
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: '8px',
+        marginBottom: '10px',
       }}
     >
-      <Typography.Title level={5}>
-        {field.title || props.title}
-      </Typography.Title>
-      {conf._selectedRowKeys.length ? (
-        <Alert
-          style={{ marginTop: '4px', marginBottom: '4px' }}
-          type="info"
-          message={
-            <Space size="small" split={<Divider type="vertical"></Divider>}>
-              <Button type="text" size="small">
-                选中 {conf._selectedRowKeys.length} 项
-              </Button>
-              <Button
-                size="small"
-                onClick={() => {
-                  conf._selectClear?.();
-                }}
-                type="link"
-              >
-                取消选择
-              </Button>
-              <Button
-                size="small"
-                onClick={() => {
-                  conf._selectReverse?.();
-                }}
-                type="link"
-              >
-                反向选择
-              </Button>
-              {selction}
-            </Space>
-          }
-        ></Alert>
-      ) : null}
-      <Space>
+      <Space size="small">
+        <Typography.Title level={5}>
+          {field.title || props.title}
+        </Typography.Title>
+        {conf._selectedRowKeys.length ? (
+          <Alert
+            style={{ padding: '3px 4px' }}
+            type="info"
+            message={
+              <Space size="small" split={<Divider type="vertical"></Divider>}>
+                <Button type="text" size="small">
+                  选中 {conf._selectedRowKeys.length} 项
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    conf._selectClear?.();
+                  }}
+                  type="link"
+                >
+                  取消选择
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    conf._selectReverse?.();
+                  }}
+                  type="link"
+                >
+                  反向选择
+                </Button>
+                {selections}
+              </Space>
+            }
+          ></Alert>
+        ) : null}
+      </Space>
+      <Space size="small">
         <Space>{props.children}</Space>
         <Space size="large">
           <ReloadOutlined
