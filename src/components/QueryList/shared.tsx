@@ -1,7 +1,7 @@
 import { ArrayField, ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
 import { useExpressionScope, ExpressionScope, useForm } from '@formily/react';
-import { autorun, observable } from '@formily/reactive';
+import { autorun, observable, action } from '@formily/reactive';
 import React, {
   createContext,
   useCallback,
@@ -84,7 +84,6 @@ export interface IQueryListContext<
 
 const QueryListContext = createContext<IQueryListContext | null>(null);
 
-
 export interface QueryListProviderProps
   extends Pick<
     IQueryListContext,
@@ -136,10 +135,12 @@ export const QueryListProvider = React.memo(
             const tableAddress = $value.current._address!.table;
             const tableField = form.query(tableAddress!).take() as ObjectField;
             tableField.setState((s) => {
-              s.value = list;
-              s.data = s.data || {};
-              s.data.pagination = s.data.pagination || {};
-              s.data.pagination.total = total;
+              action.bound!(() => {
+                s.value = list;
+                s.data = s.data || {};
+                s.data.pagination = s.data.pagination || {};
+                s.data.pagination.total = total;
+              });
             });
             return { list, total };
           })
@@ -177,9 +178,11 @@ export const QueryListProvider = React.memo(
           .query(tableField)
           .take()
           ?.setState((s) => {
-            s.data = s.data || {};
-            s.data.pagination = s.data.pagination || {};
-            s.data.pagination.current = 1;
+            action.bound!(() => {
+              s.data = s.data || {};
+              s.data.pagination = s.data.pagination || {};
+              s.data.pagination.current = 1;
+            });
           });
       }
 
@@ -226,10 +229,12 @@ export const QueryListProvider = React.memo(
           .query(_address.table)
           .take()
           ?.setState((s) => {
-            s.data = s.data || {};
-            s.data.pagination = s.data.pagination || {};
-            s.data.pagination.pageSize = Number(urlState.pageSize);
-            s.data.pagination.current = Number(urlState.current);
+            action.bound!(() => {
+              s.data = s.data || {};
+              s.data.pagination = s.data.pagination || {};
+              s.data.pagination.pageSize = Number(urlState.pageSize);
+              s.data.pagination.current = Number(urlState.current);
+            });
           });
       }
       if (params && Object.keys(params).length > 0 && _address?.query) {
@@ -286,16 +291,22 @@ export const QueryListProvider = React.memo(
 
     return (
       <QueryListContext.Provider value={$value.current}>
-        <ExpressionScope value={{
-          get $query() {
-            const queryAddress = $value.current._address?.query;
-            return queryAddress ? (form.query(queryAddress).take() as ObjectField).value: null
-          },
-          get $list() {
-            const tableAdress = $value.current._address?.table;
-            return tableAdress ? (form.query(tableAdress).take() as ArrayField).value: null
-          }
-        }}>
+        <ExpressionScope
+          value={{
+            get $query() {
+              const queryAddress = $value.current._address?.query;
+              return queryAddress
+                ? (form.query(queryAddress).take() as ObjectField).value
+                : null;
+            },
+            get $list() {
+              const tableAdress = $value.current._address?.table;
+              return tableAdress
+                ? (form.query(tableAdress).take() as ArrayField).value
+                : null;
+            },
+          }}
+        >
           {props.children}
         </ExpressionScope>
       </QueryListContext.Provider>
