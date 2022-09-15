@@ -60,7 +60,7 @@ const groups = [
   },
   {
     title: '最佳实践',
-    prefix: '/plugins',
+    prefix: '/fireformily/plugins',
     children: [
       {
         title: 'Dict',
