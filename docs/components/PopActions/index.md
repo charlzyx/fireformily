@@ -121,7 +121,9 @@ export type Actions<Record = any, Data = Record> = {
       $index?: number,
       $lookup?: object,
       $records?: Record[],
+      // in querylist
       $query?: object,
+      // in querylist
       $list?: Record[],
       // ...others
     }
@@ -132,7 +134,9 @@ export type Actions<Record = any, Data = Record> = {
       $index?: number,
       $lookup?: object,
       $records?: Record[],
+      // in querylist
       $query?: object,
+      // in querylist
       $list?: Record[],
       // ...others
     }
@@ -144,7 +148,9 @@ export type Actions<Record = any, Data = Record> = {
       $index?: number,
       $lookup?: object,
       $records?: Record[],
+      // in querylist
       $query?: object,
+      // in querylist
       $list?: Record[],
       // ...others
     }
@@ -184,32 +190,19 @@ export type CommonActions = {
 
 ### PopActions.Modal - 模态框弹出
 
-```tsx pure
-interface Modal = (
-  props: React.ComponentProps<typeof AntdModal> & CommonActions
-) => React.ReactNode;
-```
+<API src="@/components/PopActions/Modal"></API>
+
 
 ### PopActions.Drawer - 抽屉弹出
 
-```tsx pure
-interface Drawer = (
-  props: React.ComponentProps<typeof AntdDrawer> & CommonActions
-) => React.ReactNode;
-```
+<API src="@/components/PopActions/Drawer"></API>
+
 
 ### PopActions.Popconfirm - 确认弹出
 
-```tsx pure
-interface Popconfirm = (
-  props: React.ComponentProps<typeof AntdPopconfirm> & CommonActions
-) => React.ReactNode;
-```
+<API src="@/components/PopActions/Popconfirm"></API>
+
 
 ### PopActions.Popover - 轻量弹窗
 
-```tsx pure
-interface Popover = (
-  props: React.ComponentProps<typeof AntdPopover> & CommonActions
-) => React.ReactNode;
-```
+<API src="@/components/PopActions/Popover"></API>

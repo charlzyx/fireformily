@@ -1,36 +1,10 @@
 import { FormGrid, FormItem, FormLayout } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
-import jsonp from 'fetch-jsonp';
-import { registerSuggestion, suggestEffects, Suggestion } from 'fireformily';
-import qs from 'qs';
+import {  Suggestion } from 'fireformily';
 import React from 'react';
+import {suggest } from './mock'
 
-const loaders = {
-  taobao: () => {
-    registerSuggestion('taobao', (params, convert) => {
-      console.log('search params', params);
-      const str = qs.stringify({
-        code: 'utf-8',
-        q: params.kw,
-      });
-      return jsonp(`https://suggest.taobao.com/sug?${str}`)
-        .then((response: any) => response.json())
-        .then((d: any) => {
-          const { result } = d;
-          const data: { label: string; value: string }[] = result.map(
-            (item: any) => {
-              return {
-                value: item[0] as string,
-                label: item[0] as string,
-              };
-            },
-          );
-          return convert(data, 'label', 'value');
-        });
-    });
-  },
-};
 
 const Code = (props: { value: any }) => {
   return (
@@ -50,16 +24,16 @@ const SchemaField = createSchemaField({
     Suggestion,
     Code,
   },
-  scope: {},
+  scope: {
+    suggest
+  },
 });
 
 const form = createForm({
   effects(fform) {
-    suggestEffects(fform);
   },
 });
 
-loaders.taobao();
 
 type SchemaShape = React.ComponentProps<typeof SchemaField>['schema'];
 
@@ -84,9 +58,9 @@ const schema: SchemaShape = {
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Suggestion',
-          'x-data': {
-            suggest: 'taobao',
-          },
+          'x-component-props': {
+            suggest: '{{suggest}}',
+          }
         },
         s2: {
           title: '淘宝搜索',
@@ -96,9 +70,7 @@ const schema: SchemaShape = {
           'x-component': 'Suggestion',
           'x-component-props': {
             labelInValue: true,
-          },
-          'x-data': {
-            suggest: 'taobao',
+            suggest: '{{suggest}}',
           },
         },
         s3: {
@@ -109,9 +81,7 @@ const schema: SchemaShape = {
           'x-component': 'Suggestion',
           'x-component-props': {
             multiple: true,
-          },
-          'x-data': {
-            suggest: 'taobao',
+            suggest: '{{suggest}}',
           },
         },
         s4: {
@@ -123,9 +93,7 @@ const schema: SchemaShape = {
           'x-component-props': {
             multiple: true,
             labelInValue: true,
-          },
-          'x-data': {
-            suggest: 'taobao',
+            suggest: '{{suggest}}',
           },
         },
         code: {

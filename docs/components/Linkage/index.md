@@ -122,3 +122,5 @@ export default () => {
   );
 };
 ```
+
+<API src="@/components/Linkage"></API>
