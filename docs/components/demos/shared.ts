@@ -1,10 +1,23 @@
-import qs from 'qs';
 import moment from 'moment';
-import { registerLoader } from 'fireformily';
+import { registerDictLoader, PopActions } from 'fireformily';
 
-// Example of a random customer generator
 import { faker } from '@faker-js/faker';
+
+import React from 'react';
+
+type TActions = React.ComponentProps<typeof PopActions>['actions'];
+
 faker.setLocale('zh_CN');
+
+const log = (label: string, x: any) => {
+  console.log('LABEL:', label);
+  try {
+    console.group(JSON.parse(JSON.stringify(x)));
+  } catch (error) {
+    console.log('stringify error, origin: ', x);
+  }
+  console.groupEnd();
+};
 
 export const service = ({
   params,
@@ -13,10 +26,8 @@ export const service = ({
   filters,
   extra,
 }: any) => {
-  console.log(
-    'search sevice args ',
-    JSON.stringify({ params, pagination, sorter, filters, extra }, null, 2),
-  );
+  log('search sevice args ', { params, pagination, sorter, filters, extra });
+
   const {
     start = moment().toDate(),
     end = moment().add(1, 'year').toDate(),
@@ -24,7 +35,7 @@ export const service = ({
     status,
     domain,
   } = params || {};
-  const { current, pageSize } = pagination;
+  const { current, pageSize } = pagination || {};
 
   return Promise.resolve().then(() => {
     return new Promise((resolve) => {
@@ -39,6 +50,18 @@ export const service = ({
             domain: `${
               domain ? `${domain}.` : ''
             }${faker.internet.domainName()}`,
+            subdomains: Array.from(
+              new Set(
+                Array.from({
+                  length: Math.floor(Math.random() * 3),
+                }).map(() => faker.internet.domainName()),
+              ),
+            ).map((item) => {
+              return {
+                owner: faker.company.name(),
+                domain: item,
+              };
+            }),
             classify:
               classify ??
               Array.from(
@@ -53,7 +76,8 @@ export const service = ({
             desc: faker.lorem.paragraph(),
           };
         });
-        console.log('search response ', { list, total });
+        log('search response ', { list, total });
+
         resolve({
           list,
           total,
@@ -69,99 +93,65 @@ export const onSort = (
   array: any[],
   scope: any,
 ) => {
-  console.log(
-    'on sort args ',
-    JSON.stringify({ oldIndex, neoIndex, array, scope }, null, 2),
-  );
+  log('on sort args ', { oldIndex, neoIndex, array, scope });
+
   return Promise.resolve();
 };
 
-export const actions = {
+export const actions: {
+  [k: string]: TActions;
+} = {
   batch: {
-    load: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'batch load args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
-      return Promise.resolve(record);
+    load: (scope) => {
+      log('batch load args', scope);
+      return Promise.resolve(scope.$record);
     },
-    cancel: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'batch cancel args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
+    cancel: (scope) => {
+      log('batch cancel args', scope);
     },
-    submit: (data: any, record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'batch submit args',
-        JSON.stringify({ data, record, index, lookup }, null, 2),
-      );
+    submit: (data, scope) => {
+      log('batch submit args', { data, scope });
+
       return Promise.resolve();
     },
   },
   add: {
-    load: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'add load args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
-      return Promise.resolve(record);
+    load: (scope) => {
+      log('add load args', scope);
+      return Promise.resolve(scope.$record);
     },
-    cancel: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'add cancel args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
+    cancel: (scope) => {
+      log('add cancel args', scope);
     },
-    submit: (data: any, record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'add submit args',
-        JSON.stringify({ data, record, index, lookup }, null, 2),
-      );
-      return Promise.resolve();
-    },
-  },
-  remove: {
-    load: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'remove load args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
-      return Promise.resolve(record);
-    },
-    cancel: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'remove cancel args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
-    },
-    submit: (data: any, record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'remove submit args',
-        JSON.stringify({ data, record, index, lookup }, null, 2),
-      );
+    submit: (data, scope) => {
+      log('add submit args', { data, scope });
+
       return Promise.resolve();
     },
   },
   update: {
-    load: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'update load args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
-      return Promise.resolve(record);
+    load: (scope) => {
+      log('update load args', scope);
+      return Promise.resolve(scope.$record);
     },
-    cancel: (record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'update cancel args',
-        JSON.stringify({ record, index, lookup }, null, 2),
-      );
+    cancel: (scope) => {
+      log('update cancel args', scope);
     },
-    submit: (data: any, record?: any, index?: number, lookup?: any) => {
-      console.log(
-        'update submit args',
-        JSON.stringify({ data, record, index, lookup }, null, 2),
-      );
+    submit: (data, scope) => {
+      log('update submit args', { data, scope });
+      return Promise.resolve();
+    },
+  },
+  remove: {
+    load: (scope) => {
+      log('remove load args', scope);
+      return Promise.resolve(scope.$record);
+    },
+    cancel: (scope) => {
+      log('remove cancel args', scope);
+    },
+    submit: (data, scope) => {
+      log('remove submit args', { data, scope });
       return Promise.resolve();
     },
   },
@@ -169,7 +159,7 @@ export const actions = {
 
 export const loaders = {
   bool: () => {
-    registerLoader('bool', (convert) => {
+    registerDictLoader('bool', (convert) => {
       return Promise.resolve([
         { label: '是', value: 1, color: 'success' },
         { label: '否', value: 0, color: 'error' },
@@ -179,7 +169,7 @@ export const loaders = {
     });
   },
   status: () => {
-    registerLoader('status', (convert) => {
+    registerDictLoader('status', (convert) => {
       return Promise.resolve([
         { label: '已上线', value: 0, color: 'success' },
         { label: '运行中', value: 1, color: 'processing' },
@@ -192,7 +182,7 @@ export const loaders = {
     });
   },
   classify: () => {
-    registerLoader('classify', (convert) => {
+    registerDictLoader('classify', (convert) => {
       return Promise.resolve([
         { label: '文艺', value: 0 },
         { label: '喜剧', value: 1 },

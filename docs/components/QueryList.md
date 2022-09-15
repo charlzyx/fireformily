@@ -19,7 +19,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 ```tsx pure
 <QueryList service={service}>
   <QueryForm />
-  <QueryTable.Toolbar />
+  <QueryTable.Titlebar />
   <QueryTable />
 </QueryList>
 
@@ -27,7 +27,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ## 代码演示
 
-<code src="./demos/QueryListDemo1.tsx"></code>
+<code src="./demos/QueryListAll.tsx"></code>
 
 ## API
 

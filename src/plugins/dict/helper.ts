@@ -1,4 +1,21 @@
-import { colors, ColorsKey, PickArrayItem, TDictShape } from '../../shared';
+import { colors, ColorsKey, PickArrayItem } from '../../shared';
+
+export type TDictShape = {
+  emap: {
+    [x: string]: string | number;
+    [x: number]: string | number;
+  };
+  colors: {
+    [x: string]: string;
+    [x: number]: string;
+  };
+  options: {
+    key: string | number;
+    label: string;
+    value: number | string;
+    color?: ColorsKey;
+  }[];
+};
 
 export type TDictItem = Omit<PickArrayItem<TDictShape['options']>, 'key'>;
 
@@ -6,7 +23,7 @@ const getColorByIdx = (idx: number) =>
   colors[(idx % colors.length) as keyof typeof colors];
 
 export const listToDict = (list: TDictItem[] = []): TDictShape => {
-  const ret = {
+  const dict = {
     emap: list.reduce((ret: any, cur: any) => {
       ret[cur.value] = cur.label;
       ret[cur.label] = cur.value;
@@ -24,10 +41,10 @@ export const listToDict = (list: TDictItem[] = []): TDictShape => {
       color: x.color || (getColorByIdx(idx) as ColorsKey),
     })),
   };
-  return ret;
+  return dict;
 };
 
-export const convertToDictList = <Row extends Object>(
+export const convertToOptionList = <Row extends Object>(
   list: Row[],
   labelName: keyof Row = 'label' as any,
   valueName: keyof Row = 'value' as any,

@@ -49,6 +49,7 @@
     "@umijs/test": "^4.0.19",
     "dumi": "^1.1.47",
     "father": "^4.0.3",
+    "fetch-jsonp": "^1.2.3",
     "gh-pages": "^4.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",

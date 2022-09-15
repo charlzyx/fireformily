@@ -1,7 +1,4 @@
 import {
-  ArrayTable,
-  DatePicker,
-  Editable,
   FormGrid,
   FormItem,
   FormLayout,
@@ -9,25 +6,14 @@ import {
   Select,
   Space,
 } from '@formily/antd';
-import React from 'react';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
-import {
-  dict,
-  PopActions,
-  QueryForm,
-  ImageView,
-  QueryList,
-  LongText,
-  QueryTable,
-  Dict,
-  dictEffects,
-  registerLoader,
-} from 'fireformily';
+import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
+import React from 'react';
 
 const loaders = {
   bool: () => {
-    registerLoader('bool', (convert) => {
+    registerDictLoader('bool', (convert) => {
       return Promise.resolve([
         { label: '是', value: 1, color: 'success' },
         { label: '否', value: 0, color: 'error' },
@@ -37,7 +23,7 @@ const loaders = {
     });
   },
   status: () => {
-    registerLoader('status', (convert) => {
+    registerDictLoader('status', (convert) => {
       return Promise.resolve([
         { label: '已上线', value: 0, color: 'success' },
         { label: '运行中', value: 1, color: 'processing' },
@@ -50,7 +36,7 @@ const loaders = {
     });
   },
   classify: () => {
-    registerLoader('classify', (convert) => {
+    registerDictLoader('classify', (convert) => {
       return Promise.resolve([
         { label: '文艺', value: 0 },
         { label: '喜剧', value: 1 },
@@ -67,21 +53,12 @@ const loaders = {
 
 const SchemaField = createSchemaField({
   components: {
-    QueryList,
-    QueryForm,
     FormItem,
     Input,
     Select,
     FormGrid,
     FormLayout,
-    DatePicker,
-    Editable,
-    QueryTable,
-    ArrayTable,
-    PopActions,
-    ImageView,
     Dict,
-    LongText,
     Space,
   },
   scope: {
@@ -111,10 +88,13 @@ const schema: SchemaShape = {
         layout: 'vertical',
       },
       'x-component': 'FormGrid',
-      'x-component-props': {},
+      'x-component-props': {
+        maxColumns: 3,
+        minColumns: 2,
+      },
       properties: {
         classify: {
-          title: '分类',
+          title: 'SELECT MULTIPLE',
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Select',
@@ -125,8 +105,29 @@ const schema: SchemaShape = {
             dict: 'classify',
           },
         },
+        selectReadonly: {
+          title: 'SELECT MULTIPLE READONLY',
+          type: 'string',
+          'x-read-pretty': true,
+          'x-reactions': {
+            dependencies: ['.classify'],
+            fulfill: {
+              schema: {
+                'x-value': '{{$deps[0]}}',
+              },
+            },
+          },
+          'x-decorator': 'FormItem',
+          'x-component': 'Select',
+          'x-component-props': {
+            type: 'badge',
+          },
+          'x-data': {
+            dict: 'classify',
+          },
+        },
         classifyReadonly: {
-          title: '分类READONLY',
+          title: 'DICT TAG READONLY',
           type: 'string',
           'x-reactions': {
             dependencies: ['.classify'],
@@ -139,14 +140,14 @@ const schema: SchemaShape = {
           'x-decorator': 'FormItem',
           'x-component': 'Dict',
           'x-component-props': {
-            type: 'badge',
+            type: 'tag',
           },
           'x-data': {
             dict: 'classify',
           },
         },
         status: {
-          title: '状态',
+          title: 'SELECT',
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Select',
@@ -154,8 +155,29 @@ const schema: SchemaShape = {
             dict: 'status',
           },
         },
+        statusSelectReadonly: {
+          title: 'SELECT READ PRETTY',
+          type: 'string',
+          'x-read-pretty': true,
+          'x-reactions': {
+            dependencies: ['.status'],
+            fulfill: {
+              schema: {
+                'x-value': '{{$deps[0]}}',
+              },
+            },
+          },
+          'x-decorator': 'FormItem',
+          'x-component': 'Select',
+          'x-component-props': {
+            type: 'tag',
+          },
+          'x-data': {
+            dict: 'status',
+          },
+        },
         statusReadonly: {
-          title: '状态READONLY',
+          title: 'DICT BADGE READ PRETTY',
           type: 'string',
           'x-reactions': {
             dependencies: ['.status'],
@@ -168,7 +190,7 @@ const schema: SchemaShape = {
           'x-decorator': 'FormItem',
           'x-component': 'Dict',
           'x-component-props': {
-            type: 'status',
+            type: 'badge',
           },
           'x-data': {
             dict: 'status',

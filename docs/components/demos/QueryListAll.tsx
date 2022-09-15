@@ -15,7 +15,6 @@ import React from 'react';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
 import {
-  dict,
   PopActions,
   QueryForm,
   ImageView,
@@ -154,7 +153,7 @@ const query: SchemaShape = {
 };
 
 const titlebar: SchemaShape = {
-  title: 'QueryListDemo1',
+  title: '查询列表',
   type: 'void',
   'x-component': 'QueryTable.Titlebar',
   properties: {
@@ -201,6 +200,11 @@ const list: SchemaShape = {
   'x-component-props': {
     scroll: { x: '100%' },
     onSort: `{{onSort}}`,
+    expandable: {
+      rowExpandable: (row: any) => {
+        return row.subdomains.length > 0;
+      },
+    },
   },
   items: {
     type: 'object',
@@ -256,7 +260,7 @@ const list: SchemaShape = {
         'x-component': 'QueryTable.Column',
         'x-component-props': {
           title: '状态',
-       },
+        },
         properties: {
           status: {
             type: 'string',
@@ -265,7 +269,7 @@ const list: SchemaShape = {
               dict: 'status',
             },
             'x-decorator': 'FormItem',
-            'x-component': 'Dict',
+            'x-component': 'Select',
             'x-component-props': {
               type: 'badge',
             },
@@ -305,9 +309,10 @@ const list: SchemaShape = {
             type: 'array',
             'x-read-pretty': true,
             'x-decorator': 'FormItem',
-            'x-component': 'Dict',
+            'x-component': 'Select',
             'x-component-props': {
               type: 'tag',
+              mode: 'multiple',
             },
             'x-data': {
               dict: 'classify',
@@ -377,6 +382,130 @@ const list: SchemaShape = {
       },
     },
   },
+  properties: {
+    expandable: {
+      type: 'void',
+      'x-component': 'QueryTable.Expandable',
+      properties: {
+        subdomains: {
+          type: 'void',
+          'x-component': 'QueryList',
+          properties: {
+            titlebar: {
+              type: 'void',
+              title: '二级域名',
+              'x-component': 'QueryTable.Titlebar',
+              properties: {
+                add: {
+                  title: '新增',
+                  type: 'object',
+                  'x-content': 'Modal content',
+                  'x-component': 'PopActions',
+                  'x-component-props': {
+                    actions: '{{actions.add}}',
+                  },
+                  properties: {
+                    owner: {
+                      title: 'Owner',
+                      type: 'string',
+                      'x-decorator': 'FormItem',
+                      'x-component': 'Input',
+                    },
+                    domain: {
+                      title: '域名',
+                      type: 'string',
+                      'x-decorator': 'FormItem',
+                      'x-component': 'Input',
+                    },
+                  },
+                },
+              },
+            },
+            subdomains: {
+              type: 'array',
+              'x-component': 'QueryTable',
+              items: {
+                type: 'object',
+                properties: {
+                  owner: {
+                    type: 'void',
+                    'x-component': 'QueryTable.Column',
+                    'x-component-props': {
+                      title: 'Owner',
+                    },
+                    properties: {
+                      owner: {
+                        type: 'string',
+                        'x-read-pretty': true,
+                        'x-decorator': 'FormItem',
+                        'x-component': 'Input',
+                      },
+                    },
+                  },
+                  domain: {
+                    type: 'void',
+                    'x-component': 'QueryTable.Column',
+                    'x-component-props': {
+                      title: '域名',
+                    },
+                    properties: {
+                      domain: {
+                        type: 'string',
+                        'x-read-pretty': true,
+                        'x-decorator': 'FormItem',
+                        'x-component': 'Input',
+                      },
+                    },
+                  },
+                  operations: {
+                    type: 'void',
+                    'x-component': 'QueryTable.Operations',
+                    'x-component-props': {
+                      title: '操作',
+                      width: '200px',
+                    },
+                    properties: {
+                      popconfirm: {
+                        title: '删除',
+                        type: 'object',
+                        'x-content': '确定要删除这一条记录吗?',
+                        'x-component': 'PopActions.Popconfirm',
+                        'x-component-props': {
+                          actions: '{{actions.remove}}',
+                        },
+                        properties: {},
+                      },
+                      drawer: {
+                        title: '编辑',
+                        type: 'object',
+                        'x-content': 'Drawer content',
+                        'x-component': 'PopActions',
+                        'x-component-props': {
+                          actions: '{{actions.update}}',
+                        },
+                        properties: {
+                          owner: {
+                            type: 'string',
+                            'x-decorator': 'FormItem',
+                            'x-component': 'Input',
+                          },
+                          domain: {
+                            type: 'string',
+                            'x-decorator': 'FormItem',
+                            'x-component': 'Input',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 };
 
 const schema: SchemaShape = {
@@ -398,7 +527,7 @@ const schema: SchemaShape = {
   },
 };
 
-export const QueryListDemo1 = () => {
+export const QueryListAll = () => {
   return (
     <div style={{ padding: '20px' }}>
       <ConfigProvider locale={zhCN}>
@@ -410,4 +539,4 @@ export const QueryListDemo1 = () => {
   );
 };
 
-export default QueryListDemo1;
+export default QueryListAll;

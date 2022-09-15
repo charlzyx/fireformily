@@ -6,5 +6,9 @@ const { Paragraph } = Typography;
 export const LongText = (
   props: { value?: string } & React.ComponentProps<typeof Paragraph>,
 ) => {
-  return <Paragraph  copyable ellipsis {...props}>{props.value}</Paragraph>;
+  return (
+    <Paragraph copyable ellipsis {...props}>
+      {props.value}
+    </Paragraph>
+  );
 };

@@ -1,11 +1,12 @@
-import { Form, onFieldMount } from '@formily/core';
+import { Form, onFieldMount, onFieldReact } from '@formily/core';
 import { observable } from '@formily/reactive';
-import { convertListToDict, convertToDictList } from './helper';
-import { TDictShape } from '../../shared';
+import { TDictShape, convertListToDict, convertToOptionList } from './helper';
+import { Dict } from '../../components';
+import React from 'react';
 
 export type TDictLoaderFactory = (
-  converter: typeof convertToDictList,
-) => Promise<ReturnType<typeof convertToDictList>>;
+  converter: typeof convertToOptionList,
+) => Promise<ReturnType<typeof convertToOptionList>>;
 
 export const memo: {
   [namespace: string]: TDictShape;
@@ -30,18 +31,18 @@ const boolLoader = (conver) => () => {
     { name: '否', code: 0, color: 'error' },
   ]).then(data => convert(data, 'name', 'code'));
 };
-registerLoader('bool', boolLoader);
+registerDictLoader('bool', boolLoader);
 
  */
 
-export const registerLoader = (
+export const registerDictLoader = (
   name: string,
   loaderFactory: TDictLoaderFactory,
 ) => {
   loaders[name] = () => {
-    return loaderFactory(convertToDictList).then((list) => {
-      const dict = convertListToDict(list);
-      memo[name] = dict;
+    return loaderFactory(convertToOptionList).then((list) => {
+      const mydict = convertListToDict(list);
+      memo[name] = mydict;
       return memo[name];
     });
   };
@@ -72,15 +73,15 @@ export const dictEffects = (form: Form) => {
       const task = pendings[maybe] || loaders[maybe]();
 
       pendings[maybe] = task
-        .then((dict) => {
+        .then((mydict) => {
           field.setState((s) => {
-            s.dataSource = dict.options;
+            s.dataSource = mydict.options;
             if (s.componentProps) {
               s.componentProps.options = s.dataSource;
             }
             s.loading = false;
           });
-          return dict;
+          return mydict;
         })
         .catch((e) => {
           field.setState((s) => {
@@ -88,6 +89,33 @@ export const dictEffects = (form: Form) => {
           });
           throw e;
         });
+    }
+  });
+
+  onFieldReact('*', (field) => {
+    const maybe = field.data?.dict;
+    if (!maybe) return;
+
+    const same = (
+      origin: typeof field.component,
+      comp: string | React.FunctionComponent<any> | typeof field.component,
+    ) => {
+      const ocomp = Array.isArray(origin) ? origin[0] : origin;
+      const dcomp = Array.isArray(comp) ? comp[0] : comp;
+      return ocomp === dcomp;
+    };
+
+    const readPretty = field.readPretty || field.readOnly;
+    if (readPretty) {
+      if (!same(field.component, Dict)) {
+        field.data.__origin_component = field.component;
+        field.setComponent(Dict);
+      }
+    } else if (
+      field.data?.__origin_component &&
+      !same(field.data.__origin_component, field.component)
+    ) {
+      field.setComponent(field.data.__origin_component);
     }
   });
 };

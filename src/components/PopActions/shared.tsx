@@ -1,4 +1,3 @@
-import { ArrayBase } from '@formily/antd';
 import { isVoidField } from '@formily/core';
 import {
   RecursionField,
@@ -33,36 +32,32 @@ export interface IButtonType {
  * https://github.com/alibaba/formily/discussions/3207
  */
 export type Actions<Record = any, Data = Record> = {
-  load?: (
-    scope: {
-      $record?: Record,
-      $index?: number,
-      $lookup?: object,
-      $records?: Record[],
-      $query?: object,
-      $list?: Record[],
-    }
-  ) => Promise<Data>;
-  cancel?: (
-    scope: {
-      $record?: Record,
-      $index?: number,
-      $lookup?: object,
-      $records?: Record[],
-      $query?: object,
-      $list?: Record[],
-    }
-  ) => Promise<any>;
+  load?: (scope: {
+    $record?: Record;
+    $index?: number;
+    $lookup?: object;
+    $records?: Record[];
+    $query?: object;
+    $list?: Record[];
+  }) => Promise<Data>;
+  cancel?: (scope: {
+    $record?: Record;
+    $index?: number;
+    $lookup?: object;
+    $records?: Record[];
+    $query?: object;
+    $list?: Record[];
+  }) => Promise<any> | void;
   submit?: (
     data: Data,
     scope: {
-      $record?: Record,
-      $index?: number,
-      $lookup?: object,
-      $records?: Record[],
-      $query?: object,
-      $list?: Record[],
-    }
+      $record?: Record;
+      $index?: number;
+      $lookup?: object;
+      $records?: Record[];
+      $query?: object;
+      $list?: Record[];
+    },
   ) => Promise<any>;
 };
 
@@ -120,11 +115,7 @@ export const usePopAction = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [
-    field,
-    loading,
-    scope
-  ]);
+  }, [field, loading, scope]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
@@ -142,11 +133,7 @@ export const usePopAction = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [
-    field,
-    loading,
-    scope
-  ]);
+  }, [field, loading, scope]);
 
   const submit = useCallback(() => {
     if (field.disabled) return;
@@ -157,10 +144,7 @@ export const usePopAction = () => {
 
     return preSubmit()
       .then((data) => {
-        return submiter(
-          data,
-          scope,
-       );
+        return submiter(data, scope);
       })
       .then(() => {
         setVisible(false);
@@ -171,15 +155,7 @@ export const usePopAction = () => {
         setLoading(false);
         ctx?._refresh?.();
       });
-  }, [
-    ctx,
-    field,
-    loading,
-    scope?.$index,
-    scope?.$lookup,
-    scope?.$record,
-    scope?.$records,
-  ]);
+  }, [ctx, field, loading, scope]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;

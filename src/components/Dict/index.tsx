@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
-import { TDictShape, isColorStatus } from '../../shared';
+import { isColorStatus } from '../../shared';
+import { TDictShape } from '../../plugins';
 import { Space, Tag, Badge } from 'antd';
 import { useMemo } from 'react';
 
