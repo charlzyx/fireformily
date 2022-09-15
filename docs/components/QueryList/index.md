@@ -113,7 +113,3 @@ type Service = (data:
 ### QueryTable.Expandable - 嵌套子表格
 in properties
 
-
-<API src="@/components/QueryList/QueryList"></API>
-<API src="@/components/QueryList/QueryForm"></API>
-<API src="@/components/QueryList/QueryTable"></API>

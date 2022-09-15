@@ -13,7 +13,7 @@ import Overview from './Overview.tsx';
 const groups = [
   {
     title: '常用组件',
-    prefix: '/components',
+    prefix: '/fireformily/components',
     children: [
       {
         title: 'QueryList',

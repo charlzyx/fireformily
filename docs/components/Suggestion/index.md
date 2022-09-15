@@ -3,5 +3,3 @@
 
 
 <code src="./SuggestionDemo.tsx" />
-
-<API src="@/components/Suggestion"></API>

@@ -190,19 +190,14 @@ export type CommonActions = {
 
 ### PopActions.Modal - 模态框弹出
 
-<API src="@/components/PopActions/Modal"></API>
 
 
 ### PopActions.Drawer - 抽屉弹出
 
-<API src="@/components/PopActions/Drawer"></API>
 
 
 ### PopActions.Popconfirm - 确认弹出
 
-<API src="@/components/PopActions/Popconfirm"></API>
-
 
 ### PopActions.Popover - 轻量弹窗
 
-<API src="@/components/PopActions/Popover"></API>
