@@ -27,7 +27,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ## 代码演示
 
-<code src="./demos/QueryListAll.tsx"></code>
+<code src="./QueryListAll.tsx"></code>
 
 ## API
 
@@ -112,3 +112,4 @@ type Service = (data:
 
 ### QueryTable.Expandable - 嵌套子表格
 in properties
+

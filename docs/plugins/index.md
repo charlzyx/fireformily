@@ -1,11 +1,10 @@
 ---
 nav:
-  title: 增强插件
+  title: 最佳实践
 ---
 
-## 常用的增强功能
+## 最佳实践
 
-远程词典/搜索建议功能
 
 ## Dict - 词典
 
@@ -13,11 +12,6 @@ nav:
 import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
 ```
 
+<hr />
+
 <code src="./DictDemo.tsx"></code>
-
-## Suggestion - 搜索查询
-
-```tsx pure
-import { registerSuggestion, suggestEffects, Suggestion } from 'fireformily';
-```
-<code src="./SuggestDemo.tsx"></code>

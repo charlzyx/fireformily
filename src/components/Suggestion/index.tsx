@@ -1,44 +1,5 @@
 import { Checkbox, Select, Space, Steps } from 'antd';
-// import jsonp from 'fetch-jsonp';
-// import qs from 'qs';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-// const { Option } = Select;
-
-// let timeout: ReturnType<typeof setTimeout> | null;
-// let currentValue: string;
-
-// const fetch = (
-//   params: object & { kw: string },
-//   callback: (data: { value: string | number; label: string }[]) => void,
-// ) => {
-//   if (timeout) {
-//     clearTimeout(timeout);
-//     timeout = null;
-//   }
-//   currentValue = params.kw;
-
-//   const fake = () => {
-//     const str = qs.stringify({
-//       code: 'utf-8',
-//       q: params.kw,
-//     });
-//     jsonp(`https://suggest.taobao.com/sug?${str}`)
-//       .then((response: any) => response.json())
-//       .then((d: any) => {
-//         if (currentValue === params.kw) {
-//           const { result } = d;
-//           const data = result.map((item: any) => ({
-//             value: item[0],
-//             label: item[0],
-//           }));
-//           callback(data);
-//         }
-//       });
-//   };
-
-//   timeout = setTimeout(fake, 300);
-// };
 
 type Input =
   | string
@@ -63,7 +24,7 @@ export const Suggestion: React.FC<{
   value?: Input;
   onChange?: (neo: Input) => void;
   disabled?: boolean;
-  fetcher?: (
+  suggest?: (
     parmas: object & { kw: string },
   ) => Promise<{ label: string; value: string | number }[]>;
 }> = (props) => {
@@ -74,13 +35,13 @@ export const Suggestion: React.FC<{
     getInit(props.multiple, props.value),
   );
 
-  const suggest = useRef(props.fetcher);
+  const suggest = useRef(props.suggest);
 
   useEffect(() => {
-    if (props.fetcher) {
-      suggest.current = props.fetcher;
+    if (props.suggest) {
+      suggest.current = props.suggest;
     }
-  }, [props.fetcher]);
+  }, [props.suggest]);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rank = useRef(0);

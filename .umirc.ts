@@ -11,6 +11,9 @@ export default defineConfig({
   publicPath: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
   base: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
   runtimePublicPath: true,
+  alias: {
+    "@": './src/',
+  },
   navs: [
     null,
     {
