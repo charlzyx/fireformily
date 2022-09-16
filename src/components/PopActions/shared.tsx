@@ -75,17 +75,14 @@ export const usePopAction = () => {
   const scope = useExpressionScope();
   const field = useField();
   const ctx = useQueryList$();
-  // console.log(
-  //   '--scope',
-  //   // JSON.stringify(scope, null, 2)
-  //   // { scope: JSON.stringify(scope, null, 2) },
-  //   // { index: JSON.stringify(scope?.$index) },
-  //   // { record: JSON.stringify(scope?.$record) },
-  //   // { lookup: JSON.stringify(scope?.$lookup) },
-  //   // { records: JSON.stringify(scope?.$records) },
-  // );
 
   const actions = field?.componentProps?.actions as Actions;
+
+  const calling = useRef({
+    open: false,
+    reset: false,
+    submit: false,
+  });
 
   const schema = useFieldSchema();
 
@@ -103,6 +100,10 @@ export const usePopAction = () => {
   const open = useCallback(() => {
     if (field.disabled) return;
     if (loading) return;
+
+    if (calling.current.open) return;
+    calling.current.open = true;
+
     const loader = methods.current.load || noop;
     setLoading(true);
     return loader(scope)
@@ -113,13 +114,18 @@ export const usePopAction = () => {
         setVisible(true);
       })
       .finally(() => {
+        calling.current.open = false;
         setLoading(false);
       });
   }, [field, loading, scope]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
-    if (loading) return;
+    if (loading || !visible) return;
+
+    if (calling.current.reset) return;
+    calling.current.reset = true;
+
     const preReset = isVoidField(field) ? noop : () => field.reset();
     const cancler = methods.current.cancel || noop;
 
@@ -131,13 +137,18 @@ export const usePopAction = () => {
         setVisible(false);
       })
       .finally(() => {
+        calling.current.reset = false;
         setLoading(false);
       });
-  }, [field, loading, scope]);
+  }, [field, loading, scope, visible]);
 
   const submit = useCallback(() => {
     if (field.disabled) return;
-    if (loading) return;
+    if (loading || !visible) return;
+
+    if (calling.current.submit) return;
+    calling.current.submit = true;
+
     const preSubmit = isVoidField(field) ? noop : () => field.submit();
     const preReset = isVoidField(field) ? noop : () => field.reset();
     const submiter = methods.current.submit || noop;
@@ -153,9 +164,10 @@ export const usePopAction = () => {
       })
       .finally(() => {
         setLoading(false);
+        calling.current.submit = false;
         ctx?._refresh?.();
       });
-  }, [ctx, field, loading, scope]);
+  }, [ctx, field, loading, scope, visible]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;

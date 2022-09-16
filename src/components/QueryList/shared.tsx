@@ -1,7 +1,7 @@
 import { ArrayField, ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
 import { useExpressionScope, ExpressionScope, useForm } from '@formily/react';
-import { autorun, observable, action } from '@formily/reactive';
+import { autorun, observable, batch } from '@formily/reactive';
 import React, {
   createContext,
   useCallback,
@@ -27,6 +27,12 @@ export interface IQueryListContext<
     extra?: {
       action: 'filter' | 'sort' | 'paginate';
       currentDataSource?: Record[];
+    };
+    scope?: {
+      $record?: object;
+      $index?: number;
+      $records?: object[];
+      $lookup?: object;
     };
   }) => Promise<{
     list: Record[];
@@ -134,8 +140,9 @@ export const QueryListProvider = React.memo(
           .then(({ list, total }) => {
             const tableAddress = $value.current._address!.table;
             const tableField = form.query(tableAddress!).take() as ObjectField;
+            if (!tableAddress) return { list: [], total: 0 };
             tableField.setState((s) => {
-              action.bound!(() => {
+              batch(() => {
                 s.value = list;
                 s.data = s.data || {};
                 s.data.pagination = s.data.pagination || {};
@@ -178,7 +185,7 @@ export const QueryListProvider = React.memo(
           .query(tableField)
           .take()
           ?.setState((s) => {
-            action.bound!(() => {
+            batch(() => {
               s.data = s.data || {};
               s.data.pagination = s.data.pagination || {};
               s.data.pagination.current = 1;
@@ -217,19 +224,17 @@ export const QueryListProvider = React.memo(
     );
 
     useEffect(() => {
-      // console.log('at init props.syncUrl', props.syncUrl);
       if (!props.syncUrl) return;
       if (syncUrlDone.current) return;
       const { _address } = $value.current;
       const { pageSize, current, ...params } = urlState || {};
-      // console.log('urlSync ', { pageSize, current, params });
 
       if (pageSize && _address?.table) {
         form
           .query(_address.table)
           .take()
           ?.setState((s) => {
-            action.bound!(() => {
+            batch(() => {
               s.data = s.data || {};
               s.data.pagination = s.data.pagination || {};
               s.data.pagination.pageSize = Number(urlState.pageSize);

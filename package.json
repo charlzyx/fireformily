@@ -12,7 +12,8 @@
     "url": "https://github.com/charlzyx/fireformily.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "babel"
   ],
   "scripts": {
     "build": "father build",

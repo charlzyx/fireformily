@@ -5,6 +5,8 @@ import {
   Input,
   Select,
   Space,
+  Radio,
+  Checkbox,
 } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
@@ -56,6 +58,8 @@ const SchemaField = createSchemaField({
     FormItem,
     Input,
     Select,
+    Radio,
+    Checkbox,
     FormGrid,
     FormLayout,
     Dict,
@@ -89,12 +93,35 @@ const schema: SchemaShape = {
       },
       'x-component': 'FormGrid',
       'x-component-props': {
-        maxColumns: 3,
+        maxColumns: 2,
         minColumns: 2,
       },
       properties: {
-        classify: {
-          title: 'SELECT MULTIPLE',
+        dict: {
+          title: 'DICT 只读组件',
+          type: 'string',
+          'x-decorator': 'FormItem',
+          'x-component': 'Dict',
+          'x-data': {
+            dict: 'classify',
+          },
+          'x-value': [1, 3],
+        },
+        dict2: {
+          title: 'DICT 只读组件 TAG 形态',
+          type: 'string',
+          'x-decorator': 'FormItem',
+          'x-component': 'Dict',
+          'x-component-props': {
+            type: 'tag',
+          },
+          'x-data': {
+            dict: 'classify',
+          },
+          'x-value': [1, 3],
+        },
+        select1: {
+          title: '多选 SELECT',
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Select',
@@ -105,12 +132,12 @@ const schema: SchemaShape = {
             dict: 'classify',
           },
         },
-        selectReadonly: {
-          title: 'SELECT MULTIPLE READONLY',
+        select1badge: {
+          title: '多选 SELECT READ PRETTY 徽章形态',
           type: 'string',
           'x-read-pretty': true,
           'x-reactions': {
-            dependencies: ['.classify'],
+            dependencies: ['.select1'],
             fulfill: {
               schema: {
                 'x-value': '{{$deps[0]}}',
@@ -126,11 +153,21 @@ const schema: SchemaShape = {
             dict: 'classify',
           },
         },
-        classifyReadonly: {
-          title: 'DICT TAG READONLY',
+        select2: {
+          title: '单选 SELECT',
           type: 'string',
+          'x-decorator': 'FormItem',
+          'x-component': 'Select',
+          'x-data': {
+            dict: 'classify',
+          },
+        },
+        slect2tag: {
+          title: '单选 SELECT pretty 标签形态',
+          type: 'string',
+          'x-read-pretty': true,
           'x-reactions': {
-            dependencies: ['.classify'],
+            dependencies: ['.select2'],
             fulfill: {
               schema: {
                 'x-value': '{{$deps[0]}}',
@@ -138,7 +175,7 @@ const schema: SchemaShape = {
             },
           },
           'x-decorator': 'FormItem',
-          'x-component': 'Dict',
+          'x-component': 'Select',
           'x-component-props': {
             type: 'tag',
           },
@@ -146,21 +183,21 @@ const schema: SchemaShape = {
             dict: 'classify',
           },
         },
-        status: {
-          title: 'SELECT',
+        radio: {
+          title: 'Radio 单选',
           type: 'string',
           'x-decorator': 'FormItem',
-          'x-component': 'Select',
+          'x-component': 'Radio.Group',
           'x-data': {
             dict: 'status',
           },
         },
-        statusSelectReadonly: {
-          title: 'SELECT READ PRETTY',
+        radiobadge: {
+          title: 'Radio 单选 pretty 徽章形态',
           type: 'string',
           'x-read-pretty': true,
           'x-reactions': {
-            dependencies: ['.status'],
+            dependencies: ['.radio'],
             fulfill: {
               schema: {
                 'x-value': '{{$deps[0]}}',
@@ -168,19 +205,29 @@ const schema: SchemaShape = {
             },
           },
           'x-decorator': 'FormItem',
-          'x-component': 'Select',
+          'x-component': 'Radio.Group',
           'x-component-props': {
-            type: 'tag',
+            type: 'badge',
           },
           'x-data': {
             dict: 'status',
           },
         },
-        statusReadonly: {
-          title: 'DICT BADGE READ PRETTY',
+        checkbox: {
+          title: 'Checkbox 多选',
           type: 'string',
+          'x-decorator': 'FormItem',
+          'x-component': 'Checkbox.Group',
+          'x-data': {
+            dict: 'status',
+          },
+        },
+        checkboxtag: {
+          title: 'Checkbox  多选 pretty 标签形态',
+          type: 'string',
+          'x-read-pretty': true,
           'x-reactions': {
-            dependencies: ['.status'],
+            dependencies: ['.checkbox'],
             fulfill: {
               schema: {
                 'x-value': '{{$deps[0]}}',
@@ -188,9 +235,9 @@ const schema: SchemaShape = {
             },
           },
           'x-decorator': 'FormItem',
-          'x-component': 'Dict',
+          'x-component': 'Checkbox.Group',
           'x-component-props': {
-            type: 'badge',
+            type: 'tag',
           },
           'x-data': {
             dict: 'status',

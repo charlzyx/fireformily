@@ -1,3 +1,8 @@
+---
+group:
+  title: 增强组件
+  order: 2
+---
 
 ## Linkage - 级联查询
 
@@ -13,7 +18,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Linkage } from 'fireformily'
-import { loadData } from './mock'
+import { loadData } from './demos/mock'
 
 export default () => {
   const [value, setValue] = useState([]);
@@ -38,7 +43,7 @@ export default () => {
  */
 import React, { useEffect, useState } from 'react';
 import { Linkage } from 'fireformily'
-import { loadAll } from './mock'
+import { loadAll } from './demos/mock'
 
 export default () => {
   const [value, setValue] = useState(['110000', '110000', '110105']);
@@ -64,7 +69,7 @@ export default () => {
  */
 import React, { useEffect, useState } from 'react';
 import { Linkage } from 'fireformily'
-import { loadData } from './mock'
+import { loadData } from './demos/mock'
 
 export default () => {
   const [value, setValue] = useState(['110000', '11000000', '110105']);
@@ -90,7 +95,7 @@ export default () => {
  */
 import React, { useEffect, useState } from 'react';
 import { Linkage } from 'fireformily'
-import { loadData } from './mock'
+import { loadData } from './demos/mock'
 
 export default () => {
   const [value, setValue] = useState([
@@ -122,3 +127,18 @@ export default () => {
   );
 };
 ```
+
+## API
+
+```ts
+export interface LinkageOption {
+  value: string;
+  label: string;
+  children?: LinkageOption[];
+  isLeaf?: boolean;
+  loading?: boolean;
+  __init?: boolean;
+}
+```
+
+<API src="./index.tsx" hideTitle exports='["API"]' ></API>

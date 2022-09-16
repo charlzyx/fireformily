@@ -9,7 +9,7 @@ export const Popover = (
 ) => {
   const { body, field, scope, footer, header, loading, open, reset, visible } =
     usePopAction();
-  // console.log('--popovver', { visible });
+  console.log('--popovver', { visible });
 
   return (
     <AntdPopover
@@ -23,21 +23,6 @@ export const Popover = (
           {footer}
         </>
       }
-      // /**
-      //  * @deprecated `visible` is deprecated which will be removed in next major version. Please use
-      //  *   `open` instead.
-      //  */
-      // visible={visible}
-      // /**
-      //  * @deprecated `afterVisibleChange` is deprecated which will be removed in next major version.
-      //  *   Please use `afterOpenChange` instead.
-      //  */
-      // afterVisibleChange={(show) => {
-      //   if (!show) {
-      //     reset();
-      //   }
-      //   props?.afterOpenChange?.(show);
-      // }}
       open={visible}
       onOpenChange={(show) => {
         props?.onOpenChange?.(show);

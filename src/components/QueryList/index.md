@@ -1,6 +1,7 @@
 ---
-nav:
-  title: 组件
+group:
+  title: Pro 组件
+  order: 3
 ---
 ## QueryList - 查询表格
 
@@ -12,7 +13,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 可以理解为是 ProTable 的一个 formily 版本的实现。
 
 ## 布局结构
-![querylist.jpg](./fireformily-querylist.jpg)
+![querylist.jpg](./demos/fireformily-querylist.jpg)
 
 > 这个结构可以照这样来理解, 至于 Toolbar 为什么在 QueryTbale 上, 是因为它跟 QueryTable 联动更多一些
 
@@ -27,7 +28,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ## 代码演示
 
-<code src="./QueryListAll.tsx"></code>
+<code src="./demos/QueryListAll.tsx"></code>
 
 ## API
 
@@ -111,5 +112,3 @@ type Service = (data:
 ### QueryTable.Operations - 操作列
 
 ### QueryTable.Expandable - 嵌套子表格
-in properties
-

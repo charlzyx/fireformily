@@ -1,3 +1,8 @@
+---
+group:
+  title: Pro 组件
+  order: 3
+---
 ## PopActions - 弹窗动作
 
 PopActions 是为了解决常见的 Popover/Popconfirm/Modal/Drawer 弹窗编辑子表单模板代码的问题
@@ -163,7 +168,7 @@ export type Actions<Record = any, Data = Record> = {
 
 得益于 formily 中,  非 [VoidField](https://core.formilyjs.org/zh-CN/api/models/void-field), 都是可以单独执行 `reset/validate/submit` 动作的, 所以可以轻松的利用这个特性, 实现 `PopActions` 的子表单的 `重置/校验/提交` 动作
 
-![actoins](./actions.jpg)
+![actoins](./demos/actions.jpg)
 
 ## API
 
@@ -200,4 +205,3 @@ export type CommonActions = {
 
 
 ### PopActions.Popover - 轻量弹窗
-

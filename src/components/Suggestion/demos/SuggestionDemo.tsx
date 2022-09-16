@@ -1,10 +1,9 @@
 import { FormGrid, FormItem, FormLayout } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
-import {  Suggestion } from 'fireformily';
+import { Suggestion } from 'fireformily';
 import React from 'react';
-import {suggest } from './mock'
-
+import { suggest } from './mock';
 
 const Code = (props: { value: any }) => {
   return (
@@ -25,15 +24,13 @@ const SchemaField = createSchemaField({
     Code,
   },
   scope: {
-    suggest
+    suggest,
   },
 });
 
 const form = createForm({
-  effects(fform) {
-  },
+  effects(fform) {},
 });
-
 
 type SchemaShape = React.ComponentProps<typeof SchemaField>['schema'];
 
@@ -60,7 +57,7 @@ const schema: SchemaShape = {
           'x-component': 'Suggestion',
           'x-component-props': {
             suggest: '{{suggest}}',
-          }
+          },
         },
         s2: {
           title: '淘宝搜索',

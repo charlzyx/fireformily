@@ -1,4 +1,4 @@
-import { Checkbox, Select, Space, Steps } from 'antd';
+import { Select } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 type Input =
@@ -16,8 +16,8 @@ const getInit = (multiple?: boolean, value?: Input): Input => {
 };
 
 export const Suggestion: React.FC<{
-  placeholder: string;
-  style: React.CSSProperties;
+  placeholder?: string;
+  style?: React.CSSProperties;
   labelInValue?: boolean;
   params?: object;
   multiple?: boolean;
@@ -34,6 +34,8 @@ export const Suggestion: React.FC<{
   const [value, setValue] = useState<Input>(
     getInit(props.multiple, props.value),
   );
+
+  const [loading, setLoading] = useState(false);
 
   const suggest = useRef(props.suggest);
 
@@ -52,10 +54,19 @@ export const Suggestion: React.FC<{
       clearTimeout(timer.current);
     }
     timer.current = setTimeout(() => {
-      suggest.current?.(params)?.then((options) => {
-        if (now < rank.current) return;
-        setData(options);
-      });
+      setLoading(true);
+      if (!suggest.current) {
+        setLoading(false);
+      }
+      suggest
+        .current?.(params)
+        ?.then((options) => {
+          if (now < rank.current) return;
+          setData(options);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }, 200);
   }, []);
 
@@ -69,7 +80,6 @@ export const Suggestion: React.FC<{
   };
 
   const handleChange = (newValue: Input) => {
-    console.log('onChange', newValue);
     setValue(newValue);
     props.onChange?.(newValue);
   };
@@ -77,6 +87,7 @@ export const Suggestion: React.FC<{
   return (
     <Select
       showSearch
+      loading={loading}
       value={value}
       labelInValue={props.labelInValue}
       mode={props.multiple ? 'multiple' : undefined}
@@ -92,45 +103,3 @@ export const Suggestion: React.FC<{
     ></Select>
   );
 };
-
-// const App: React.FC = () => {
-//   const [value, setValue] = useState<Input>([{ label: '第一', value: 1 }]);
-
-//   const [labelInValue, setLabelInValue] = useState(true);
-//   const [multiple, setMultiple] = useState(true);
-
-//   useEffect(() => {
-//     console.log('--value ', value);
-//   }, [value]);
-
-//   return (
-//     <Space direction="vertical">
-//       <Space>
-//         <label>
-//           <Checkbox
-//             checked={labelInValue}
-//             onChange={() => setLabelInValue((x) => !x)}
-//           ></Checkbox>
-//           labeInValue
-//         </label>
-//         <label>
-//           <Checkbox
-//             checked={multiple}
-//             onChange={() => setMultiple((x) => !x)}
-//           ></Checkbox>
-//           multiple
-//         </label>
-//       </Space>
-//       <Suggestion
-//         labelInValue={labelInValue}
-//         multiple={multiple}
-//         value={value}
-//         onChange={setValue}
-//         placeholder="input search text"
-//         style={{ width: 200 }}
-//       />
-//     </Space>
-//   );
-// };
-
-// export default App;

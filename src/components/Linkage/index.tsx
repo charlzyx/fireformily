@@ -1,4 +1,4 @@
-import { observer } from '@formily/react';
+import { Observer } from '@formily/react';
 import { observable } from '@formily/reactive';
 import { Cascader } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -18,20 +18,31 @@ const fullWithStyle = {
 
 type Input = string | number | { label: string; value: string | number };
 
-interface LinkageProps
-  extends Omit<
-    React.ComponentProps<typeof Cascader>,
-    'loadData' | 'value' | 'onChange'
-  > {
-  loadData?: (current: LinkageOption[]) => Promise<LinkageOption[]>;
+export interface LinkageProps {
+  /** 懒加载, 与整棵树加载不能共存 */
+  loadData?: (selectOptions: LinkageOption[]) => Promise<LinkageOption[]>;
+  /** 整棵树加载, 与懒加载不能共存 */
   loadAll?: () => Promise<LinkageOption[]>;
+  /** 是否支持多选 */
   multiple?: boolean;
+  /** 控制选项值是否包装为 { label, value } 格式 */
   labelInValue?: boolean;
+  /**
+   * 数组格式 Input[]
+   * @type Input = (string | number | { label: string; value: string | number });
+   */
   value?: Input[];
   onChange?: (val: Input[]) => any;
   disabled?: boolean;
   style?: React.CSSProperties;
 }
+
+interface MergedLinkageProps
+  extends Omit<
+      React.ComponentProps<typeof Cascader>,
+      'loadData' | 'value' | 'onChange'
+    >,
+    LinkageProps {}
 
 const initOptions = (labelInValue?: boolean, value?: Input[]) => {
   return labelInValue && Array.isArray(value)
@@ -50,7 +61,7 @@ const initOptions = (labelInValue?: boolean, value?: Input[]) => {
     : [];
 };
 
-const useLazyeOptions = (props: LinkageProps) => {
+const useLazyeOptions = (props: MergedLinkageProps) => {
   const { loadData, loadAll, value, labelInValue } = props;
 
   const loader = useRef(loadAll || loadData);
@@ -123,7 +134,9 @@ const useLazyeOptions = (props: LinkageProps) => {
   return state;
 };
 
-export const Linkage = observer((props: LinkageProps) => {
+export const API = (props: LinkageProps) => {};
+
+export const Linkage = (props: MergedLinkageProps) => {
   const {
     value,
     loadAll,
@@ -165,17 +178,23 @@ export const Linkage = observer((props: LinkageProps) => {
   };
 
   return (
-    <Cascader
-      disabled={disabled}
-      multiple={multiple}
-      changeOnSelect
-      {...others}
-      loading={state.loading}
-      value={getValue(value)}
-      style={props.style || fullWithStyle}
-      options={[...state.options]}
-      loadData={loadAll ? undefined : (state.load as any)}
-      onChange={onChangeFn as any}
-    ></Cascader>
+    <Observer>
+      {() => {
+        return (
+          <Cascader
+            disabled={disabled}
+            multiple={multiple}
+            changeOnSelect
+            {...others}
+            loading={state.loading}
+            value={getValue(value)}
+            style={props.style || fullWithStyle}
+            options={[...state.options]}
+            loadData={loadAll ? undefined : (state.load as any)}
+            onChange={onChangeFn as any}
+          ></Cascader>
+        );
+      }}
+    </Observer>
   );
-});
+};

@@ -24,21 +24,6 @@ export const Popconfirm = (
       okButtonProps={{ loading: loading }}
       onCancel={reset}
       onConfirm={submit}
-      // /**
-      //  * @deprecated `visible` is deprecated which will be removed in next major version. Please use
-      //  *   `open` instead.
-      //  */
-      // visible={visible}
-      // /**
-      //  * @deprecated `afterVisibleChange` is deprecated which will be removed in next major version.
-      //  *   Please use `afterOpenChange` instead.
-      //  */
-      // afterVisibleChange={(show) => {
-      //   if (!show) {
-      //     reset();
-      //   }
-      //   props?.afterOpenChange?.(show);
-      // }}
       open={visible}
       onOpenChange={(show) => {
         if (!show) {
