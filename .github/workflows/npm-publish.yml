@@ -6,7 +6,7 @@ name: Node.js Package
 on:
   push:
     branches:
-      - release
+      - master
 
 jobs:
   publish-npm:
@@ -22,7 +22,7 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
-  
+
       # 下面主要是创建 github 的release
       # 使用 tyankatsu0105/read-package-version-actions@v1 工具来读取对应的package.json 数据
       - name: Read package.json
@@ -30,7 +30,7 @@ jobs:
         with:
           path: './'
         id: package-version
-        
+
         # 关于创建 release 的更多参数，可以查看 actions/create-release@v1
       - name: Create Release for Tag
         id: release_tag
@@ -43,4 +43,3 @@ jobs:
           prerelease: false # 是否为预发布版本
           body: |
             请点击查看 [更新日志](https://charlzyx.github.io/fireformily).
-     

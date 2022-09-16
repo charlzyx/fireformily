@@ -1,7 +1,7 @@
 ---
 hero:
   title: ''
-  desc: '![fireformily](/images/fireformily.svg)<br /> @formily/antd Pro?'
+  desc: '![fireformily](/fireformily/images/fireformily.svg)<br /> @formily/antd Pro?'
   actions:
     - text: 查看组件 →
       link: ./components

@@ -1,17 +1,20 @@
 import { defineConfig } from 'dumi';
 
+const base = process.env.NODE_ENV === 'production' ? '/fireformily/' : '/';
+
 export default defineConfig({
   title: 'fireformily',
   mfsu: {},
   // favicon:
   //   'https://user-images.githubusercontent.com/9554297/83762004-a0761b00-a6a9-11ea-83b4-9c8ff721d4b8.png',
   // logo: 'https://user-images.githubusercontent.com/9554297/83762004-a0761b00-a6a9-11ea-83b4-9c8ff721d4b8.png',
-  favicon: '/images/fireformily.svg',
-  logo: '/images/fireformily.svg',
+  favicon: base + 'images/fireformily.svg',
+  logo: base + 'images/fireformily.svg',
   mode: 'site',
   outputPath: './doc-site',
-  publicPath: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
-  base: process.env.NODE_ENV === 'production' ? '/fireformily/' : '/',
+  publicPath: base,
+  dynamicImport: {},
+  base,
   runtimePublicPath: true,
   extraBabelPlugins: ['./babel/plugin-jsx-element-wrapper-with-observer-by-live.js'],
   alias: {
