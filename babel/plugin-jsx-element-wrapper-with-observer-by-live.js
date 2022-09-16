@@ -17,7 +17,18 @@ module.exports = declare((api, config) => {
   api.assertVersion(7);
   const visitor = {
     Program({ node }, state) {
-      if (state.__observerImported) {
+      const existed = node.body.find((im) => {
+        const isImportDeclaration = t.isImportDeclaration(im);
+        if (isImportDeclaration) {
+          const source = im.source.value === '@formily/react';
+          const spec = im.specifiers.find((sp) => {
+            return sp.imported && sp.imported.name === 'Observer';
+          });
+          return spec && source;
+        }
+        return false;
+      });
+      if (state.__observerImported || existed) {
         return;
       } else {
         node.body.unshift(ObserverImporter);
