@@ -51,6 +51,10 @@ export default defineConfig({
   navs: [
     null,
     {
+      title: 'Github',
+      path: 'https://github.com/charlzyx/fireformily',
+    },
+    {
       title: 'formily',
       path: 'https://github.com/alibaba/formily',
     },
