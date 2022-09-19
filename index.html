@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="/fireformily/images/fireformily.svg"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/antd/dist/antd.css" />
+    <style>
+      .__dumi-default-navbar-logo {
+        height: 60px !important;
+        width: 150px !important;
+        padding-left: 0 !important;
+        color: transparent !important;
+      }
+      .__dumi-default-navbar {
+        padding: 0 28px !important;
+      }
+      .__dumi-default-layout-hero h1 {
+        color: #45124e !important;
+        font-size: 80px !important;
+        padding-bottom: 30px !important;
+      }
+      .__dumi-default-dark-switch {
+        display: none;
+      }
+      nav a {
+        text-decoration: none !important;
+      }
+    </style>
+    <script>
+      window.routerBase = "/fireformily/";
+    </script>
+    <script>
+      window.publicPath = window.resourceBaseUrl || "/fireformily/";
+    </script>
+    <script>
+      //! umi version: 3.5.34
+    </script>
+    <script>
+      !(function () {
+        var e = localStorage.getItem("dumi:prefers-color"),
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches,
+          r = ["light", "dark", "auto"];
+        document.documentElement.setAttribute(
+          "data-prefers-color",
+          e === r[2] ? (t ? r[1] : r[0]) : r.indexOf(e) > -1 ? e : r[0]
+        );
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="/fireformily/umi.js"></script>
+  </body>
+</html>
