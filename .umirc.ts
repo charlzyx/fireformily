@@ -5,7 +5,7 @@ const base = process.env.NODE_ENV === 'production' ? '/fireformily/' : '/';
 export default defineConfig({
   title: 'fireformily',
   mfsu: {},
- favicon: base + 'images/fireformily.svg',
+  favicon: base + 'images/fireformily.svg',
   logo: base + 'images/fireformily.svg',
   mode: 'site',
   outputPath: './doc-site',
