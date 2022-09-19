@@ -1,0 +1,52 @@
+{
+  "name": "fireformily",
+  "version": "0.1.11",
+  "module": "dist/esm/index.js",
+  "main": "dist/cjs/index.js",
+  "typings": "dist/esm/index.d.ts",
+  "files": [
+    "dist",
+    "babel"
+  ],
+  "scripts": {
+    "build": "father build",
+    "deploy": "npm run docs:build && npm run docs:deploy",
+    "docs:build": "dumi build",
+    "docs:deploy": "gh-pages -d docs-dist",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint --fix 'src/**'",
+    "start": "dumi dev",
+    "test": "umi-test",
+    "test:coverage": "umi-test --coverage"
+  },
+  "dependencies": {
+    "@ahooksjs/use-url-state": "^3.5.0",
+    "@ant-design/icons": "^4.7.0",
+    "@formily/antd": "^2.2.4",
+    "@formily/core": "^2.2.4",
+    "@formily/react": "^2.2.4",
+    "@types/react": "^18.0.19",
+    "@types/react-dom": "^18.0.6",
+    "antd": "^4.23.1",
+    "lodash": "^4.17.21",
+    "qs": "^6.11.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@types/jest": "^29.0.1",
+    "@types/qs": "^6.9.7",
+    "@umijs/fabric": "^3.0.0",
+    "@umijs/test": "^4.0.19",
+    "dumi": "^1.1.47",
+    "father": "^4.0.3",
+    "fetch-jsonp": "^1.2.3",
+    "gh-pages": "^4.0.0",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "yorkie": "^2.0.0"
+  }
+}
