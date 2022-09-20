@@ -1,0 +1,4 @@
+.fireformily-tree.ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected {
+  border-left: #1890ff solid 4px;
+  background-color: transparent;
+}

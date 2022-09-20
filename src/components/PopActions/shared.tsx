@@ -15,6 +15,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { isObservable } from '@formily/reactive';
 import { useQueryList$ } from '../QueryList/shared';
 
 const nextTick = () =>
@@ -24,6 +25,9 @@ const nextTick = () =>
     }, 0);
   });
 
+const shallowClone = (x: any) => {
+  return isObservable(x) ? x : Array.isArray(x) ? [...x] : { ...x };
+};
 export interface IButtonType {
   size?: React.ComponentProps<typeof Button>['size'];
   type?: React.ComponentProps<typeof Button>['type'];
@@ -106,10 +110,11 @@ export const usePopAction = () => {
 
     const loader = methods.current.load || noop;
     setLoading(true);
+
     return loader(scope)
       .then((data) => {
         field.setState((s) => {
-          s.value = data;
+          s.value = shallowClone(data);
         });
         setVisible(true);
       })

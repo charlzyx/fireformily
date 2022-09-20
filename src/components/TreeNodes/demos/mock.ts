@@ -1,4 +1,5 @@
-import { OptionData } from 'fireformily';
+import { OptionData, PopActions } from 'fireformily';
+import { raw } from '@formily/reactive';
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
@@ -136,4 +137,34 @@ export const loadData = (options: OptionData[]) => {
       }),
     );
   }
+};
+type TActions = React.ComponentProps<typeof PopActions>['actions'];
+
+const log = (label: string, x: any) => {
+  console.log('LABEL:', label);
+  try {
+    console.group(JSON.parse(JSON.stringify(x)));
+  } catch (error) {
+    console.log('stringify error, origin: ', x);
+  }
+  console.groupEnd();
+};
+
+export const actions: {
+  [name: string]: TActions;
+} = {
+  update: {
+    load: (scope) => {
+      log('add load args', scope);
+      return Promise.resolve(scope.$record);
+    },
+    cancel: (scope) => {
+      log('add cancel args', scope);
+    },
+    submit: (data, scope) => {
+      log('add submit args', { data, scope });
+
+      return Promise.resolve();
+    },
+  },
 };
