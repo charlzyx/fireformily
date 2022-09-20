@@ -1,4 +1,5 @@
-import { LinkageOption } from 'fireformily';
+import { OptionData, PopActions } from 'fireformily';
+import { raw } from '@formily/reactive';
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
@@ -54,7 +55,7 @@ export const flat = (
   return { flatten, tree };
 };
 
-export const getById = (parent?: string) => {
+export const getById = (parent?: React.Key) => {
   return fetch(remote)
     .then((res) => res.json())
     .then((origin) => flat(origin))
@@ -92,7 +93,7 @@ export const loadAll = () => {
     });
 };
 
-export const loadData = (options: LinkageOption[]) => {
+export const loadData = (options: OptionData[]) => {
   // unshift root id
   const keys = [undefined, ...options.map((x) => x.value)];
   const last = options[options.length - 1];
@@ -136,4 +137,34 @@ export const loadData = (options: LinkageOption[]) => {
       }),
     );
   }
+};
+type TActions = React.ComponentProps<typeof PopActions>['actions'];
+
+const log = (label: string, x: any) => {
+  console.log('LABEL:', label);
+  try {
+    console.group(JSON.parse(JSON.stringify(x)));
+  } catch (error) {
+    console.log('stringify error, origin: ', x);
+  }
+  console.groupEnd();
+};
+
+export const actions: {
+  [name: string]: TActions;
+} = {
+  update: {
+    load: (scope) => {
+      log('add load args', scope);
+      return Promise.resolve(scope.$record);
+    },
+    cancel: (scope) => {
+      log('add cancel args', scope);
+    },
+    submit: (data, scope) => {
+      log('add submit args', { data, scope });
+
+      return Promise.resolve();
+    },
+  },
 };

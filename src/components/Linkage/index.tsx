@@ -2,15 +2,9 @@ import { Observer } from '@formily/react';
 import { observable } from '@formily/reactive';
 import { Cascader } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { OptionData } from '../../shared';
 
-export interface LinkageOption {
-  value: string;
-  label: string;
-  children?: LinkageOption[];
-  isLeaf?: boolean;
-  loading?: boolean;
-  __init?: boolean;
-}
+export interface LinkageOption extends OptionData {}
 
 const fullWithStyle = {
   width: '100%',
@@ -134,8 +128,6 @@ const useLazyeOptions = (props: MergedLinkageProps) => {
   return state;
 };
 
-export const API = (props: LinkageProps) => {};
-
 export const Linkage = (props: MergedLinkageProps) => {
   const {
     value,
@@ -151,7 +143,7 @@ export const Linkage = (props: MergedLinkageProps) => {
   const state = useLazyeOptions(props);
 
   const onChangeFn = useCallback(
-    (values: string[], options: LinkageOption[]) => {
+    (values: string[], options: Required<LinkageOption>[]) => {
       if (labelInValue) {
         return onChange?.(options);
       } else {
