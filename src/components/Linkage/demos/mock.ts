@@ -1,4 +1,4 @@
-import { LinkageOption } from 'fireformily';
+import { OptionData } from 'fireformily';
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
@@ -54,7 +54,7 @@ export const flat = (
   return { flatten, tree };
 };
 
-export const getById = (parent?: string) => {
+export const getById = (parent?: React.Key) => {
   return fetch(remote)
     .then((res) => res.json())
     .then((origin) => flat(origin))
@@ -92,7 +92,7 @@ export const loadAll = () => {
     });
 };
 
-export const loadData = (options: LinkageOption[]) => {
+export const loadData = (options: OptionData[]) => {
   // unshift root id
   const keys = [undefined, ...options.map((x) => x.value)];
   const last = options[options.length - 1];
