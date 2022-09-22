@@ -5,21 +5,38 @@ import { useMemo } from 'react';
 const defaultNodeKey = (x: any) => x?.key;
 const emptyArray = () => [];
 
-export const TreeRootScope = <
-  Node extends {
-    children?: Node[];
+const findIndex = <T extends any>(
+  arr: T[],
+  finder: (item: T, idx: number) => boolean,
+) => {
+  if (!Array.isArray(arr)) return -1;
+  for (let index = 0; index < arr.length; index++) {
+    const element = arr[index];
+    if (finder(element, index)) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+export const RootScope = <
+  NodeLike extends {
+    children?: NodeLike[];
   },
 >(
   props: React.PropsWithChildren<{
-    nodeKey: React.Key | ((node: Node) => React.Key);
-    getRoot: () => Node[];
+    nodeKey: React.Key | ((node: NodeLike) => React.Key);
+    getRoot: () => NodeLike[];
   }>,
 ) => {
   const scope = useExpressionScope();
+
   const { nodeKey, getRoot } = props;
+
   const refs = useMemo(() => {
-    return new Map<React.Key, Node>();
+    return new Map<React.Key, NodeLike>();
   }, []);
+
   return (
     <ExpressionScope
       value={{
@@ -27,7 +44,7 @@ export const TreeRootScope = <
           return getRoot();
         },
         get $getKey() {
-          return (node: Node) => {
+          return (node: NodeLike) => {
             return typeof nodeKey === 'function'
               ? nodeKey(node)
               : (node as any)?.[nodeKey];
@@ -46,13 +63,13 @@ export const TreeRootScope = <
   );
 };
 
-export const TreeRecordScope = <
-  Node extends {
-    children?: Node[];
+export const NodeRecordScope = <
+  NodeLike extends {
+    children?: NodeLike[];
   },
 >(props: {
-  getNode?: () => Node;
-  getParents?: (node?: Node, root?: Node[]) => Node[];
+  getNode?: (root: NodeLike[]) => NodeLike;
+  getParents?: (node?: NodeLike, root?: NodeLike[]) => NodeLike[];
   children?: React.ReactNode | ((scope: any) => React.ReactNode);
 }) => {
   const scope = useExpressionScope();
@@ -66,15 +83,15 @@ export const TreeRecordScope = <
       return scope.$root;
     },
     get $record() {
-      const record = getNode?.();
+      const record = getNode?.(this.$root);
       if (typeof record === 'object') {
         // return record;
         return lazyMerge(record, {
-          get $lookup(): Node | undefined {
-            return value.$lookup;
+          get $lookup(): NodeLike | undefined {
+            return refs.get(getKey(record)).$lookup;
           },
           get $index(): number {
-            return value.$index;
+            return refs.get(getKey(record)).$index;
           },
         } as any);
       } else {
@@ -91,12 +108,15 @@ export const TreeRecordScope = <
     },
     get $index() {
       const records = this.$records;
-      const idx = records.findIndex(
-        (x: Node) => getKey(x) === getKey(this.$record),
-      );
+      const idx = findIndex(records, (item) => {
+        const itemKey = getKey(item);
+        const recordKey = getKey(this.$record);
+        return itemKey === recordKey;
+      });
+
       return idx;
     },
-    get $records(): Node[] {
+    get $records(): NodeLike[] {
       const parent = this.$lookup;
       return parent
         ? Array.isArray(parent)
@@ -121,7 +141,33 @@ export const TreeRecordScope = <
       }
       return parts.join('.');
     },
+    get $pos() {
+      const parents: NodeLike[] =
+        this.$deepth > 0 ? this.$lookup?.children : this.$root!;
+      const indexList: number[] = [];
+      const isRoot = parents === this.$root;
+      parents.reduce(
+        (parent, item) => {
+          const index = findIndex(parent.children!, (child: NodeLike) => {
+            return getKey(child) === getKey(item);
+          });
+          if (index > -1) {
+            indexList.push(index);
+          }
+          return item;
+        },
+        { children: parents } as NodeLike,
+      );
+
+      console.log('node scope.pos', indexList, this.$index);
+      if (isRoot) {
+        indexList.shift();
+      }
+
+      return [...indexList, this.$index];
+    },
   };
+
   refs.set(getKey(value.$record), value);
 
   return (
