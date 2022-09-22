@@ -4,7 +4,7 @@ import { Schema, useField, useFieldSchema } from '@formily/react';
 import { ArrowDownOutlined, ToTopOutlined } from '@ant-design/icons';
 import { Button, TreeDataNode } from 'antd';
 import React, { createContext, useContext } from 'react';
-import { NodeRecordScope, RootScope } from './scopes';
+import { NodeScope, RootScope, ITreeNodeScope, ITreeRootScope } from './scopes';
 
 export type NodeLike = {
   children?: NodeLike[];
@@ -38,19 +38,23 @@ export interface ITreeBaseRootContext {
   props: ITreeBaseRootProps;
   field: ObjectField;
   schema: Schema;
+  scope: ITreeRootScope<NodeLike>
 }
 
-export interface ITreeBaseNodeContext {
-  node: NodeLike;
-  pos: NodePos;
-  index: number;
-  parents: NodeLike[];
-  root: NodeLike[];
+export interface ITreeBaseNodeContext  {
+  node: ITreeNodeScope<NodeLike>['$record'];
+  records: ITreeNodeScope<NodeLike>['$records'];
+  pos: ITreeNodeScope<NodeLike>['$pos'];
+  parents: ITreeNodeScope<NodeLike>['$parents'];
+  path: ITreeNodeScope<NodeLike>['$path'];
+  index: ITreeNodeScope<NodeLike>['$index'];
+  deepth: ITreeNodeScope<NodeLike>['$deepth'];
+  root: ITreeNodeScope<NodeLike>['$root'];
   extra?: Omit<TreeDataNode, 'title' | 'key'>;
 }
 
 export interface ITreeBaseNodeProps
-  extends React.ComponentProps<typeof NodeRecordScope> {
+  extends React.ComponentProps<typeof NodeScope> {
   extra?: Omit<TreeDataNode, 'title' | 'key'>;
 }
 
@@ -98,49 +102,38 @@ export const TreeBase: ComposedTreeBase = (props) => {
       getRoot={props.getRoot ? props.getRoot : () => (field.value as any) || []}
       nodeKey={props.nodeKey}
     >
-      <TreeBaseContext.Provider value={{ field, schema, props }}>
+      {(scope) => {
+      return <TreeBaseContext.Provider value={{
+        scope,
+        schema,
+        field,
+        props,
+       }}>
         {props.children}
       </TreeBaseContext.Provider>
-    </RootScope>
+
+      }}
+   </RootScope>
   );
 };
 
 TreeBase.Node = ({ children, ...props }) => {
   return (
-    <NodeRecordScope getNode={props.getNode} getParents={props.getParents}>
+    <NodeScope getNode={props.getNode} getParents={props.getParents}>
       {(scope) => {
         return (
           <TreeBaseNodeContext.Provider
-            value={{
-              get node() {
-                return scope.$record;
-              },
-              get parents() {
-                return scope.$parents;
-              },
-              get pos() {
-                return scope.$pos;
-              },
-              get index() {
-                return scope.$index;
-              },
-              get root() {
-                return scope.$root;
-              },
-              get extra() {
-                return scope.$extra;
-              },
-            }}
+            value={{...scope, extra: props.extra}}
           >
             {typeof children === 'function' ? children(scope) : children}
           </TreeBaseNodeContext.Provider>
         );
       }}
-    </NodeRecordScope>
+    </NodeScope>
   );
 };
 
-const move = (before: number[], after: number[], root: NodeLike[]) => {
+const move = (before: number[], after: number[], root: NodeLike) => {
   if (JSON.stringify(before) === JSON.stringify(after)) return;
   const tmp = before.reduce(
     (target: NodeLike, at: number, index: number): NodeLike => {
@@ -164,7 +157,7 @@ const move = (before: number[], after: number[], root: NodeLike[]) => {
       target.children?.splice(at, 0, tmp);
       return target;
     },
-    { children: root } as NodeLike,
+    root,
   );
 };
 
@@ -172,12 +165,12 @@ const Moveable = (props: { to?: 'up' | 'down' | 'free' }) => {
   const node = useNode();
   const onClick = () => {
     if (!node) return;
-    const before = node?.pos;
-    const after = [...node.pos];
+    const before = node.pos!;
+    const after = [...node.pos!];
     const myIndex = before[before.length - 1];
     after[after.length - 1] =
       props.to === 'down' ? myIndex + 1 : Math.max(myIndex - 1, 0);
-    move(before, after, node.root);
+    move(before, after, node.root!);
 
     // const parents = node.parents.length > 0 ? node.parents : node?.root!;
     // const me = parents[node.index];
@@ -195,7 +188,8 @@ const Moveable = (props: { to?: 'up' | 'down' | 'free' }) => {
       ></Button>
       <Button
         onClick={() => {
-          console.log('node.pos', node?.pos.toString());
+          if (!node) return;
+          console.log('node.pos', node.pos?.toString());
         }}
       >
         LOG POS

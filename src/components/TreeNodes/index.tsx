@@ -35,6 +35,7 @@ const getChainNodes = (
   parentChain?: any[],
 ) => {
   const chain = parentChain || [];
+  if (!Array.isArray(treeData)) return chain;
   for (let index = 0; index < treeData.length; index++) {
     const item = treeData[index];
     if (item.value === target.value) {
@@ -79,7 +80,7 @@ const ScopeLogger = () => {
 };
 
 type BaseTreeProps = {
-  value?: TreeNode[];
+  value?: TreeNode;
   onChange?: (neo: BaseTreeProps['value']) => void;
   loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
 };
@@ -92,9 +93,7 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
   const { onChange, children, loadData, value, ...others } = props;
 
   const field = useField<ObjectField>();
-  const [root, setRoot] = useState<TreeNode[]>(
-    Array.isArray(field.value) ? field.value.slice() : [],
-  );
+  const [root, setRoot] = useState<TreeNode>(field.value);
 
   const fieldSchema = useFieldSchema();
 
@@ -124,7 +123,7 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
 
   const onLoad = useCallback(
     (node: any) => {
-      let chain = getChainNodes(refs.current.root, node);
+      let chain = getChainNodes(refs.current.root.children!, node);
       const last = chain[chain.length - 1];
 
       last.loading = true;
@@ -133,7 +132,12 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
         .then((list) => {
           last.children = list;
           last.loading = false;
-          setRoot((x) => [...x]);
+          setRoot((r) => {
+            return {
+              ...r,
+              children: [...r.children!]
+            }
+          });
           watch();
         })
         .finally(() => {
@@ -146,7 +150,11 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
   useEffect(() => {
     methods.current.loadData?.([])?.then?.((list) => {
       // state.root = list;
-      setRoot(list as any);
+      setRoot({
+        label:"ROOT",
+        value:"ROOT",
+        children: list
+      });
       // data.tree = state.root;
       watch();
     });
@@ -160,7 +168,7 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
   return (
     <>
       <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
-      <TreeBase nodeKey={FIELD_NAMES.key} getRoot={() => refs.current.root}>
+      <TreeBase nodeKey={FIELD_NAMES.key} >
         <Tree
           showLine
           {...others}
@@ -168,19 +176,22 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
             return (
               <TreeBase.Node
                 getNode={(treeRoot) => {
-                  const withSelf = getChainNodes(treeRoot, node);
-                  return withSelf[withSelf.length - 1];
+                  const withSelf = getChainNodes(treeRoot.children!, node);
+                  const n = withSelf[withSelf.length - 1];
+                  // console.log('get node', n);
+                  return n;
                 }}
                 getParents={(current, treeRoot) => {
-                  const withSelf = getChainNodes(treeRoot!, current!);
-                  withSelf.pop();
-                  return withSelf;
+                  const withSelf = getChainNodes(treeRoot?.children!, current!);
+                  // console.log('withSelf', withSelf)
+                  return [treeRoot, ...withSelf];
                 }}
                 extra={node}
               >
                 {(scope) => {
+                  console.log("scope.path", scope.$path);
                   // const name = `${field.path.toString()}.${scope.$name}`;
-                  const name = `${scope.$name}`;
+                  const name = `${scope.$path}`;
                   return (
                     <Space key={name}>
                       <RecursionField
@@ -200,7 +211,7 @@ export const TreeNodes = React.memo((props: MergedTreeProps) => {
           onDrop={onDrop}
           blockNode
           fieldNames={FIELD_NAMES}
-          treeData={root}
+          treeData={root.children}
           loadData={onLoad}
         ></Tree>
       </TreeBase>

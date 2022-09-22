@@ -1,9 +1,10 @@
-import { ExpressionScope, useExpressionScope } from '@formily/react';
+import { ObjectField } from '@formily/core';
+import { ExpressionScope, useExpressionScope, useField } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
 import { useMemo } from 'react';
 
 const defaultNodeKey = (x: any) => x?.key;
-const emptyArray = () => [];
+const makeEmptyArray = () => [];
 
 const findIndex = <T extends any>(
   arr: T[],
@@ -19,17 +20,36 @@ const findIndex = <T extends any>(
   return -1;
 };
 
+export interface ITreeRootScope<T extends { children?: T[] }> {
+  $root?: T;
+  $getKey?: (node: T) => React.Key,
+  $refs?: Map<React.Key, T>
+}
+
+export interface ITreeNodeScope<T extends { children?: T[] }> {
+  $root?: T;
+  $records?: T[];
+  $record?: T & ITreeNodeScope<T>;
+  $lookup?: ITreeNodeScope<T>['$record'];
+  $index?: number;
+  $pos?: number[];
+  $parents?: T[];
+  $path?: string;
+  $deepth?: number;
+}
+
 export const RootScope = <
   NodeLike extends {
     children?: NodeLike[];
   },
 >(
-  props: React.PropsWithChildren<{
+  props: {
     nodeKey: React.Key | ((node: NodeLike) => React.Key);
-    getRoot: () => NodeLike[];
-  }>,
+    children?: React.ReactNode | ((scope: any) => React.ReactNode);
+    getRoot?: () => NodeLike
+  },
 ) => {
-  const scope = useExpressionScope();
+  const field = useField<ObjectField>();
 
   const { nodeKey, getRoot } = props;
 
@@ -37,11 +57,9 @@ export const RootScope = <
     return new Map<React.Key, NodeLike>();
   }, []);
 
-  return (
-    <ExpressionScope
-      value={{
+    const value: ITreeRootScope<NodeLike> = {
         get $root() {
-          return getRoot();
+          return typeof getRoot ==='function' ? getRoot(): field.value as any;
         },
         get $getKey() {
           return (node: NodeLike) => {
@@ -53,39 +71,48 @@ export const RootScope = <
         get $refs() {
           return refs;
         },
-        get $lookup() {
-          return scope?.$lookup;
-        },
-      }}
+    };
+
+  return (
+    <ExpressionScope
+      value={value}
     >
-      {props.children}
+      {typeof props.children === 'function'
+        ? props.children(value)
+        : props.children}
     </ExpressionScope>
   );
 };
 
-export const NodeRecordScope = <
+export const NodeScope = <
   NodeLike extends {
     children?: NodeLike[];
   },
 >(props: {
-  getNode?: (root: NodeLike[]) => NodeLike;
-  getParents?: (node?: NodeLike, root?: NodeLike[]) => NodeLike[];
+  getNode?: (root: NodeLike) => NodeLike;
+  getParents?: (node?: NodeLike, root?: NodeLike) => NodeLike[];
   children?: React.ReactNode | ((scope: any) => React.ReactNode);
 }) => {
-  const scope = useExpressionScope();
+  const scope = useExpressionScope() as ITreeRootScope<NodeLike>;
   const { getNode, getParents } = props;
 
   const getKey = scope?.$getKey || defaultNodeKey;
   const refs = scope?.$refs || new Map();
 
-  const value = {
+  const value :  ITreeNodeScope<NodeLike> = {
+
     get $root() {
-      return scope.$root;
+      return scope?.$root;
+    },
+    get $parents() {
+      const parents = getParents?.(this.$record, this.$root) || makeEmptyArray();
+      console.log('$parents', { parents, record: this.$record, root: this.$root });
+      return parents;
     },
     get $record() {
-      const record = getNode?.(this.$root);
+      const record = getNode?.(this.$root!);
+      console.log('$record', { record, root: this.$root });
       if (typeof record === 'object') {
-        // return record;
         return lazyMerge(record, {
           get $lookup(): NodeLike | undefined {
             return refs.get(getKey(record)).$lookup;
@@ -100,52 +127,42 @@ export const NodeRecordScope = <
     },
     get $lookup() {
       const parents = this.$parents;
-      const parent = parents?.[parents?.length - 1] || this.$root;
-      const lookup = parent
-        ? refs.get(getKey(parent))?.$record ?? this.$root
-        : this.$root;
-      return lookup;
+      const parent = parents?.[parents?.length - 1];
+      // console.log('lookup parents', {parents, parent} )
+      return parent ? refs.get(getKey(parent))?.$record: undefined;
+    },
+    get $records(): NodeLike[] {
+      const parent = this.$lookup;
+      return parent ? parent.children ?? makeEmptyArray(): makeEmptyArray();
     },
     get $index() {
-      const records = this.$records;
+      const records = this.$records ?? makeEmptyArray();
       const idx = findIndex(records, (item) => {
         const itemKey = getKey(item);
-        const recordKey = getKey(this.$record);
+        const recordKey = getKey(this.$record!);
         return itemKey === recordKey;
       });
 
       return idx;
     },
-    get $records(): NodeLike[] {
-      const parent = this.$lookup;
-      return parent
-        ? Array.isArray(parent)
-          ? parent
-          : parent.children
-        : emptyArray();
-    },
-    get $parents() {
-      const parents = getParents?.(this.$record, this.$root) || emptyArray();
-      return parents;
-    },
+
     get $deepth() {
-      return this.$parents.length;
+      return this.$parents?.length ?? 0;
     },
-    get $name() {
-      const parts: React.Key[] = [this.$index];
+    get $path() {
+      const parts: React.Key[] = [this.$index!];
       let parent = this.$lookup;
-      while (parent && parent !== this.$root) {
+      while (parent) {
         parts.unshift('children');
-        parts.unshift(parent.$index);
+        parts.unshift(parent.$index!);
         parent = parent.$lookup;
       }
       return parts.join('.');
     },
     get $pos() {
-      const parents: NodeLike[] =
-        this.$deepth > 0 ? this.$lookup?.children : this.$root!;
+      const parents: NodeLike[] = this.$parents ?? makeEmptyArray();
       const indexList: number[] = [];
-      const isRoot = parents === this.$root;
+
       parents.reduce(
         (parent, item) => {
           const index = findIndex(parent.children!, (child: NodeLike) => {
@@ -160,15 +177,13 @@ export const NodeRecordScope = <
       );
 
       console.log('node scope.pos', indexList, this.$index);
-      if (isRoot) {
-        indexList.shift();
-      }
 
-      return [...indexList, this.$index];
+
+      return [...indexList, this.$index!];
     },
   };
 
-  refs.set(getKey(value.$record), value);
+  refs.set(getKey(value.$record!), value);
 
   return (
     <ExpressionScope value={value}>
