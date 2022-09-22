@@ -1,29 +1,37 @@
-import { ObjectField } from '@formily/core';
+import { ArrayField, ObjectField } from '@formily/core';
 import {
+  Field,
   RecursionField,
   useExpressionScope,
   useField,
   useFieldSchema,
 } from '@formily/react';
-import { observe } from '@formily/reactive';
+import { observe, observable } from '@formily/reactive';
 import { Space, Tree, TreeDataNode } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TreeRecordScope, TreeRootScope } from '../../pro/TreeDataScope';
-import { OptionData } from '../../shared';
+import { TreeBase } from '../../pro/TreeBase';
 import './style.css';
 
-const noop = () => Promise.resolve([] as OptionData[]);
+export type TreeNode = {
+  label?: string;
+  value?: React.Key;
+  key?: React.Key;
+  isLeaf?: boolean;
+  __init?: boolean;
+  loading?: boolean;
+  children?: TreeNode[];
+};
+
+const noop = () => Promise.resolve([] as TreeNode[]);
 
 const FIELD_NAMES = {
   title: 'label',
   key: 'value',
 };
 
-type NodeData = OptionData & TreeDataNode;
-
 const getChainNodes = (
-  treeData: NodeData[],
-  target: NodeData,
+  treeData: TreeNode[],
+  target: TreeNode,
   parentChain?: any[],
 ) => {
   const chain = parentChain || [];
@@ -71,34 +79,22 @@ const ScopeLogger = () => {
 };
 
 type BaseTreeProps = {
-  value?: {
-    expandedKeys: React.Key[];
-    selectedKeys: React.Key[];
-    checkedKeys:
-      | React.Key[]
-      | {
-          checked: React.Key[];
-          halfChecked: React.Key[];
-        };
-    tree?: OptionData[];
-  };
+  value?: TreeNode[];
   onChange?: (neo: BaseTreeProps['value']) => void;
-  loadData?: (options: OptionData[]) => Promise<OptionData[]>;
+  loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
 };
 
 interface MergedTreeProps
   extends Omit<React.ComponentProps<typeof Tree>, 'loadData'>,
     BaseTreeProps {}
 
-export const TreeNodes = (props: MergedTreeProps) => {
-  const { onChange, value, children, loadData, ...others } = props;
-  const [root, setRoot] = useState<NodeData[]>([]);
-
-  // const state = useMemo(() => {
-  //   return observable({ root: props?.value?.tree || [], loading: false });
-  // }, [props?.value?.tree]);
+export const TreeNodes = React.memo((props: MergedTreeProps) => {
+  const { onChange, children, loadData, value, ...others } = props;
 
   const field = useField<ObjectField>();
+  const [root, setRoot] = useState<TreeNode[]>(
+    Array.isArray(field.value) ? field.value.slice() : [],
+  );
 
   const fieldSchema = useFieldSchema();
 
@@ -120,92 +116,32 @@ export const TreeNodes = (props: MergedTreeProps) => {
     methods.current.onChange = props.onChange;
   }, [props.loadData, props.onChange]);
 
-  const data: Required<MergedTreeProps>['value'] = useMemo(() => {
-    if (!field) return;
-    const init = {
-      expandedKeys: value?.expandedKeys || [],
-      selectedKeys: value?.selectedKeys || [],
-      checkedKeys: value?.checkedKeys || [],
-    };
-    console.log('---value', field.data);
-    if (!field.data) {
-      field.data = init;
-    }
-    return field.data;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field]);
-
   const watch = useCallback(() => {
     setTimeout(() => {
-      methods.current.onChange?.({
-        tree: refs.current.root,
-        ...data,
-      });
+      methods.current.onChange?.(refs.current.root);
     });
-  }, [data]);
+  }, []);
 
-  useEffect(() => {
-    // let timer: ReturnType<typeof setTimeout> | null = null;
-    // const disposer = observe(state.root, () => {
-    //   if (timer) clearTimeout(timer);
-    //   timer = setTimeout(() => {
-    //     watch();
-    //   }, 67);
-    // });
-    let timer2: ReturnType<typeof setTimeout> | null = null;
-    const disposer2 = observe(data, () => {
-      if (timer2) clearTimeout(timer2);
-      timer2 = setTimeout(() => {
-        watch();
-      }, 67);
-    });
-    return () => {
-      // disposer();
-      disposer2();
-    };
-  }, [watch, data]);
+  const onLoad = useCallback(
+    (node: any) => {
+      let chain = getChainNodes(refs.current.root, node);
+      const last = chain[chain.length - 1];
 
-  useEffect(() => {
-    if (!data) return;
-    if (value?.selectedKeys) {
-      data.selectedKeys = value.selectedKeys;
-    }
-  }, [data, value?.selectedKeys]);
-
-  useEffect(() => {
-    if (!data) return;
-    if (value?.expandedKeys) {
-      data.expandedKeys = value.expandedKeys;
-    }
-  }, [data, value?.expandedKeys]);
-
-  useEffect(() => {
-    if (!data) return;
-    if (value?.checkedKeys) {
-      data.checkedKeys = value.checkedKeys;
-    }
-  }, [data, value?.checkedKeys, value?.expandedKeys]);
-
-  const onLoad = (node: any) => {
-    let chain = getChainNodes(root, node);
-    const last = chain[chain.length - 1];
-
-    // state.loading = true;
-
-    last.loading = true;
-    const promise = methods.current.loadData ?? noop;
-    return promise(chain)
-      .then((list) => {
-        last.children = list;
-        last.loading = false;
-        setRoot((x) => [...x]);
-        watch();
-      })
-      .finally(() => {
-        last.loading = false;
-        // state.loading = false;
-      });
-  };
+      last.loading = true;
+      const promise = methods.current.loadData ?? noop;
+      return promise(chain)
+        .then((list) => {
+          last.children = list;
+          last.loading = false;
+          setRoot((x) => [...x]);
+          watch();
+        })
+        .finally(() => {
+          last.loading = false;
+        });
+    },
+    [watch],
+  );
 
   useEffect(() => {
     methods.current.loadData?.([])?.then?.((list) => {
@@ -217,21 +153,22 @@ export const TreeNodes = (props: MergedTreeProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // console.log(data?.selectedKeys);
+  const onDrop = (...args: any[]) => {
+    console.log('onDrop', { args });
+  };
 
   return (
     <>
       <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
-      <TreeRootScope nodeKey={FIELD_NAMES.key} getRoot={() => root}>
+      <TreeBase nodeKey={FIELD_NAMES.key} getRoot={() => refs.current.root}>
         <Tree
           showLine
           {...others}
-          className="fireformily-tree"
-          titleRender={(node: any) => {
+          titleRender={(node) => {
             return (
-              <TreeRecordScope<NodeData>
-                getNode={() => {
-                  const withSelf = getChainNodes(root, node);
+              <TreeBase.Node
+                getNode={(treeRoot) => {
+                  const withSelf = getChainNodes(treeRoot, node);
                   return withSelf[withSelf.length - 1];
                 }}
                 getParents={(current, treeRoot) => {
@@ -239,9 +176,11 @@ export const TreeNodes = (props: MergedTreeProps) => {
                   withSelf.pop();
                   return withSelf;
                 }}
+                extra={node}
               >
                 {(scope) => {
-                  const name = `${field.path.toString()}.${scope.$name}`;
+                  // const name = `${field.path.toString()}.${scope.$name}`;
+                  const name = `${scope.$name}`;
                   return (
                     <Space key={name}>
                       <RecursionField
@@ -253,33 +192,20 @@ export const TreeNodes = (props: MergedTreeProps) => {
                     </Space>
                   );
                 }}
-              </TreeRecordScope>
+              </TreeBase.Node>
             );
           }}
-          checkedKeys={props.checkable ? data?.checkedKeys : undefined}
-          onCheck={(checkInfo) => {
-            if (!props.checkable) return;
-            data.checkedKeys = checkInfo;
-          }}
-          selectedKeys={props.selectable ? data?.selectedKeys : undefined}
-          onSelect={(selectInfo) => {
-            console.log('----selectInfo', selectInfo);
-            if (!props.selectable) return;
-            data.selectedKeys = selectInfo;
-          }}
-          expandedKeys={data?.expandedKeys}
-          onExpand={(expandInfo) => {
-            data.expandedKeys = expandInfo;
-          }}
           autoExpandParent
+          draggable
+          onDrop={onDrop}
           blockNode
           fieldNames={FIELD_NAMES}
           treeData={root}
           loadData={onLoad}
         ></Tree>
-      </TreeRootScope>
+      </TreeBase>
     </>
   );
-};
+});
 
 export default TreeNodes;

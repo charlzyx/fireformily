@@ -30,7 +30,9 @@ export const flat = (
 ) => {
   const flatten: { parent?: string; code: string; name: string }[] = [];
 
-  const tree = Object.values(json).map((province) => {
+  const MAX = 4;
+  const tree = Object.values(json).map((province, idx) => {
+    if (idx > MAX) return;
     flatten.push({ code: province.code, name: province.name });
     province.children = Object.values(province.cities).map((city) => {
       // 拍平的结构要求 parentId 不能重复, 这个数据里面直辖市是一样的, 搞一下

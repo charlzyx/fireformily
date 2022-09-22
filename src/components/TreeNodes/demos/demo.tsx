@@ -1,7 +1,7 @@
 import { FormItem, Space, Input } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { createSchemaField, FormProvider } from '@formily/react';
-import { PopActions, safeStringify, TreeNodes } from 'fireformily';
+import { PopActions, safeStringify, TreeBase, TreeNodes } from 'fireformily';
 
 import { actions, loadData } from './mock';
 
@@ -22,6 +22,7 @@ const SchemaField = createSchemaField({
     TreeNodes,
     Space,
     PopActions,
+    TreeBase,
     Code,
     Input,
     FormItem,
@@ -51,8 +52,6 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component': 'TreeNodes',
           'x-component-props': {
             loadData: '{{loadData}}',
-            checkable: true,
-            selectable: true,
           },
           properties: {
             label: {
@@ -60,6 +59,20 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               'x-read-pretty': true,
               // 'x-decorator': 'FormItem',
               'x-component': 'Input',
+            },
+            moveup: {
+              type: 'void',
+              'x-component': 'TreeBase.Move',
+              'x-component-props': {
+                to: 'up',
+              },
+            },
+            movedown: {
+              type: 'void',
+              'x-component': 'TreeBase.Move',
+              'x-component-props': {
+                to: 'down',
+              },
             },
             edit: {
               title: '编辑',
@@ -106,7 +119,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
   },
 };
 
-const TreeBase = () => {
+const TreeNodesDemo = () => {
   return (
     <FormProvider form={form}>
       <SchemaField schema={schema}></SchemaField>
@@ -114,4 +127,4 @@ const TreeBase = () => {
   );
 };
 
-export default TreeBase;
+export default TreeNodesDemo;
