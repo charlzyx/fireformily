@@ -4,7 +4,7 @@ group:
   order: 2
 ---
 
-## Linkage - 级联查询
+## 🖇 Linkage - 级联查询
 
 > 主要为了解决一个很蛋疼的问题, 比如省市区, 返回值如果只有 code 的话, 加载不出来 label
 
@@ -140,5 +140,3 @@ export interface LinkageOption {
   __init?: boolean;
 }
 ```
-
-<API src="./index.tsx" hideTitle exports='["API"]' ></API>
