@@ -4,7 +4,7 @@ group:
   order: 1
 ---
 
-## LongText - 长文本
+## 📄 LongText - 长文本
 
 其实就是 Antd 的 [Typography.Paragraph](https://ant.design/components/typography-cn/#Typography.Paragraph) 默认 `copyable` / `ellipsis` 为 `true` 方便在表格中展示
 

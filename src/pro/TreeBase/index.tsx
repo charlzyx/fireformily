@@ -1,10 +1,15 @@
+import { ToTopOutlined } from '@ant-design/icons';
 import { AntdIconProps } from '@ant-design/icons/lib/components/AntdIcon';
 import { ObjectField } from '@formily/core';
-import { Schema, useField, useFieldSchema } from '@formily/react';
-import { ArrowDownOutlined, ToTopOutlined } from '@ant-design/icons';
+import {
+  Schema,
+  useExpressionScope,
+  useField,
+  useFieldSchema,
+} from '@formily/react';
 import { Button, TreeDataNode } from 'antd';
 import React, { createContext, useContext } from 'react';
-import { NodeRecordScope, RootScope } from './scopes';
+import { INodeScope, NodeScope, RootScope } from './scopes';
 
 export type NodeLike = {
   children?: NodeLike[];
@@ -45,12 +50,13 @@ export interface ITreeBaseNodeContext {
   pos: NodePos;
   index: number;
   parents: NodeLike[];
-  root: NodeLike[];
+  parent: NodeLike;
+  root: NodeLike;
   extra?: Omit<TreeDataNode, 'title' | 'key'>;
 }
 
 export interface ITreeBaseNodeProps
-  extends React.ComponentProps<typeof NodeRecordScope> {
+  extends Omit<React.ComponentProps<typeof NodeScope>, 'children'> {
   extra?: Omit<TreeDataNode, 'title' | 'key'>;
 }
 
@@ -85,7 +91,7 @@ type ComposedTreeBase = React.FC<React.PropsWithChildren<ITreeBaseRootProps>> &
   TreeBaseMixins & {
     Node: React.FC<
       ITreeBaseNodeProps & {
-        chidren?: React.ReactNode | ((scope: any) => React.ReactNode);
+        children?: ((scope: any) => React.ReactNode) | React.ReactNode;
       }
     >;
   };
@@ -94,10 +100,7 @@ export const TreeBase: ComposedTreeBase = (props) => {
   const field = useField<ObjectField>();
   const schema = useFieldSchema();
   return (
-    <RootScope
-      getRoot={props.getRoot ? props.getRoot : () => (field.value as any) || []}
-      nodeKey={props.nodeKey}
-    >
+    <RootScope nodeKey={props.nodeKey}>
       <TreeBaseContext.Provider value={{ field, schema, props }}>
         {props.children}
       </TreeBaseContext.Provider>
@@ -105,42 +108,63 @@ export const TreeBase: ComposedTreeBase = (props) => {
   );
 };
 
-TreeBase.Node = ({ children, ...props }) => {
+const NodeProvider = (props: {
+  children: (scope: any) => React.ReactNode;
+  extra?: ITreeBaseNodeProps['extra'];
+}) => {
+  const scope = useExpressionScope() as INodeScope<any>;
   return (
-    <NodeRecordScope getNode={props.getNode} getParents={props.getParents}>
-      {(scope) => {
-        return (
-          <TreeBaseNodeContext.Provider
-            value={{
-              get node() {
-                return scope.$record;
-              },
-              get parents() {
-                return scope.$parents;
-              },
-              get pos() {
-                return scope.$pos;
-              },
-              get index() {
-                return scope.$index;
-              },
-              get root() {
-                return scope.$root;
-              },
-              get extra() {
-                return scope.$extra;
-              },
-            }}
-          >
-            {typeof children === 'function' ? children(scope) : children}
-          </TreeBaseNodeContext.Provider>
-        );
+    <TreeBaseNodeContext.Provider
+      value={{
+        get index() {
+          return scope.$index!;
+        },
+        get node() {
+          return scope.$record;
+        },
+        get parents() {
+          return scope.$parents!;
+        },
+        get parent() {
+          return scope.$lookup!;
+        },
+        get pos() {
+          return scope.$pos!;
+        },
+        get root() {
+          return scope.$root;
+        },
+        get extra() {
+          return props.extra;
+        },
       }}
-    </NodeRecordScope>
+    >
+      {props.children(scope)}
+    </TreeBaseNodeContext.Provider>
   );
 };
 
-const move = (before: number[], after: number[], root: NodeLike[]) => {
+TreeBase.Node = ({ children, ...props }) => {
+  return (
+    <NodeScope getPos={props.getPos}>
+      <NodeProvider extra={props.extra}>
+        {(scope: any) => {
+          return typeof children === 'function' ? children(scope) : children;
+        }}
+      </NodeProvider>
+    </NodeScope>
+  );
+};
+
+/**
+ * @name 鲁智深
+ * @description 倒拔垂杨柳
+ */
+export const moveTreeNode = (
+  before: number[],
+  after: number[],
+  root: NodeLike,
+) => {
   if (JSON.stringify(before) === JSON.stringify(after)) return;
   const tmp = before.reduce(
     (target: NodeLike, at: number, index: number): NodeLike => {
@@ -150,22 +174,19 @@ const move = (before: number[], after: number[], root: NodeLike[]) => {
       target.children?.splice(at, 1);
       return me!;
     },
-    { children: root } as NodeLike,
+    root,
   );
-  console.log(
-    'before.after',
-    JSON.stringify({ before, after, tmp: tmp.label }),
-  );
-  after.reduce(
-    (target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === after.length - 1;
-      if (!isLast) return target.children![at]!;
-      // 在 target 前方插入
-      target.children?.splice(at, 0, tmp);
-      return target;
-    },
-    { children: root } as NodeLike,
-  );
+  // console.log(
+  //   'before.after',
+  //   JSON.stringify({ before, after, tmp: (tmp as any).label }),
+  // );
+  after.reduce((target: NodeLike, at: number, index: number): NodeLike => {
+    const isLast = index === after.length - 1;
+    if (!isLast) return target.children![at]!;
+    // 在 target 前方插入
+    target.children?.splice(at, 0, tmp);
+    return target;
+  }, root);
 };
 
 const Moveable = (props: { to?: 'up' | 'down' | 'free' }) => {
@@ -177,30 +198,21 @@ const Moveable = (props: { to?: 'up' | 'down' | 'free' }) => {
     const myIndex = before[before.length - 1];
     after[after.length - 1] =
       props.to === 'down' ? myIndex + 1 : Math.max(myIndex - 1, 0);
-    move(before, after, node.root);
-
-    // const parents = node.parents.length > 0 ? node.parents : node?.root!;
-    // const me = parents[node.index];
-    // parents.splice(node.index, 1);
-    // parents.splice(node.index + 1, 0, me!);
-    // console.log('neo', parents);
+    moveTreeNode(before, after, node.root);
   };
+  // console.log('ooo', node, '--', node?.parent);
+  const shouldHidden =
+    (props.to === 'up' && node?.index === 0) ||
+    (props.to === 'down' &&
+      node?.index === (node?.parent?.children?.length ?? -1) - 1);
   // console.log('move down ', node);
-  return (
-    <>
-      <Button
-        type="link"
-        icon={<ToTopOutlined rotate={props.to === 'up' ? 0 : 180} />}
-        onClick={onClick}
-      ></Button>
-      <Button
-        onClick={() => {
-          console.log('node.pos', node?.pos.toString());
-        }}
-      >
-        LOG POS
-      </Button>
-    </>
+  return shouldHidden ? null : (
+    <Button
+      type="link"
+      size="small"
+      icon={<ToTopOutlined rotate={props.to === 'up' ? 0 : 180} />}
+      onClick={onClick}
+    ></Button>
   );
 };
 
