@@ -4,7 +4,7 @@ group:
   order: 2
 ---
 
-## Suggestion - 联想搜索
+## 🪄 Suggestion - 联想搜索
 
 
 <code src="./demos/SuggestionDemo.tsx" />
