@@ -23,9 +23,9 @@ export interface INodeScope<T extends { children?: T[] }> {
   $root?: T;
   $pos?: number[];
   $record?: T & Pick<INodeScope<T>, '$lookup' | '$index'>;
-  // root is T
-  $lookup?: INodeScope<T>['$record'] | T;
+  $lookup?: INodeScope<T>['$record'];
   $records?: T[];
+  $last?: boolean;
   $parents?: INodeScope<T>['$record'][];
   $index?: number;
   $path?: string;
@@ -177,7 +177,12 @@ export const NodeScope = <
         return lookup ?? this.$root;
       },
       get $records() {
-        return this.$lookup?.children;
+        return this.$lookup?.children ?? [];
+      },
+      get $last() {
+        const ret = this.$index === this.$records?.length - 1;
+        console.log("this.label", this.$record.label, this.$index, ret)
+        return ret;
       },
       get $parents() {
         const pos = Array.isArray(this.$pos) ? [...this.$pos] : [];

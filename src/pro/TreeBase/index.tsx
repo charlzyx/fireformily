@@ -7,6 +7,7 @@ import {
   useField,
   useFieldSchema,
 } from '@formily/react';
+import { autorun, batch } from '@formily/reactive';
 import { Button, TreeDataNode } from 'antd';
 import React, { createContext, useContext } from 'react';
 import { INodeScope, NodeScope, RootScope } from './scopes';
@@ -66,7 +67,7 @@ export type TreeBaseMixins = {
   Remove?: React.FC<React.PropsWithChildren<AntdIconProps>>;
   Move?: React.FC<
     React.PropsWithChildren<{
-      to?: 'up' | 'down' | 'free';
+      to?: 'up' | 'down';
     }>
   >;
   Pos?: React.FC;
@@ -91,7 +92,7 @@ type ComposedTreeBase = React.FC<React.PropsWithChildren<ITreeBaseRootProps>> &
   TreeBaseMixins & {
     Node: React.FC<
       ITreeBaseNodeProps & {
-        children?: ((scope: any) => React.ReactNode) | React.ReactNode;
+        children?: ((scope: INodeScope<NodeLike>) => React.ReactNode) | React.ReactNode;
       }
     >;
   };
@@ -156,40 +157,58 @@ TreeBase.Node = ({ children, ...props }) => {
   );
 };
 
-/**
- * @name 鲁智深
- * @description 倒拔垂杨柳
- */
 export const moveTreeNode = (
   before: number[],
   after: number[],
   root: NodeLike,
 ) => {
   if (JSON.stringify(before) === JSON.stringify(after)) return;
-  const tmp = before.reduce(
+
+  let from = {
+    parent: null as NodeLike | null,
+    idx: -1
+  };
+
+  before.reduce(
     (target: NodeLike, at: number, index: number): NodeLike => {
       const isLast = index === before.length - 1;
-      if (!isLast) return target.children![at]!;
-      const me = target.children?.[at];
-      target.children?.splice(at, 1);
-      return me!;
-    },
+      if (isLast) {
+        from.parent = target as any;
+        from.idx = at;
+      }
+      return  target.children![at]!;
+   },
     root,
   );
   // console.log(
   //   'before.after',
   //   JSON.stringify({ before, after, tmp: (tmp as any).label }),
   // );
+  let to = {
+    parent: null as NodeLike | null,
+    idx: -1
+  }
+
   after.reduce((target: NodeLike, at: number, index: number): NodeLike => {
     const isLast = index === after.length - 1;
-    if (!isLast) return target.children![at]!;
-    // 在 target 前方插入
-    target.children?.splice(at, 0, tmp);
-    return target;
+    if (isLast) {
+      to.parent = target;
+      to.idx = at;
+    }
+    return target.children![at]!;
   }, root);
+
+
+  batch(() => {
+    // 同级
+    const moving = from.parent?.children![from.idx];
+    from.parent?.children?.splice(from.idx, 1);
+    to.parent?.children!.splice(to.idx, 0, moving!);
+  });
+
 };
 
-const Moveable = (props: { to?: 'up' | 'down' | 'free' }) => {
+const Moveable = (props: { to?: 'up' | 'down' }) => {
   const node = useNode();
   const onClick = () => {
     if (!node) return;

@@ -34,7 +34,8 @@ export const flat = (
   const tree = Object.values(json).map((province, idx) => {
     if (idx > MAX) return;
     flatten.push({ code: province.code, name: province.name });
-    province.children = Object.values(province.cities).map((city) => {
+    province.children = Object.values(province.cities).map((city, cidx) => {
+      if (cidx > MAX) return null as any;
       // 拍平的结构要求 parentId 不能重复, 这个数据里面直辖市是一样的, 搞一下
       const cityCode =
         city.code === province.code ? `${city.code}00` : city.code;
@@ -44,16 +45,19 @@ export const flat = (
         name: city.name,
         parent: province.code,
       });
-      city.children = Object.entries(city.districts).map(([code, name]) => {
+
+      city.children = Object.entries(city.districts).map(([code, name], didx) => {
+        if (didx >  MAX) return;
+
         const distCode =
           code === cityCode || code == province.code ? `${code}0000` : code;
         flatten.push({ code: distCode, name, parent: cityCode });
         return { code, name } as any;
-      });
+      }).filter(Boolean);
       return city;
-    });
+    }).filter(Boolean);
     return province;
-  });
+  }).filter(Boolean);
   return { flatten, tree };
 };
 

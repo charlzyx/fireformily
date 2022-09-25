@@ -1,14 +1,18 @@
 import { ObjectField } from '@formily/core';
 import {
+  connect,
   observer,
   RecursionField,
+  Schema,
   useExpressionScope,
   useField,
   useFieldSchema,
 } from '@formily/react';
-import { toJS } from '@formily/reactive';
+import { observe, raw, toJS } from '@formily/reactive';
+import { RobotOutlined  } from '@ant-design/icons'
+import { createPortal } from 'react-dom';
 import { Space, Tree } from 'antd';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { moveTreeNode, TreeBase } from '../../pro/TreeBase';
 import { safeStringify } from '../../shared';
 import './style.css';
@@ -24,35 +28,18 @@ export type TreeNode = {
 };
 
 const noop = () => Promise.resolve([] as TreeNode[]);
+const eqeqeq = (a: TreeNode, b: TreeNode) => a.value === b.value;
 
 const FIELD_NAMES = {
   title: 'label',
   key: 'value',
 };
 
-const getChainNodes = (
-  parent: TreeNode,
-  target: TreeNode,
-  parentChain?: any[],
-) => {
-  const chain = parentChain || [];
-  if (!Array.isArray(parent.children)) {
-    return chain;
-  }
-
-  for (let index = 0; index < parent.children.length; index++) {
-    const item = parent.children[index];
-    if (item.value === target.value) {
-      chain.unshift(item);
-      return chain;
-    }
-    const inMyChild = getChainNodes(item, target, chain);
-    if (inMyChild.length > 0) {
-      chain.unshift(item);
-      return chain;
-    }
-  }
-  return chain;
+// https://reactive.formilyjs.org/zh-CN/api/observe
+const WATCH_OP: Record<string, true> = {
+  add: true,
+  delete: true,
+  set: true,
 };
 
 const getNodePos = (
@@ -69,6 +56,7 @@ const getNodePos = (
 
   for (let index = 0; index < parent.children.length; index++) {
     const item = parent.children[index];
+    if (item === undefined) continue;
     if (eqeq(item, target)) {
       pos.unshift(index);
       return pos;
@@ -82,18 +70,20 @@ const getNodePos = (
   return pos;
 };
 
-const ScopeLogger = () => {
-  const scope = useExpressionScope();
+const getChainNodes = (
+  root: TreeNode,
+  target: TreeNode,
+) => {
+  const pos = getNodePos(root, target, eqeqeq);
 
-  return (
-    <div
-      onClick={() => {
-        console.log('---scope', safeStringify(scope));
-      }}
-    >
-      LOOK SCOPE
-    </div>
-  );
+  const chain: TreeNode[] = [];
+  pos.reduce((parent, idx) => {
+    const current = parent.children[idx];
+    chain.push(current);
+    return current;
+  }, root);
+
+  return chain;
 };
 
 type BaseTreeProps = {
@@ -102,7 +92,7 @@ type BaseTreeProps = {
   loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
 };
 
-interface MergedTreeProps
+export interface MergedTreeProps
   extends Omit<React.ComponentProps<typeof Tree>, 'loadData'>,
     BaseTreeProps {}
 
@@ -110,10 +100,8 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
   const { onChange, children, loadData, value, ...others } = props;
 
   const field = useField<ObjectField>();
-
-  const root = field.value;
-
   const fieldSchema = useFieldSchema();
+  // const [root, setRoot]= useState(field.value?.children ?? []);
 
   const methods = useRef({
     onChange: props.onChange,
@@ -127,7 +115,7 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
 
   const onLoad = useCallback(
     (node: any) => {
-      let chain = getChainNodes(root, node);
+      let chain = getChainNodes(field.value, node);
       const last = chain[chain.length - 1];
 
       last.loading = true;
@@ -136,12 +124,13 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
         .then((list) => {
           last.children = list;
           last.loading = false;
+          // setRoot((list: any) => [...list]);
         })
         .finally(() => {
           last.loading = false;
         });
     },
-    [root],
+    [],
   );
 
   useEffect(() => {
@@ -152,8 +141,9 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
         value: 'ROOT',
         children: list,
       });
+      // setRoot(list);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onDrop = ({ dragNode, node }: any) => {
@@ -163,16 +153,24 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
     const after = node.pos.split('-').map(Number);
     // 这是 antd  tree 的 pos, 最前面有个0需要去掉
     after.shift();
-    moveTreeNode(before, after, root);
+    moveTreeNode(before, after, field.value);
 
     console.log('onDrop', { before, after });
   };
+
+  const cloneAndCompile = (schema: Schema, scope: any) => {
+    schema.mapProperties((ps, key) => {
+      schema.properties![key] = ps.compile(scope);
+    });
+    return schema;
+  }
 
   return (
     <React.Fragment>
       <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
       <TreeBase nodeKey={FIELD_NAMES.key}>
         <Tree
+          selectable={false}
           showLine
           {...others}
           titleRender={(node) => {
@@ -182,22 +180,26 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
                   const pos = getNodePos(
                     treeRoot,
                     node,
-                    (a, b) => a.value === b.value,
+                    eqeqeq
                   );
                   return pos;
                 }}
               >
                 {(scope) => {
                   const name = scope.$path;
+                  // const before = fieldSchema;
+                  // fieldSchema.mapProperties(sub => sub.compile(scope))
+
+                  // const clone = cloneAndCompile(fieldSchema, scope);
+
+                  // const after = fieldSchema.compile(scope);
+                  // console.log('compile', {after: after.properties._footer });
                   return (
-                    <Space key={name}>
-                      <RecursionField
+                     <RecursionField
                         schema={fieldSchema}
                         name={name}
                         onlyRenderProperties
                       ></RecursionField>
-                      <ScopeLogger />
-                    </Space>
                   );
                 }}
               </TreeBase.Node>
@@ -207,7 +209,7 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
           onDrop={onDrop}
           blockNode
           fieldNames={FIELD_NAMES}
-          treeData={toJS(root).children}
+          treeData={toJS(field.value).children}
           loadData={onLoad}
         ></Tree>
       </TreeBase>
