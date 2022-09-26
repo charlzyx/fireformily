@@ -145,6 +145,7 @@ export const loadData = (options: OptionData[]) => {
         return {
           value: item.code,
           label: item.name,
+          disableCheckbox: item.name === "石家庄市",
           // 需要给出叶子条件, 这里我们是省市区3级, 所以keys长度是3的时候就到最后一级别了
           isLeaf: keys.length === 3,
         };

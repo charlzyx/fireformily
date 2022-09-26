@@ -14,7 +14,7 @@ import {
   useFieldSchema,
 } from '@formily/react';
 import { Button } from 'antd';
-import React, { createContext, useContext } from 'react';
+import React, { createContext, PropsWithChildren, useContext } from 'react';
 import {
   opreations,
   INodeScope,
@@ -27,8 +27,8 @@ import {
   helper,
 } from './scopes';
 
-export interface ITreeBaseRootProps
-  extends React.ComponentProps<typeof RootScope> {
+export interface ITreeBaseRootProps {
+  nodeKey: React.ComponentProps<typeof RootScope>['nodeKey'],
   disabled?: boolean;
   onAdd?: (
     pos: NumberPos,
@@ -169,7 +169,11 @@ export const TreeBase: ComposedTreeBase = (props) => {
   const field = useField<ObjectField>();
   const schema = useFieldSchema();
   return (
-    <RootScope nodeKey={props.nodeKey}>
+    <RootScope
+      nodeKey={props.nodeKey}
+      getRoot={() => field.value}
+    >
+
       <TreeBaseContext.Provider value={{ field, schema, props }}>
         {props.children}
       </TreeBaseContext.Provider>

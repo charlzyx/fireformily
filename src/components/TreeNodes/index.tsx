@@ -105,7 +105,13 @@ const getChainNodes = (root: TreeNode, target: TreeNode) => {
 };
 
 type BaseTreeProps = {
-  value?: TreeNode;
+  value?: {
+    checkedKeys?: React.Key[];
+    checkedNodes?: TreeNode[];
+    selectedKey?: React.Key;
+    selectedNode?: TreeNode;
+    children?: TreeNode[];
+  };
   onChange?: (neo: BaseTreeProps['value']) => void;
   loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
 };
@@ -162,11 +168,11 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
   useEffect(() => {
     methods.current.loadData?.([])?.then?.((list) => {
       // state.root = list;
-      field.setValue({
-        label: 'ROOT',
-        value: 'ROOT',
-        children: list,
-      });
+      field.setState(s => {
+        s.value.label = "ROOT";
+        s.value.value = "ROOT";
+        s.value.children = list;
+      })
       setRoot(toJS(field.value.children));
       let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -220,6 +226,10 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
           showLine
           {...others}
           expandedKeys={[...data.expandedKeys]}
+          checkedKeys={[...field.value.checkedKeys ?? []]}
+          onCheck={keys => {
+            field.value.checkedKeys = keys;
+          }}
           autoExpandParent={data.autoExpandParent}
           onExpand={(ekeys) => {
             data.expandedKeys = ekeys;
@@ -257,11 +267,14 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
         ></Tree>
         <RecursionField
           schema={fieldSchema}
+          name=""
           onlyRenderProperties
         ></RecursionField>
       </TreeBase>
     </React.Fragment>
   );
 });
+
+TreeBase.mixin?.(TreeNodes)
 
 export default TreeNodes;

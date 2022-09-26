@@ -1,5 +1,4 @@
-import { ObjectField } from '@formily/core';
-import { ExpressionScope, useExpressionScope, useField } from '@formily/react';
+import { ExpressionScope, useExpressionScope } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
 import { batch } from '@formily/reactive';
 import { useEffect, useMemo, useRef } from 'react';
@@ -145,10 +144,9 @@ export interface INodeScope<T extends object> extends IRootScope<T> {
 export const RootScope = <T extends object>(
   props: React.PropsWithChildren<{
     nodeKey: React.Key | ((node: NodeLike<T>) => React.Key);
-    getRoot?: () => NodeLike<T>;
+    getRoot: () => NodeLike<T>;
   }>,
 ) => {
-  const field = useField<ObjectField>();
 
   const { nodeKey, children, getRoot } = props;
 
@@ -169,9 +167,7 @@ export const RootScope = <T extends object>(
     const refs = new Map<React.Key, INodeScope<T>>();
     const scope: IRootScope<T> = {
       get $root() {
-        return typeof methods.current.getRoot === 'function'
-          ? methods.current.getRoot()
-          : (field.value as any);
+        return  methods.current.getRoot();
       },
       get $getKey() {
         return (node: NodeLike<T>) => {

@@ -123,6 +123,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component': 'TreeNodes',
           'x-component-props': {
             loadData: '{{loadData}}',
+            checkable: true
           },
           items: {
             type: 'void',
@@ -227,6 +228,11 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           },
 
           properties: {
+            checkedKeys: {
+              type: 'array',
+              "x-read-pretty": true,
+              'x-component': "Input"
+            },
             code: {
               type: 'object',
               'x-component': 'Debug',
