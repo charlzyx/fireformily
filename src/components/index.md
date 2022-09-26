@@ -6,8 +6,6 @@ group:
   order: 0
 ---
 
-## 🎄 TreeNodes - 树
-
 ```tsx
 /**
  * inline: true
@@ -24,7 +22,7 @@ const groups = [
       {
         title: 'Dict',
         subtitle: '远程词典',
-        cover: 'https://gw.alipayobjects.com/zos/antfincdn/AwU0Cv%26Ju/bianzu%2525208.svg',
+        cover: 'https://gw.alipayobjects.com/zos/alicdn/9Ltop8JwH/Breadcrumb.svg',
         link: '/dict'
       },
       {
@@ -75,6 +73,12 @@ const groups = [
         subtitle: '弹窗动作表单',
         cover: 'https://gw.alipayobjects.com/zos/alicdn/3StSdUlSH/Modal.svg',
         link: '/pop-actions'
+      },
+      {
+        title: 'TreeNodes',
+        subtitle: '节点树',
+        cover: 'https://gw.alipayobjects.com/zos/alicdn/Xh-oWqg9k/Tree.svg',
+        link: '/tree-nodes'
       },
     ]
   }
