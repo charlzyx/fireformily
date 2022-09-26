@@ -80,7 +80,13 @@ const groups = [
         subtitle: '搜索建议',
         cover: 'https://gw.alipayobjects.com/zos/alicdn/qtJm4yt45/AutoComplete.svg',
         link: '/suggestion'
-      }
+      },
+      {
+        title: 'TreeNodes',
+        subtitle: '节点树',
+        cover: 'https://gw.alipayobjects.com/zos/alicdn/Xh-oWqg9k/Tree.svg',
+        link: '/tree-nodes'
+      },
     ]
   },
     {
@@ -92,6 +98,12 @@ const groups = [
         subtitle: '远程词典',
         cover: 'https://gw.alipayobjects.com/zos/antfincdn/AwU0Cv%26Ju/bianzu%2525208.svg',
         link: '/dict'
+      },
+      {
+        title: 'TreeBase',
+        subtitle: '基础树',
+        cover: 'https://gw.alipayobjects.com/zos/alicdn/Xh-oWqg9k/Tree.svg',
+        link: '/tree-base'
       },
       {
         title: '响应式编程 in React',

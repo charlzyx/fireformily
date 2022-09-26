@@ -1,5 +1,5 @@
-import { OptionData, PopActions } from 'fireformily';
-import { raw } from '@formily/reactive';
+import { safeStringify, OptionData, PopActions } from 'fireformily';
+
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
@@ -31,29 +31,41 @@ export const flat = (
   const flatten: { parent?: string; code: string; name: string }[] = [];
 
   const MAX = 4;
-  const tree = Object.values(json).map((province, idx) => {
-    if (idx > MAX) return;
-    flatten.push({ code: province.code, name: province.name });
-    province.children = Object.values(province.cities).map((city) => {
-      // 拍平的结构要求 parentId 不能重复, 这个数据里面直辖市是一样的, 搞一下
-      const cityCode =
-        city.code === province.code ? `${city.code}00` : city.code;
+  const tree = Object.values(json)
+    .map((province, idx) => {
+      if (idx > MAX) return;
+      flatten.push({ code: province.code, name: province.name });
+      province.children = Object.values(province.cities)
+        .map((city, cidx) => {
+          if (cidx > MAX) return null as any;
+          // 拍平的结构要求 parentId 不能重复, 这个数据里面直辖市是一样的, 搞一下
+          const cityCode =
+            city.code === province.code ? `${city.code}00` : city.code;
 
-      flatten.push({
-        code: cityCode,
-        name: city.name,
-        parent: province.code,
-      });
-      city.children = Object.entries(city.districts).map(([code, name]) => {
-        const distCode =
-          code === cityCode || code == province.code ? `${code}0000` : code;
-        flatten.push({ code: distCode, name, parent: cityCode });
-        return { code, name } as any;
-      });
-      return city;
-    });
-    return province;
-  });
+          flatten.push({
+            code: cityCode,
+            name: city.name,
+            parent: province.code,
+          });
+
+          city.children = Object.entries(city.districts)
+            .map(([code, name], didx) => {
+              if (didx > MAX) return;
+
+              const distCode =
+                code === cityCode || code == province.code
+                  ? `${code}0000`
+                  : code;
+              flatten.push({ code: distCode, name, parent: cityCode });
+              return { code, name } as any;
+            })
+            .filter(Boolean);
+          return city;
+        })
+        .filter(Boolean);
+      return province;
+    })
+    .filter(Boolean);
   return { flatten, tree };
 };
 
@@ -145,7 +157,7 @@ type TActions = React.ComponentProps<typeof PopActions>['actions'];
 const log = (label: string, x: any) => {
   console.log('LABEL:', label);
   try {
-    console.group(JSON.parse(JSON.stringify(x)));
+    console.group(safeStringify(x));
   } catch (error) {
     console.log('stringify error, origin: ', x);
   }
@@ -168,5 +180,20 @@ export const actions: {
 
       return Promise.resolve();
     },
+  },
+};
+
+export const events = {
+  onCopy: (params: any) => {
+    log('onCopy args', params);
+  },
+  onMove: (params: any) => {
+    log('onMove args', params);
+  },
+  onRemove: (params: any) => {
+    log('onRemove args', params);
+  },
+  onAdd: (params: any) => {
+    log('onAdd args', params);
   },
 };
