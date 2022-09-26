@@ -4,7 +4,7 @@ group:
   order: 1
 ---
 
-## Dict - 远程词典
+## 📕 Dict - 远程词典
 
 formily 自带 `enum` 字段能够满足本地的枚举词典的需求, 但远程的其实更常用一些;
 因此, 规范了一个标准的词典加载器 `registerDictLoader`, 来注册一个内存中的全局

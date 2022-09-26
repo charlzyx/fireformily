@@ -1,26 +1,38 @@
-import { FormItem, Space, Input } from "@formily/antd";
-import { createForm } from "@formily/core";
+import { RobotOutlined } from '@ant-design/icons';
+import { FormItem, Input, Space } from '@formily/antd';
+import { createForm } from '@formily/core';
 import {
   createSchemaField,
   FormProvider,
-  observer,
   useExpressionScope,
-} from "@formily/react";
-import { PopActions, safeStringify, TreeBase, TreeNodes } from "fireformily";
-import { FileAddOutlined, RobotOutlined } from "@ant-design/icons";
-import { Button, Alert } from "antd";
+} from '@formily/react';
+import { Button } from 'antd';
+import { PopActions, safeStringify, TreeBase, TreeNodes } from 'fireformily';
 
-import { actions, loadData } from "./mock";
+import { useState } from 'react';
+import { actions, loadData } from './mock';
 
 const form = createForm();
 
-const Code = (props: { value: any }) => {
+const Debug = (props: { value: any }) => {
+  const [pos, setPos] = useState('');
+  const node = TreeBase.useNodeScope?.(pos.split('-').map(Number));
   return (
-    <div>NOTHING HERE</div>
-    // <details>
-    //   {/* <summary>value of TreeNodes</summary> */}
-    //   <div>{/* <pre>{safeStringify(props.value)}</pre> */}</div>
-    // </details>
+    <div>
+      <div>Input Node Pos</div>
+      <Input
+        placeholder="例如: 2-0-1"
+        value={pos}
+        onChange={(e) => setPos(e.target.value)}
+      ></Input>
+      <Button
+        onClick={() => {
+          console.log('node scope', safeStringify(node));
+        }}
+      >
+        LOOK NODE SCOPE
+      </Button>
+    </div>
   );
 };
 
@@ -29,10 +41,13 @@ const ScopeLogger = () => {
   return (
     <RobotOutlined
       onClick={() => {
-        console.log("---scope.$pos", safeStringify(scope.$pos));
-        console.log("---scope.$index", safeStringify(scope.$index));
-        console.log("---scope.$records.length", safeStringify(scope.$records.length));
-        console.log("---scope.$record", safeStringify(scope.$record));
+        console.log('---scope.$pos', safeStringify(scope.$pos));
+        console.log('---scope.$index', safeStringify(scope.$index));
+        console.log(
+          '---scope.$records.length',
+          safeStringify(scope.$records.length),
+        );
+        console.log('---scope.$record', safeStringify(scope.$record));
         // console.log(safeStringify(scope));
       }}
     />
@@ -47,19 +62,23 @@ const NodeFooter = (props: any) => {
   const scope = useExpressionScope();
 
   return (
-    <div style={{ margin: '8px 0'}}>
+    <div style={{ margin: '8px 0' }}>
       <hr />
       SHOULD BE FOOTER
       <Button
         size="small"
         onClick={() => {
-          return scope.$lookup.children.push({value: scope.$pos.join('+'), label: 'neo'});
+          return scope.$lookup.children.push({
+            value: scope.$pos.join('+'),
+            label: 'neo',
+          });
         }}
         // icon={<FileAddOutlined></FileAddOutlined>}
         type="primary"
       >
-         index: {scope.$index} | length: {scope.$records.length} | pos: {scope.$pos.join(',')}
-         {props.hidden ? 'true' : 'false'}
+        index: {scope.$index} | length: {scope.$records.length} | pos:{' '}
+        {scope.$pos.join(',')}
+        {props.hidden ? 'true' : 'false'}
       </Button>
     </div>
   );
@@ -73,7 +92,7 @@ const SchemaField = createSchemaField({
     TreeBase,
     NodeHeader,
     NodeFooter,
-    Code,
+    Debug,
     ScopeLogger,
     Input,
     FormItem,
@@ -92,94 +111,131 @@ const schema: React.ComponentProps<typeof SchemaField>["schema"] = {
       "x-component": "Space",
       "x-component-props": {
         style: {
-          display: "flex",
-          justifyContent: "space-between",
+          display: 'flex',
+          justifyContent: 'space-between',
         },
       },
+
       properties: {
         tree: {
-          type: "object",
-          "x-decorator": "FormItem",
-          "x-component": "TreeNodes",
-          "x-component-props": {
-            loadData: "{{loadData}}",
+          type: 'object',
+          'x-decorator': 'FormItem',
+          'x-component': 'TreeNodes',
+          'x-component-props': {
+            loadData: '{{loadData}}',
+            checkable: true
           },
-          properties: {
-            // _header: {
-            //   type: "void",
-            //   "x-visible": "{{$index === 0}}",
-            //   "x-component-props": "{{{count: $records && $records.length}}}",
-            //   "x-component": "NodeHeader",
-            // },
-            label: {
-              type: "string",
-              // "x-decorator": "FormItem",
-              // "x-read-pretty": true,
-              "x-component": "Input",
-              "x-component-props": {
-                style:{
-                  width: "200px"
-                }
-              }
-            },
-            moveup: {
-              type: "void",
-              "x-component": "TreeBase.Move",
-              "x-component-props": {
-                to: "up",
+          items: {
+            type: 'void',
+            properties: {
+              // _header: {
+              //   type: "void",
+              //   "x-visible": "{{$index === 0}}",
+              //   "x-component-props": "{{{count: $records && $records.length}}}",
+              //   "x-component": "NodeHeader",
+              // },
+              pos: {
+                type: 'void',
+                'x-component': 'TreeBase.Pos',
               },
-            },
-            movedown: {
-              type: "void",
-              "x-component": "TreeBase.Move",
-              "x-component-props": {
-                to: "down",
+              label: {
+                type: 'string',
+                // "x-decorator": "FormItem",
+                // "x-read-pretty": true,
+                'x-component': 'Input',
+                'x-component-props': {
+                  style: {
+                    width: '200px',
+                  },
+                },
               },
+              moveup: {
+                type: 'void',
+                'x-component': 'TreeBase.Move',
+                'x-component-props': {
+                  to: 'up',
+                },
+              },
+              movedown: {
+                type: 'void',
+                'x-component': 'TreeBase.Move',
+                'x-component-props': {
+                  to: 'down',
+                },
+              },
+              remove: {
+                type: 'void',
+                'x-component': 'TreeBase.Remove',
+              },
+              copy: {
+                type: 'void',
+                'x-component': 'TreeBase.Copy',
+                'x-component-props': {
+                  clone: (old: any) =>
+                    JSON.parse(
+                      JSON.stringify(old, (k, v) => {
+                        if (k === 'value') {
+                          return `clone_${v}`;
+                        } else {
+                          return v;
+                        }
+                      }),
+                    ),
+                },
+              },
+              add: {
+                type: 'void',
+                'x-component': 'TreeBase.Addition',
+                'x-component-props': {
+                  factory: (parent: any) => {
+                    return {
+                      label: `${parent.label}之 ${parent.children.length} 子`,
+                      value: `${parent.value}${parent.children.length}`,
+                    };
+                  },
+                },
+              },
+              // edit: {
+              //   title: "编辑",
+              //   type: "object",
+              //   "x-component": "PopActions",
+              //   "x-component-props": {
+              //     actions: "{{actions.update}}",
+              //   },
+              //   properties: {
+              //     label: {
+              //       type: "string",
+              //       "x-decorator": "FormItem",
+              //       "x-component": "Input",
+              //     },
+              //     value: {
+              //       type: "string",
+              //       "x-decorator": "FormItem",
+              //       "x-component": "Input",
+              //     },
+              //   },
+              // },
+              scopelog: {
+                type: 'void',
+                'x-component': 'ScopeLogger',
+              },
+              // _footer: {
+              //   type: "void",
+              //   "x-hidden": "{{!$last}}",
+              //   "x-component": "NodeFooter",
+              // },
             },
-            // edit: {
-            //   title: "编辑",
-            //   type: "object",
-            //   "x-component": "PopActions",
-            //   "x-component-props": {
-            //     actions: "{{actions.update}}",
-            //   },
-            //   properties: {
-            //     label: {
-            //       type: "string",
-            //       "x-decorator": "FormItem",
-            //       "x-component": "Input",
-            //     },
-            //     value: {
-            //       type: "string",
-            //       "x-decorator": "FormItem",
-            //       "x-component": "Input",
-            //     },
-            //   },
-            // },
-            scopelog: {
-              type: "void",
-              "x-component": "ScopeLogger",
-            },
-            // _footer: {
-            //   type: "void",
-            //   "x-hidden": "{{!$last}}",
-            //   "x-component": "NodeFooter",
-            //   'x-component-props': {
-            //     hidden: "{{!$last}}"
-            //   }
-            // },
+          },
 
-          },
-        },
-        code: {
-          type: "object",
-          "x-component": "Code",
-          "x-reactions": {
-            dependencies: [".tree"],
-            fulfill: {
-              schema: {
-                "x-value": "{{$deps[0]}}",
-              },
+          properties: {
+            checkedKeys: {
+              type: 'array',
+              "x-read-pretty": true,
+              'x-component': "Input"
+            },
+            code: {
+              type: 'object',
+              'x-component': 'Debug',
             },
           },
         },
