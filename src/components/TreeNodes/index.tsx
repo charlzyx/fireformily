@@ -239,7 +239,7 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
                   // HACK: 解决一个删除闪 ROOT 的问题
                   return (
                     <RecursionField
-                      schema={fieldSchema}
+                      schema={fieldSchema.items as any}
                       name={name}
                       onlyRenderProperties
                     ></RecursionField>
@@ -255,6 +255,10 @@ export const TreeNodes = observer((props: MergedTreeProps) => {
           treeData={root}
           loadData={onLoad}
         ></Tree>
+        <RecursionField
+          schema={fieldSchema}
+          onlyRenderProperties
+        ></RecursionField>
       </TreeBase>
     </React.Fragment>
   );

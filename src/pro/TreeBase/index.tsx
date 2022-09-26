@@ -146,10 +146,10 @@ export const useNodeScope = (posLike?: NodePos) => {
   const pos = helper.formatPos(posLike!);
 
   const node = [...(posLike ? pos : $pos)].reduce((parent, at) => {
-    return parent.children?.[at]!;
+    return parent?.children?.[at]!;
   }, $root);
 
-  const nodeScope = $refs.get($getKey(node));
+  const nodeScope = $refs?.get?.($getKey(node));
   return nodeScope;
 };
 

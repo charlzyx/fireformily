@@ -124,114 +124,114 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component-props': {
             loadData: '{{loadData}}',
           },
-          // items: {
-          //   type: 'void',
-
-          // },
-          properties: {
-            // _header: {
-            //   type: "void",
-            //   "x-visible": "{{$index === 0}}",
-            //   "x-component-props": "{{{count: $records && $records.length}}}",
-            //   "x-component": "NodeHeader",
-            // },
-            pos: {
-              type: 'void',
-              'x-component': 'TreeBase.Pos',
-            },
-            label: {
-              type: 'string',
-              // "x-decorator": "FormItem",
-              // "x-read-pretty": true,
-              'x-component': 'Input',
-              'x-component-props': {
-                style: {
-                  width: '200px',
+          items: {
+            type: 'void',
+            properties: {
+              // _header: {
+              //   type: "void",
+              //   "x-visible": "{{$index === 0}}",
+              //   "x-component-props": "{{{count: $records && $records.length}}}",
+              //   "x-component": "NodeHeader",
+              // },
+              pos: {
+                type: 'void',
+                'x-component': 'TreeBase.Pos',
+              },
+              label: {
+                type: 'string',
+                // "x-decorator": "FormItem",
+                // "x-read-pretty": true,
+                'x-component': 'Input',
+                'x-component-props': {
+                  style: {
+                    width: '200px',
+                  },
                 },
               },
-            },
-            moveup: {
-              type: 'void',
-              'x-component': 'TreeBase.Move',
-              'x-component-props': {
-                to: 'up',
-              },
-            },
-            movedown: {
-              type: 'void',
-              'x-component': 'TreeBase.Move',
-              'x-component-props': {
-                to: 'down',
-              },
-            },
-            remove: {
-              type: 'void',
-              'x-component': 'TreeBase.Remove',
-            },
-            copy: {
-              type: 'void',
-              'x-component': 'TreeBase.Copy',
-              'x-component-props': {
-                clone: (old: any) =>
-                  JSON.parse(
-                    JSON.stringify(old, (k, v) => {
-                      if (k === 'value') {
-                        return `clone_${v}`;
-                      } else {
-                        return v;
-                      }
-                    }),
-                  ),
-              },
-            },
-            add: {
-              type: 'void',
-              'x-component': 'TreeBase.Addition',
-              'x-component-props': {
-                factory: (parent: any) => {
-                  return {
-                    label: `${parent.label}之 ${parent.children.length} 子`,
-                    value: `${parent.value}${parent.children.length}`,
-                  };
+              moveup: {
+                type: 'void',
+                'x-component': 'TreeBase.Move',
+                'x-component-props': {
+                  to: 'up',
                 },
               },
+              movedown: {
+                type: 'void',
+                'x-component': 'TreeBase.Move',
+                'x-component-props': {
+                  to: 'down',
+                },
+              },
+              remove: {
+                type: 'void',
+                'x-component': 'TreeBase.Remove',
+              },
+              copy: {
+                type: 'void',
+                'x-component': 'TreeBase.Copy',
+                'x-component-props': {
+                  clone: (old: any) =>
+                    JSON.parse(
+                      JSON.stringify(old, (k, v) => {
+                        if (k === 'value') {
+                          return `clone_${v}`;
+                        } else {
+                          return v;
+                        }
+                      }),
+                    ),
+                },
+              },
+              add: {
+                type: 'void',
+                'x-component': 'TreeBase.Addition',
+                'x-component-props': {
+                  factory: (parent: any) => {
+                    return {
+                      label: `${parent.label}之 ${parent.children.length} 子`,
+                      value: `${parent.value}${parent.children.length}`,
+                    };
+                  },
+                },
+              },
+              // edit: {
+              //   title: "编辑",
+              //   type: "object",
+              //   "x-component": "PopActions",
+              //   "x-component-props": {
+              //     actions: "{{actions.update}}",
+              //   },
+              //   properties: {
+              //     label: {
+              //       type: "string",
+              //       "x-decorator": "FormItem",
+              //       "x-component": "Input",
+              //     },
+              //     value: {
+              //       type: "string",
+              //       "x-decorator": "FormItem",
+              //       "x-component": "Input",
+              //     },
+              //   },
+              // },
+              scopelog: {
+                type: 'void',
+                'x-component': 'ScopeLogger',
+              },
+              // _footer: {
+              //   type: "void",
+              //   "x-hidden": "{{!$last}}",
+              //   "x-component": "NodeFooter",
+              // },
             },
-            // edit: {
-            //   title: "编辑",
-            //   type: "object",
-            //   "x-component": "PopActions",
-            //   "x-component-props": {
-            //     actions: "{{actions.update}}",
-            //   },
-            //   properties: {
-            //     label: {
-            //       type: "string",
-            //       "x-decorator": "FormItem",
-            //       "x-component": "Input",
-            //     },
-            //     value: {
-            //       type: "string",
-            //       "x-decorator": "FormItem",
-            //       "x-component": "Input",
-            //     },
-            //   },
-            // },
-            scopelog: {
-              type: 'void',
-              'x-component': 'ScopeLogger',
-            },
-            // _footer: {
-            //   type: "void",
-            //   "x-hidden": "{{!$last}}",
-            //   "x-component": "NodeFooter",
-            // },
           },
-          // properties: {
-          //   code: {
-          //     type: 'object',
-          //     'x-component': 'Debug',
-          //   },
-          // },
+
+          properties: {
+            code: {
+              type: 'object',
+              'x-component': 'Debug',
+            },
+          },
         },
       },
     },
