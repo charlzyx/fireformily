@@ -96,7 +96,7 @@ export const getOpreations = (fieldNames = FIELD_NAMES) => {
           const isLast = index === pos.length - 1;
           const children = pickChildren(target);
           if (isLast) {
-            children![at].children = list;
+            children![at][fieldNames.children] = list;
           }
           return children![at];
         }, root);
