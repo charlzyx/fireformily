@@ -225,16 +225,7 @@ export const TreeNodes = observer(
     }, [props.fieldNames]);
     const root = field.value;
 
-    const {
-      value,
-      layout,
-      onMove,
-      onRemove,
-      onAdd,
-      onBlur,
-      onCopy,
-      ...others
-    } = props;
+    const { value, layout, onMove, onRemove, onAdd, onCopy, ...others } = props;
 
     const onDrop = (before: NodePos, after: NodePos) => {
       const req = onMove?.(before, after, field.value);
