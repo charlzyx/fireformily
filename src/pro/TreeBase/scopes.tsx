@@ -2,7 +2,7 @@ import { ObjectField } from '@formily/core';
 import { ExpressionScope, useExpressionScope, useField } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
 import { batch } from '@formily/reactive';
-import { useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 
 export type NodePos = string | number[];
 export type NumberPos = number[];
@@ -132,6 +132,14 @@ export interface IRootScope<T extends object> {
   $refs: Map<React.Key, INodeScope<T>>;
 }
 
+export interface IRootContext<T extends object> extends IRootScope<T> {}
+
+export const RootContext = createContext<IRootContext<any> | null>(null);
+
+export const useRoot = () => {
+  return useContext(RootContext);
+};
+
 export interface INodeScope<T extends object> extends IRootScope<T> {
   $pos: number[];
   $record: NodeLike<T> & Pick<INodeScope<T>, '$lookup' | '$index'>;
@@ -188,7 +196,11 @@ export const RootScope = <T extends object>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <ExpressionScope value={value}>{children}</ExpressionScope>;
+  return (
+    <ExpressionScope value={value}>
+      <RootContext.Provider value={value}>{children}</RootContext.Provider>
+    </ExpressionScope>
+  );
 };
 
 export const NodeScope = <T extends object>(props: {

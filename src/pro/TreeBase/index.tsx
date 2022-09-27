@@ -25,7 +25,9 @@ import {
   NumberPos,
   NodeLike,
   helper,
+  useRoot,
 } from './scopes';
+export { useRoot } from './scopes';
 
 export interface ITreeBaseRootProps
   extends React.ComponentProps<typeof RootScope> {
@@ -120,22 +122,17 @@ export const usePos = (pos?: NodePos) => {
   const root = useRoot();
   const ret = ctx
     ? typeof ctx.pos === 'function'
-      ? ctx.pos(root!)
+      ? ctx.pos(root?.$root)
       : ctx.pos
     : pos;
 
   return helper.formatPos(ret!);
 };
 
-export const useRoot = () => {
-  const tree = useTree();
-  return tree?.field?.value;
-};
-
 export const useRecord = (pos?: NodePos) => {
   const root = useRoot();
   const ctx = useContext(TreeBaseNodeContext);
-  return takeNode(root, ctx?.pos ?? pos);
+  return takeNode(root?.$root, ctx?.pos ?? pos);
 };
 
 export const useNodeScope = (posLike?: NodePos) => {
