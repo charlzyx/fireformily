@@ -1,21 +1,21 @@
 import { ObjectField } from '@formily/core';
 import {
+  Observer,
   observer,
   RecursionField,
   useField,
   useFieldSchema,
 } from '@formily/react';
-import { observe, observable, toJS } from '@formily/reactive';
-import { Tree } from 'antd';
+import { toJS, raw } from '@formily/reactive';
+import { Space, Tree } from 'antd';
 import React, {
-  Children,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { TreeBase, NodePos } from '../../pro/TreeBase';
+import { NodePos, TreeBase } from '../../pro/TreeBase';
 import './style.css';
 
 export type TreeNode = {
@@ -38,10 +38,24 @@ const FIELD_NAMES = {
 };
 
 type BaseTreeProps = {
-  value?: TreeNode;
-  onChange?: (neo: BaseTreeProps['value']) => void;
   loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
+  value?: {
+    expanedKeys?: React.Key[];
+    selectedKeys?: React.Key[];
+    checkedKeys?: React.Key[];
+    halfCheckedKeys?: React.Key[];
+    children?: TreeNode[];
+  };
+  onDrop?: (before: NodePos, after: NodePos) => void | Promise<void>;
 };
+
+type AntdTreeProps = React.ComponentProps<typeof Tree>;
+
+export interface TreeNodesProps
+  extends Omit<AntdTreeProps, 'loadData' | 'onDrop' | 'value' | 'onChange'>,
+    BaseTreeProps {
+  layout?: React.ComponentProps<typeof Space>;
+}
 
 const getNodePos = (
   parent: TreeNode,
@@ -50,7 +64,7 @@ const getNodePos = (
   parentPos?: any[],
 ) => {
   if (eqeq(parent, target)) {
-    return [0];
+    return [];
   }
   const pos = parentPos || [];
   if (!Array.isArray(parent.children)) return pos;
@@ -71,25 +85,16 @@ const getNodePos = (
   return pos;
 };
 
-const getParents = (root: TreeNode, target: TreeNode) => {
-  const pos = getNodePos(root, target, eqeqeq);
-
+const getParents = (root: TreeNode, pos: NodePos) => {
   const chain: TreeNode[] = [];
   pos.reduce((parent, idx) => {
-    const current = parent.children[idx];
-    chain.push(current);
+    const current = parent?.children?.[idx]!;
+    chain.push(current!);
     return current;
   }, root);
 
   return chain;
 };
-export interface MergedTreeProps
-  extends Omit<React.ComponentProps<typeof Tree>, 'loadData'>,
-    BaseTreeProps {}
-
-const TreeWrapper = (
-  props: React.PropsWithChildren<{ fieldNames: typeof FIELD_NAMES }>,
-) => {};
 
 const TitleRender = () => {
   const tree = TreeBase.useTree();
@@ -103,54 +108,36 @@ const TitleRender = () => {
   );
 };
 
-const TreeInner = observer((props: MergedTreeProps) => {
-  const { onChange, value, loadData, ...others } = props;
-  const tree = TreeBase.useTree();
+const TreeInner = observer((props: TreeNodesProps) => {
+  const { loadData, treeData, checkedKeys, ...others } = props;
   const root = TreeBase.useRoot();
-  console.log('so much');
+  const tree = TreeBase.useTree();
 
-  const [treeData, setTreeData] = useState<TreeNode[]>(value?.children ?? []);
+  const fieldNames = useMemo(() => {
+    return { ...FIELD_NAMES, ...props.fieldNames };
+  }, [props.fieldNames]);
 
   const methods = useRef({
-    onChange: onChange,
-    loadData: loadData,
+    loadData,
   });
 
-  const refs = useRef({
-    value: value,
-  });
-
-  useEffect(() => {
-    methods.current.loadData = loadData;
-    methods.current.onChange = onChange;
-  }, [loadData, onChange]);
-
-  useEffect(() => {
-    refs.current.value = value;
-  }, [value]);
-
-  useEffect(() => {
-    methods.current.onChange?.({
-      ...value,
-      children: treeData,
-    });
-  }, [treeData, value]);
-
-  const onLoad = useCallback((node: any) => {
-    let chain = getParents(refs.current.value!, node);
-    const last = chain[chain.length - 1];
-    last.loading = true;
-    const promise = methods.current.loadData ?? noop;
-    return promise(chain)
-      .then((list) => {
-        last.children = list;
-        last.loading = false;
-        // setTreeData((pre) => [...pre]);
-      })
-      .finally(() => {
-        last.loading = false;
-      });
-  }, []);
+  const onLoad = useCallback(
+    (node: any) => {
+      const pos = getNodePos(root?.$root!, node, eqeqeq);
+      let chain = getParents(root?.$root!, pos);
+      const last = chain[chain.length - 1];
+      last.loading = true;
+      const promise = methods.current.loadData ?? noop;
+      return promise(chain)
+        .then((list) => {
+          tree?.opreations.appendChildren(pos, root?.$root, list as any);
+        })
+        .finally(() => {
+          last.loading = false;
+        });
+    },
+    [root?.$root, tree?.opreations],
+  );
 
   const onDrop = ({ dragNode, node }: any) => {
     const before = dragNode.pos.split('-').map(Number);
@@ -159,58 +146,153 @@ const TreeInner = observer((props: MergedTreeProps) => {
     const after = node.pos.split('-').map(Number);
     // 这是 antd  tree 的 pos, 最前面有个0需要去掉
     after.shift();
-    const neo = tree?.opreations.move(before, after, root?.$root!);
-    setTreeData(neo?.children as any);
+    const ret = props.onDrop?.(before, after);
+    // thenable
+    if (typeof ret?.then === 'function') {
+      ret.then(() => {
+        tree?.opreations.move(before, after, root?.$root!);
+      });
+    } else {
+      tree?.opreations.move(before, after, root?.$root!);
+    }
 
     console.log('onDrop', { before, after });
   };
+
   return (
     <Tree
-      selectable={false}
+      // selectable={false}
       showLine
+      blockNode
+      className={`${props.className} fireformily-tree`}
       {...others}
+      expandedKeys={root?.$root.expandedKeys ?? []}
+      onExpand={(keys) => {
+        if (!root) return;
+        root.$root.expandedKeys = keys;
+      }}
+      selectedKeys={root?.$root.selectedKeys ?? []}
+      onSelect={(keys) => {
+        if (!root) return;
+        root.$root.selectedKeys = keys;
+      }}
+      checkedKeys={root?.$root.checkedKeys}
+      onCheck={(keys, info) => {
+        if (!root) return;
+        root.$root.checkedKeys = keys;
+        root.$root.halfCheckedKeys = info.halfCheckedKeys;
+      }}
       titleRender={(node) => {
-        const pos = getNodePos({ children: treeData }, node, eqeqeq);
+        if (!root) return null;
+        const pos = getNodePos(root.$root!, node, eqeqeq);
+        // root 不 render 不然会闪
+        if (pos.length === 0) return null;
+
         return (
-          <TreeBase.Node pos={pos} key={pos.join('-')}>
+          <TreeBase.Node
+            pos={pos}
+            getExtra={(treeRoot) => {
+              const {
+                expandedKeys: expandeds = [],
+                selectedKeys: selecteds = [],
+                checkedKeys: checkeds = [],
+                halfCheckedKeys: halfCheckeds = [],
+              } = treeRoot as any;
+              const nodeKey = (node as any)[fieldNames.key];
+              return {
+                checked: checkeds?.includes?.(nodeKey),
+                halfChecked: halfCheckeds?.includes?.(nodeKey),
+                selecteds: selecteds?.includes?.(nodeKey),
+                expanded: expandeds?.includes?.(nodeKey),
+              };
+            }}
+          >
             <TitleRender></TitleRender>
           </TreeBase.Node>
         );
       }}
-      draggable
-      blockNode
       fieldNames={FIELD_NAMES}
       treeData={treeData}
       onDrop={onDrop}
-      loadData={onLoad}
+      loadData={onLoad as any}
     ></Tree>
   );
 });
 
-export const TreeNodes = observer((props: MergedTreeProps) => {
-  const field = useField<ObjectField>();
-  const fieldSchema = useFieldSchema();
-  const fieldNames = { ...FIELD_NAMES, ...props.fieldNames };
+export const TreeNodes = observer(
+  (props: TreeNodesProps & React.ComponentProps<typeof TreeBase>) => {
+    const field = useField<ObjectField>();
+    const fieldSchema = useFieldSchema();
 
-  return (
-    <>
-      <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
+    const fieldNames = useMemo(() => {
+      return { ...FIELD_NAMES, ...props.fieldNames };
+    }, [props.fieldNames]);
+    const root = field.value;
 
-      <TreeBase
-        nodeKey={fieldNames.key}
-        getRoot={() => field.value}
-        fieldNames={fieldNames}
-      >
-        <TreeInner {...props}></TreeInner>
-      </TreeBase>
+    const { value, layout, ...others } = props;
 
-      <RecursionField
-        schema={fieldSchema}
-        name=""
-        onlyRenderProperties
-      ></RecursionField>
-    </>
-  );
-});
+    const onDrop = (before: NodePos, after: NodePos) => {
+      const req = props.onMove?.(before, after, field.value);
+      return req;
+    };
+
+    const methods = useRef({
+      loadData: props.loadData,
+    });
+
+    useEffect(() => {
+      if (field.value.children) return;
+      const promise = methods.current.loadData ?? noop;
+
+      promise([]).then((rootList) => {
+        field.setState((s) => {
+          s.value.children = rootList;
+        });
+      });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    useEffect(() => {
+      field.setState((s) => {
+        s.value.expandKeys = value?.expanedKeys ?? [];
+        s.value.checkedKeys = value?.checkedKeys ?? [];
+        s.value.halfCheckedKeys = value?.halfCheckedKeys ?? [];
+        s.value.selectedKeys = value?.selectedKeys ?? [];
+      });
+    }, [
+      field,
+      value?.checkedKeys,
+      value?.expanedKeys,
+      value?.halfCheckedKeys,
+      value?.selectedKeys,
+    ]);
+
+    let treeData = root.children?.slice() ?? [];
+
+    if (root.__dirty) {
+      treeData = raw(root).children.slice();
+      root.__dirty = false;
+    }
+
+    return (
+      <React.Fragment>
+        <TreeBase getRoot={() => field.value} fieldNames={fieldNames}>
+          <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
+          <Space size="small" {...layout}>
+            <TreeInner
+              {...others}
+              onDrop={onDrop}
+              treeData={treeData}
+            ></TreeInner>
+            <RecursionField
+              schema={fieldSchema}
+              name=""
+              onlyRenderProperties
+            ></RecursionField>
+          </Space>
+        </TreeBase>
+      </React.Fragment>
+    );
+  },
+);
 
 TreeBase.mixin(TreeNodes);

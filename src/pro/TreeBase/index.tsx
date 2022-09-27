@@ -5,38 +5,24 @@ import {
   ToTopOutlined,
 } from '@ant-design/icons';
 import { ObjectField } from '@formily/core';
-import {
-  JSXComponent,
-  observer,
-  Schema,
-  useExpressionScope,
-  useField,
-  useFieldSchema,
-} from '@formily/react';
+import { JSXComponent, Schema, useField, useFieldSchema } from '@formily/react';
 import { Button, Popconfirm } from 'antd';
 import React, { createContext, useContext, useMemo } from 'react';
 import {
-  INodeScope,
-  FIELD_NAMES,
-  IRootScope,
-  NodeScope,
-  useNode,
-  useRoot,
-  RootScope,
-  PosLike,
-  NodePos,
-  NodeLike,
   getHelper,
   getOpreations,
+  NodeLike,
+  NodePos,
+  NodeScope,
+  PosLike,
+  RootScope,
+  useNode,
+  useRoot,
 } from './scopes';
-
-export { NodePos, PosLike } from './scopes';
+export type { NodeLike, NodePos } from './scopes';
 
 export interface ITreeBaseRootProps
-  extends Pick<
-    React.ComponentProps<typeof RootScope>,
-    'getRoot' | 'fieldNames' | 'nodeKey'
-  > {
+  extends React.ComponentProps<typeof RootScope> {
   disabled?: boolean;
   onAdd?: (
     pos: NodePos,
@@ -73,7 +59,7 @@ export interface ITreeBaseRootContext {
 
 type AntdButtonProps = React.ComponentProps<typeof Button>;
 export interface ITreeBaseNodeProps
-  extends Pick<React.ComponentProps<typeof NodeScope>, 'getNode'> {
+  extends Pick<React.ComponentProps<typeof NodeScope>, 'getNode' | 'getExtra'> {
   pos: PosLike | ((root: NodeLike) => PosLike);
 }
 
@@ -141,8 +127,8 @@ export const usePos = (pos?: PosLike) => {
 export const usePosNode = (pos?: NodePos) => {
   const tree = useTree();
   const root = useRoot();
-  const nodeKey = root?.$getKey(tree?.helper.getNodeByPos(pos!, root?.$root!));
-  const node = useNode(nodeKey);
+  const findNode = tree?.helper.getNodeByPos(pos!, root?.$root!);
+  const node = useNode(findNode?.[root?.fieldNames?.key || '']);
   return node;
 };
 
@@ -153,7 +139,7 @@ type ComposedTreeBase = React.FC<React.PropsWithChildren<ITreeBaseRootProps>> &
   };
 
 const TreeBasic: ComposedTreeBase = (props) => {
-  const { fieldNames, getRoot, nodeKey } = props;
+  const { fieldNames, getRoot } = props;
   const field = useField<ObjectField>();
   const schema = useFieldSchema();
   const ctx = useMemo(() => {
@@ -166,7 +152,7 @@ const TreeBasic: ComposedTreeBase = (props) => {
     };
   }, [field, fieldNames, props, schema]);
   return (
-    <RootScope fieldNames={fieldNames} getRoot={getRoot} nodeKey={nodeKey}>
+    <RootScope fieldNames={fieldNames} getRoot={getRoot}>
       <TreeBaseContext.Provider value={ctx}>
         {props.children}
       </TreeBaseContext.Provider>
@@ -175,11 +161,11 @@ const TreeBasic: ComposedTreeBase = (props) => {
 };
 
 const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
-  const { pos, children, getNode } = props;
+  const { pos, children, getNode, getExtra } = props;
   const takePosFn = typeof pos === 'function' ? pos : () => pos;
   return (
     <TreeBaseNodeContext.Provider value={props}>
-      <NodeScope getPos={takePosFn} getNode={getNode}>
+      <NodeScope getPos={takePosFn} getNode={getNode} getExtra={getExtra}>
         {children}
       </NodeScope>
     </TreeBaseNodeContext.Provider>
@@ -188,7 +174,7 @@ const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
 
 const TreeBasePos: typeof TreeBasic['Pos'] = (props) => {
   const pos = usePos();
-  return <span {...props}> {pos?.join('-')} </span>;
+  return <span {...props}>#{pos?.join('-')} </span>;
 };
 
 const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
@@ -289,6 +275,7 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
   const self = useField();
   if (!tree) return null;
   if (tree.field.pattern !== 'editable') return null;
+  if (!node?.$extra?.expanded) return null;
 
   return (
     <Button
@@ -311,18 +298,20 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
         // thenable
         if (typeof req?.then === 'function') {
           req.then((neo) => {
-            tree.opreations.append(
-              before,
-              neo ?? factory?.(node.$lookup),
-              node.$root,
-              method,
-            );
+            setTimeout(() => {
+              tree.opreations.append(
+                before,
+                node.$root,
+                neo ?? factory?.(node.$record),
+                method,
+              );
+            });
           });
         } else {
           tree.opreations.append(
             before,
-            factory?.(node.$lookup) || {},
             node.$root,
+            factory?.(node.$record) || {},
             method,
           );
         }
@@ -343,9 +332,9 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
 
   return (
     <Button
-      type="dashed"
+      type="link"
       size="small"
-      icon={<PlusOutlined></PlusOutlined>}
+      icon={<CopyOutlined></CopyOutlined>}
       {...others}
       onClick={(e) => {
         e.stopPropagation();
@@ -364,12 +353,12 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
           req.then((neo) => {
             tree.opreations.copy(
               before,
-              neo ?? clone?.(node.$lookup),
+              neo ?? clone?.(node.$record),
               node.$root,
             );
           });
         } else {
-          tree.opreations.copy(before, clone?.(node.$lookup) || {}, node.$root);
+          tree.opreations.copy(before, clone?.(node.$record) || {}, node.$root);
         }
       }}
     >
