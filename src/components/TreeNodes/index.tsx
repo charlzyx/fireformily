@@ -119,12 +119,13 @@ const TreeInner = observer((props: TreeNodesProps) => {
 
   const onLoad = useCallback(
     (node: any) => {
+      if (!methods.current.loadData) return;
       const pos = getNodePos(root?.$root!, node, eqeqeq);
       let chain = getParents(root?.$root!, pos);
       const last = chain[chain.length - 1];
       last.loading = true;
-      const promise = methods.current.loadData ?? noop;
-      return promise(chain)
+      return methods.current
+        .loadData(chain)
         .then((list) => {
           tree?.opreations.appendChildren(pos, root?.$root, list as any);
         })
@@ -245,30 +246,30 @@ export const TreeNodes = observer(
     });
 
     useEffect(() => {
+      // not re load
       if (field.value.children) return;
-      const promise = methods.current.loadData ?? noop;
+      if (!methods.current.loadData) return;
 
-      promise([]).then((rootList) => {
+      methods.current.loadData([]).then((rootList) => {
         field.setState((s) => {
           s.value.children = rootList;
         });
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
     useEffect(() => {
+      if (!field) return;
+      // set default
       field.setState((s) => {
+        s.value.children = value?.children ?? [];
         s.value.expandKeys = value?.expanedKeys ?? [];
         s.value.checkedKeys = value?.checkedKeys ?? [];
         s.value.halfCheckedKeys = value?.halfCheckedKeys ?? [];
         s.value.selectedKeys = value?.selectedKeys ?? [];
       });
-    }, [
-      field,
-      value?.checkedKeys,
-      value?.expanedKeys,
-      value?.halfCheckedKeys,
-      value?.selectedKeys,
-    ]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [field]);
 
     let treeData = root.children?.slice() ?? [];
 
