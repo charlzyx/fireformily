@@ -1,138 +1,213 @@
 import { ObjectField } from '@formily/core';
-import { ExpressionScope, useExpressionScope, useField } from '@formily/react';
+import { ExpressionScope, useField } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
 import { batch } from '@formily/reactive';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, createContext, useContext } from 'react';
 
-export type NodePos = string | number[];
-export type NumberPos = number[];
+export type PosLike = string | number[];
+export type NodePos = number[];
 
-export type NodeLike<T extends object = object> = T & {
-  children?: NodeLike<T>[];
+export const FIELD_NAMES = {
+  title: 'label',
+  key: 'value',
+  children: 'children',
 };
 
-const defaultNodeKey = (x: any) => x?.key;
-
-export const helper = {
-  formatPos: (p: NodePos): NumberPos => {
-    if (!p) return [] as number[];
-    return typeof p === 'string' ? p.split('-').map(Number) : p;
-  },
-  posToPath: (pos: number[] = []) => {
-    return pos.reduce((p, item) => {
-      return p ? `${p}.children.${item}` : `children.${item}`;
-    }, '');
-  },
-  getNodeByPos: <T extends object>(pos: number[], root: NodeLike<T>) => {
-    if (!pos || !root) return undefined;
-    const ans = pos.reduce((parent: any, idx: number) => {
-      const item = parent?.children?.[idx];
-      return item;
-    }, root);
-    return ans;
-  },
+export const markDirty = <T extends any>(o: T, bool: boolean) => {
+  // setTimeout(() => {
+  (o as any).__dirty = true;
+  // });
+  return o;
 };
 
-export const opreations = {
-  remove: (posLike: NodePos, root: NodeLike) => {
-    if (!root || !posLike) return;
-    const pos = helper.formatPos(posLike);
-    console.log('before remove', JSON.stringify(root, null, 2));
-    pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === pos.length - 1;
-      if (isLast) {
-        target.children?.splice(at, 1);
-        console.log('after remove', JSON.stringify(root, null, 2));
-      }
-      return target.children![at]!;
-    }, root);
-  },
-  copy: (
-    posLike: NodePos,
-    root: NodeLike,
-    clone: (old: NodeLike) => NodeLike,
-  ) => {
-    if (!root || !posLike) return;
-    const pos = helper.formatPos(posLike);
-    pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === pos.length - 1;
-      if (isLast) {
-        const old = target.children?.[at];
-        const neo = clone(old!);
-        target.children?.splice(at + 1, 0, neo);
-      }
-      return target.children![at]!;
-    }, root);
-  },
-  add: (posLike: NodePos, root: NodeLike, neo: NodeLike) => {
-    if (!root || !posLike) return;
-    const pos = helper.formatPos(posLike);
-    pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === pos.length - 1;
-      if (isLast) {
-        const me = target.children?.[at];
-        if (!me) return target;
-        if (!me.children) {
-          (me as any).loading = true;
-          me.children = [];
-          (me as any).loading = false;
+export type NodeLike<T extends object = object> = {
+  [childField: string]: NodeLike<T>;
+} & T;
+
+export const getHelper = (fieldNames = FIELD_NAMES) => {
+  const pickChildren = (o: any): undefined | any[] => o?.[fieldNames.children];
+
+  return {
+    formatPos: (p?: PosLike): NodePos => {
+      if (!p) return [] as number[];
+      return typeof p === 'string' ? p.split('-').map(Number) : p;
+    },
+    posToPath: (pos: number[] = []) => {
+      return pos.reduce((p, item) => {
+        return p
+          ? `${p}.${fieldNames.children}.${item}`
+          : `${fieldNames.children}.${item}`;
+      }, '');
+    },
+    getNodeByPos: <T extends object>(pos: number[], root: NodeLike<T>) => {
+      if (!pos || !root) return undefined;
+      const ans = pos.reduce((parent: any, idx: number) => {
+        const arr = pickChildren(parent);
+        return arr?.[idx];
+      }, root);
+      return ans;
+    },
+  };
+};
+
+export const getOpreations = (fieldNames = FIELD_NAMES) => {
+  const helper = getHelper(fieldNames);
+  const pickChildren = (o: any): undefined | any[] => o?.[fieldNames.children];
+  return {
+    remove: (posLike: PosLike, root: NodeLike) => {
+      if (!root || !posLike) return;
+      const pos = helper.formatPos(posLike);
+      batch(() => {
+        pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
+          const isLast = index === pos.length - 1;
+          if (isLast) {
+            pickChildren(target)?.splice(at, 1);
+          }
+          // shallow clone
+          return pickChildren(target)![at];
+        }, root);
+      });
+      markDirty(root, true);
+      return root;
+    },
+    copy: (posLike: PosLike, neo: NodeLike, root: NodeLike) => {
+      if (!root || !posLike) return;
+      const pos = helper.formatPos(posLike);
+      batch(() => {
+        pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
+          const isLast = index === pos.length - 1;
+          const children = pickChildren(target);
+
+          if (isLast) {
+            children?.splice(at + 1, 0, neo);
+          }
+          // shallow clone
+          return children![at];
+        }, root);
+      });
+      markDirty(root, true);
+      return root;
+    },
+    appendChildren: (posLike: PosLike, root: NodeLike, list: NodeLike[]) => {
+      if (!root || !posLike) return;
+      const pos = helper.formatPos(posLike);
+      batch(() => {
+        pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
+          const isLast = index === pos.length - 1;
+          const children = pickChildren(target);
+          if (isLast) {
+            children![at].children = list;
+          }
+          return children![at];
+        }, root);
+      });
+      markDirty(root, true);
+      return root;
+    },
+    append: (
+      posLike: PosLike,
+      root: NodeLike,
+      neo: NodeLike,
+      method: 'unshift' | 'push' = 'push',
+    ) => {
+      if (!root || !posLike) return;
+      const pos = helper.formatPos(posLike);
+      batch(() => {
+        pos.reduce((target: NodeLike, at: number, index: number): NodeLike => {
+          const isLast = index === pos.length - 1;
+          const children = pickChildren(target);
+          if (isLast) {
+            const me = children?.[at];
+            if (!me[fieldNames.children]) {
+              me[fieldNames.children] = [];
+            }
+            const myChildren = pickChildren(me);
+            console.log('myChildren', myChildren);
+            if (method === 'push') {
+              myChildren!.push(neo);
+            } else {
+              myChildren!.unshift(neo);
+            }
+            return me;
+          }
+          return children![at];
+        }, root);
+      });
+      console.log('markddirty');
+      markDirty(root, true);
+      return root;
+    },
+    move: (before: NodePos, after: NodePos, root: NodeLike) => {
+      if (JSON.stringify(before) === JSON.stringify(after)) return root;
+
+      batch(() => {
+        const sameLevel =
+          before.length === after.length &&
+          before.slice(0, before.length - 1).join('_') ===
+            after.slice(0, after.length - 1).join('_');
+        if (sameLevel) {
+          before.reduce(
+            (target: NodeLike, at: number, index: number): NodeLike => {
+              const isLast = index === before.length - 1;
+              const children = pickChildren(target);
+
+              if (isLast) {
+                const formIdx = before[before.length - 1];
+                const toIdx = after[after.length - 1];
+                const fixToIndex = toIdx > formIdx ? toIdx + 1 : toIdx;
+                const pick = children!.splice(formIdx, 1)[0];
+                children!.splice(fixToIndex, 0, pick);
+              }
+              return children![at];
+            },
+            root,
+          );
+        } else {
+          let pick = null as NodeLike | null;
+
+          before.reduce(
+            (target: NodeLike, at: number, index: number): NodeLike => {
+              const isLast = index === before.length - 1;
+              const children = pickChildren(target);
+              if (isLast) {
+                pick = children!.splice(at, 1)[0];
+              }
+              return children![at];
+            },
+            root,
+          );
+          if (!pick) return root;
+
+          after.reduce(
+            (target: NodeLike, at: number, index: number): NodeLike => {
+              const isLast = index === after.length - 1;
+              const children = pickChildren(target);
+
+              if (isLast) {
+                children!.splice(at, 0, pick);
+              }
+              return children![at];
+            },
+            root,
+          );
         }
-        me.children.push(neo);
-        // me.children?.splice(at + 1, 0, neo);
-        return me;
-      }
-      return target.children![at]!;
-    }, root);
-  },
-  move: (before: number[], after: number[], root: NodeLike) => {
-    if (JSON.stringify(before) === JSON.stringify(after)) return;
-
-    let from = {
-      parent: null as NodeLike | null,
-      idx: -1,
-    };
-
-    before.reduce((target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === before.length - 1;
-      if (isLast) {
-        from.parent = target as any;
-        from.idx = at;
-      }
-      return target.children![at]!;
-    }, root);
-    // console.log(
-    //   'before.after',
-    //   JSON.stringify({ before, after, tmp: (tmp as any).label }),
-    // );
-    let to = {
-      parent: null as NodeLike | null,
-      idx: -1,
-    };
-
-    after.reduce((target: NodeLike, at: number, index: number): NodeLike => {
-      const isLast = index === after.length - 1;
-      if (isLast) {
-        to.parent = target;
-        to.idx = at;
-      }
-      return target.children![at]!;
-    }, root);
-
-    batch(() => {
-      const moving = from.parent?.children![from.idx];
-      from.parent?.children?.splice(from.idx, 1);
-      to.parent?.children!.splice(to.idx, 0, moving!);
-    });
-  },
+      });
+      markDirty(root, true);
+      return root;
+    },
+  };
 };
 
 export interface IRootScope<T extends object> {
   $root: NodeLike<T>;
-  $getKey: (node: NodeLike<T>) => React.Key;
+  fieldNames: typeof FIELD_NAMES;
   $refs: Map<React.Key, INodeScope<T>>;
 }
 
-export interface INodeScope<T extends object> extends IRootScope<T> {
+export interface IRootContext<T extends object> extends IRootScope<T> {}
+
+export interface INodeScope<T extends object> {
+  $root: NodeLike<T>;
   $pos: number[];
   $record: NodeLike<T> & Pick<INodeScope<T>, '$lookup' | '$index'>;
   $lookup: INodeScope<T>['$record'] | NodeLike<T>;
@@ -140,30 +215,47 @@ export interface INodeScope<T extends object> extends IRootScope<T> {
   $index: number;
   $parents: NodeLike<T>[];
   $path: string;
+  $extra?: Record<string, any> & {
+    expanded?: boolean;
+    checked?: boolean;
+    selected?: boolean;
+    halfChecked?: boolean;
+  };
 }
+
+export interface INodeContext<T extends object> extends INodeScope<T> {}
+
+const RootContext = createContext<IRootContext<any> | null>(null);
+const NodeContext = createContext<INodeContext<any> | null>(null);
+
+export const useRoot = () => {
+  const ctx = useContext(RootContext);
+  return ctx;
+};
+
+export const useNode = (nodeKey?: React.Key) => {
+  const root = useRoot();
+  const ctx = useContext(NodeContext);
+  return nodeKey ? root?.$refs.get(nodeKey) ?? ctx : ctx;
+};
 
 export const RootScope = <T extends object>(
   props: React.PropsWithChildren<{
-    nodeKey: React.Key | ((node: NodeLike<T>) => React.Key);
-    getRoot?: () => NodeLike<T>;
+    getRoot: () => NodeLike<T>;
+    fieldNames?: typeof FIELD_NAMES;
   }>,
 ) => {
   const field = useField<ObjectField>();
 
-  const { nodeKey, children, getRoot } = props;
+  const { children, getRoot } = props;
+
+  const fieldNames = useMemo(() => {
+    return { ...FIELD_NAMES, ...props.fieldNames };
+  }, [props.fieldNames]);
 
   const methods = useRef({
-    nodeKey,
     getRoot,
   });
-
-  useEffect(() => {
-    methods.current.nodeKey = props.nodeKey;
-  }, [props.nodeKey]);
-
-  useEffect(() => {
-    methods.current.getRoot = props.getRoot;
-  }, [props.getRoot]);
 
   const value = useMemo(() => {
     const refs = new Map<React.Key, INodeScope<T>>();
@@ -173,12 +265,8 @@ export const RootScope = <T extends object>(
           ? methods.current.getRoot()
           : (field.value as any);
       },
-      get $getKey() {
-        return (node: NodeLike<T>) => {
-          return typeof nodeKey === 'function'
-            ? nodeKey(node)
-            : (node as any)?.[nodeKey];
-        };
+      get fieldNames() {
+        return fieldNames;
       },
       get $refs() {
         return refs;
@@ -188,15 +276,21 @@ export const RootScope = <T extends object>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <ExpressionScope value={value}>{children}</ExpressionScope>;
+  return (
+    <RootContext.Provider value={value}>
+      <ExpressionScope value={value}>{children}</ExpressionScope>
+    </RootContext.Provider>
+  );
 };
 
-export const NodeScope = <T extends object>(props: {
-  getPos: (root: NodeLike<T>) => NodePos;
-  getNode?: (root: NodeLike<T>) => NodeLike<T>;
-  children: React.ReactNode | ((scope: INodeScope<T>) => React.ReactNode);
-}) => {
-  const root = useExpressionScope() as IRootScope<T>;
+export const NodeScope = <T extends object>(
+  props: React.PropsWithChildren<{
+    getPos: (root: NodeLike<T>) => PosLike;
+    getNode?: (root: NodeLike<T>) => NodeLike<T>;
+    getExtra?: (root: NodeLike<T>) => INodeScope<T>['$extra'];
+  }>,
+) => {
+  const root = useRoot();
 
   const { getPos, getNode, children } = props;
 
@@ -213,41 +307,30 @@ export const NodeScope = <T extends object>(props: {
     methods.current.getNode = props.getNode;
   }, [props.getNode]);
 
-  const getKey = root?.$getKey || defaultNodeKey;
-
   const value = useMemo(() => {
-    if (!root?.$root) return {} as any;
-    const refs = root.$refs!;
+    if (!root) return {} as any;
+    const helper = getHelper(root.fieldNames);
+    const { $refs, fieldNames } = root;
+
     const scope: INodeScope<T> = {
-      get $getKey() {
-        return root.$getKey;
-      },
-      get $refs() {
-        return root.$refs;
-      },
       get $root() {
         return root.$root;
       },
       get $pos() {
-        const ret = methods.current?.getPos?.(root.$root!);
-
-        const ans = ret
-          ? typeof ret === 'string'
-            ? ret.split('-').map(Number)
-            : ret
-          : [];
-        return ans;
+        const ret = methods.current.getPos(root.$root);
+        return helper.formatPos(ret);
       },
-
       get $path() {
         return helper.posToPath(this.$pos);
       },
-
+      get $extra() {
+        return props.getExtra?.(this.$root);
+      },
       get $record() {
         const record =
-          typeof methods.current?.getNode === 'function'
-            ? methods.current.getNode(root.$root!)
-            : helper.getNodeByPos(this.$pos!, this.$root!);
+          typeof methods.current.getNode === 'function'
+            ? methods.current.getNode(root.$root)
+            : helper.getNodeByPos(this.$pos, this.$root);
 
         const isRoot = record === this.$root;
 
@@ -272,18 +355,15 @@ export const NodeScope = <T extends object>(props: {
       get $lookup() {
         // 去掉最后一个
         const parentPos = this.$pos?.slice(0, this.$pos.length - 1) || [];
-        // console.log('parentPos', parentPos, 'now', this.$pos);
         const myParent = helper.getNodeByPos(parentPos, this.$root);
 
         const lookup = myParent
-          ? this.$refs.get(this.$getKey(myParent))?.$record
+          ? root.$refs.get(myParent?.[fieldNames.key])?.$record
           : undefined;
-        // const lookup = refs.get(parentPos.join('_'))?.$record;
-        // console.log('lookup', lookup, lookup?.children);
         return lookup ?? this.$root;
       },
       get $records() {
-        return this.$lookup?.children ?? [];
+        return (this.$lookup?.[fieldNames.children] as any) ?? [];
       },
       get $parents() {
         const pos = Array.isArray(this.$pos) ? [...this.$pos] : [];
@@ -291,7 +371,8 @@ export const NodeScope = <T extends object>(props: {
 
         pos.reduce((parent, at) => {
           parents.push(parent);
-          return parent.children?.[at]!;
+          const child = parent[fieldNames.children][at];
+          return child;
         }, this.$root);
         return parents;
       },
@@ -299,14 +380,14 @@ export const NodeScope = <T extends object>(props: {
         return this.$pos ? this.$pos[this.$pos.length - 1] : -1;
       },
     };
-    refs!.set(getKey(scope.$record!), scope);
+    $refs!.set((scope.$record as any)?.[fieldNames.key], scope);
     return scope;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <ExpressionScope value={value}>
-      {typeof children === 'function' ? children(value) : children}
-    </ExpressionScope>
+    <NodeContext.Provider value={value}>
+      <ExpressionScope value={value}>{children}</ExpressionScope>
+    </NodeContext.Provider>
   );
 };
