@@ -16,7 +16,7 @@ const form = createForm();
 
 const Debug = (props: { value: any }) => {
   const [pos, setPos] = useState('');
-  const node = TreeBase.useNodeScope?.(pos.split('-').map(Number));
+  const node = TreeBase.usePosNode?.(pos.split('-').map(Number));
   return (
     <div>
       <div>Input Node Pos</div>
@@ -89,7 +89,6 @@ const SchemaField = createSchemaField({
     TreeNodes,
     Space,
     PopActions,
-    TreeBase,
     NodeHeader,
     NodeFooter,
     Debug,
@@ -135,7 +134,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               // },
               pos: {
                 type: 'void',
-                'x-component': 'TreeBase.Pos',
+                'x-component': 'TreeNodes.Pos',
               },
               label: {
                 type: 'string',
@@ -150,25 +149,25 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               },
               moveup: {
                 type: 'void',
-                'x-component': 'TreeBase.Move',
+                'x-component': 'TreeNodes.Move',
                 'x-component-props': {
                   to: 'up',
                 },
               },
               movedown: {
                 type: 'void',
-                'x-component': 'TreeBase.Move',
+                'x-component': 'TreeNodes.Move',
                 'x-component-props': {
                   to: 'down',
                 },
               },
               remove: {
                 type: 'void',
-                'x-component': 'TreeBase.Remove',
+                'x-component': 'TreeNodes.Remove',
               },
               copy: {
                 type: 'void',
-                'x-component': 'TreeBase.Copy',
+                'x-component': 'TreeNodes.Copy',
                 'x-component-props': {
                   clone: (old: any) =>
                     JSON.parse(
@@ -184,7 +183,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               },
               add: {
                 type: 'void',
-                'x-component': 'TreeBase.Addition',
+                'x-component': 'TreeNodes.Append',
                 'x-component-props': {
                   factory: (parent: any) => {
                     return {
