@@ -5,24 +5,38 @@ import {
   useField,
   useFieldSchema,
 } from '@formily/react';
-import { raw } from '@formily/reactive';
 import { Space, Tree } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { NodePos, TreeBase } from '../../pro/TreeBase';
+import { TreeBase } from '../../pro/TreeBase';
 import './style.css';
 
 export type TreeNode = {
   label?: string;
   value?: React.Key;
-  key?: React.Key;
   isLeaf?: boolean;
-  __init?: boolean;
-  loading?: boolean;
   children?: TreeNode[];
+  loading?: boolean;
+  key?: React.Key;
+  __init?: boolean;
 };
 
-const noop = () => Promise.resolve([] as TreeNode[]);
-const eqeqeq = (a: TreeNode, b: TreeNode) => a.value === b.value;
+type AntdTreeProps = React.ComponentProps<typeof Tree>;
+
+type TreeNodesProps = React.ComponentProps<typeof TreeBase> &
+  Omit<
+    AntdTreeProps,
+    'loadData' | 'onDrop' | 'value' | 'onChange' | 'fieldNames'
+  > & {
+    loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
+    value?: {
+      expanedKeys?: React.Key[];
+      selectedKeys?: React.Key[];
+      checkedKeys?: React.Key[];
+      halfCheckedKeys?: React.Key[];
+      children?: TreeNode[];
+    };
+    layout?: React.ComponentProps<typeof Space>;
+  };
 
 const FIELD_NAMES = {
   title: 'label',
@@ -30,131 +44,80 @@ const FIELD_NAMES = {
   children: 'children',
 };
 
-type BaseTreeProps = React.ComponentProps<typeof TreeBase> & {
-  loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
-  value?: {
-    expanedKeys?: React.Key[];
-    selectedKeys?: React.Key[];
-    checkedKeys?: React.Key[];
-    halfCheckedKeys?: React.Key[];
-    children?: TreeNode[];
-  };
-  layout?: React.ComponentProps<typeof Space>;
-  // 内部
-  onDrop?: (before: NodePos, after: NodePos) => void | Promise<void>;
-};
-
-type AntdTreeProps = React.ComponentProps<typeof Tree>;
-
-export interface TreeNodesProps
-  extends Omit<
-      AntdTreeProps,
-      'loadData' | 'onDrop' | 'value' | 'onChange' | 'fieldNames'
-    >,
-    BaseTreeProps {}
-
-const getNodePos = (
-  parent: TreeNode,
-  target: TreeNode,
-  eqeq: (a: TreeNode, b: TreeNode) => boolean,
-  parentPos?: any[],
-) => {
-  if (eqeq(parent, target)) {
-    return [];
-  }
-  const pos = parentPos || [];
-  if (!Array.isArray(parent.children)) return pos;
-
-  for (let index = 0; index < parent.children.length; index++) {
-    const item = parent.children[index];
-    if (item === undefined) continue;
-    if (eqeq(item, target)) {
-      pos.unshift(index);
-      return pos;
-    }
-    const inMyChild = getNodePos(item, target, eqeq, pos);
-    if (inMyChild.length > 0) {
-      pos.unshift(index);
-      return pos;
-    }
-  }
-  return pos;
-};
-
-const getParents = (root: TreeNode, pos: NodePos) => {
-  const chain: TreeNode[] = [];
-  pos.reduce((parent, idx) => {
-    const current = parent?.children?.[idx]!;
-    chain.push(current!);
-    return current;
-  }, root);
-
-  return chain;
-};
-
 const TitleRender = () => {
   const tree = TreeBase.useTree();
   const node = TreeBase.useNode();
 
   return (
-    <RecursionField
-      name={node?.$path}
-      schema={tree?.schema.items as any}
-    ></RecursionField>
+    <div
+      onClick={(e) => {
+        if ((e?.target as any)?.tagName === 'INPUT') {
+          e.stopPropagation();
+        }
+      }}
+    >
+      <RecursionField
+        name={node?.$path}
+        schema={tree?.schema.items as any}
+      ></RecursionField>
+    </div>
   );
 };
 
-const TreeInner = observer((props: TreeNodesProps) => {
-  const { loadData, treeData, checkedKeys, ...others } = props;
-  const root = TreeBase.useRoot();
-  const tree = TreeBase.useTree();
+const TreeInner = observer((props: any) => {
+  const { loadData, checkedKeys, fieldNames, children, ...others } = props;
 
-  const fieldNames = useMemo(() => {
-    return { ...FIELD_NAMES, ...props.fieldNames };
-  }, [props.fieldNames]);
+  const helper = TreeBase.useHelper();
+  const field = useField<ObjectField>();
 
   const methods = useRef({
     loadData,
+    onDrop: props.onDrop,
   });
 
   const onLoad = useCallback(
     (node: any) => {
       if (!methods.current.loadData) return;
-      const pos = getNodePos(root?.$root!, node, eqeqeq);
-      let chain = getParents(root?.$root!, pos);
+      const pos = helper.getPos(node);
+      let chain = helper.posToParents(pos!);
       const last = chain[chain.length - 1];
+      console.log('wtff', pos, last, chain);
       last.loading = true;
       return methods.current
         .loadData(chain)
-        .then((list) => {
-          tree?.opreations.appendChildren(pos, root?.$root, list as any);
+        .then((list: any) => {
+          console.log('ans', list);
+          helper.append(pos!, 'replace', ...list);
         })
         .finally(() => {
           last.loading = false;
         });
     },
-    [root?.$root, tree?.opreations],
+    [helper],
   );
 
-  const onDrop = ({ dragNode, node }: any) => {
-    const before = dragNode.pos.split('-').map(Number);
-    // 这是 antd  tree 的 pos, 最前面有个0需要去掉
-    before.shift();
-    const after = node.pos.split('-').map(Number);
-    // 这是 antd  tree 的 pos, 最前面有个0需要去掉
-    after.shift();
-    const ret = props.onDrop?.(before, after);
-    // thenable
-    if (typeof ret?.then === 'function') {
-      ret.then(() => {
-        tree?.opreations.move(before, after, root?.$root!);
-      });
-    } else {
-      tree?.opreations.move(before, after, root?.$root!);
-    }
+  const onDrop = useCallback(
+    ({ dragNode, node }: any) => {
+      const before = dragNode.pos.split('-').map(Number);
+      // 这是 antd  tree 的 pos, 最前面有个0需要去掉
+      before.shift();
+      const after = node.pos.split('-').map(Number);
+      // 这是 antd  tree 的 pos, 最前面有个0需要去掉
+      after.shift();
+      const ret = methods.current.onDrop?.(before, after);
+      // thenable
+      if (typeof ret?.then === 'function') {
+        ret.then(() => {
+          helper.move(before, after);
+        });
+      } else {
+        helper.move(before, after);
+      }
 
-    console.log('onDrop', { before, after });
-  };
+      console.log('onDrop', { before, after });
+    },
+    [helper],
+  );
 
   return (
     <Tree
@@ -162,39 +125,23 @@ const TreeInner = observer((props: TreeNodesProps) => {
       blockNode
       className={`${props.className} fireformily-tree`}
       {...others}
-      expandedKeys={root?.$root.expandedKeys ?? []}
-      onExpand={(keys) => {
-        if (!root) return;
-        root.$root.expandedKeys = keys;
-      }}
-      selectedKeys={root?.$root.selectedKeys ?? []}
-      onSelect={(keys) => {
-        if (!root) return;
-        root.$root.selectedKeys = keys;
-      }}
-      checkedKeys={root?.$root.checkedKeys}
-      onCheck={(keys, info) => {
-        if (!root) return;
-        root.$root.checkedKeys = keys;
-        root.$root.halfCheckedKeys = info.halfCheckedKeys;
-      }}
       titleRender={(node) => {
-        if (!root) return null;
-        const pos = getNodePos(root.$root!, node, eqeqeq);
-        // root 不 render 不然会闪
-        if (pos.length === 0) return null;
+        const pos = helper.getPos(node);
+        if (!pos) return null;
+        // console.log('pos of', helper.take(node).title, pos, node);
 
         return (
           <TreeBase.Node
-            pos={pos}
+            pos={() => helper.getPos(node)!}
             getExtra={(treeRoot) => {
+              const nodeKey = helper.take(node).key;
               const {
                 expandedKeys: expandeds = [],
                 selectedKeys: selecteds = [],
                 checkedKeys: checkeds = [],
                 halfCheckedKeys: halfCheckeds = [],
               } = treeRoot as any;
-              const nodeKey = (node as any)[fieldNames.key];
+
               return {
                 checked: checkeds?.includes?.(nodeKey),
                 halfChecked: halfCheckeds?.includes?.(nodeKey),
@@ -207,95 +154,107 @@ const TreeInner = observer((props: TreeNodesProps) => {
           </TreeBase.Node>
         );
       }}
-      fieldNames={FIELD_NAMES}
-      treeData={treeData}
+      expandedKeys={field.value.expandedKeys ?? []}
+      onExpand={(keys) => {
+        field.setState((s) => {
+          s.value.expandedKeys = keys;
+        });
+      }}
+      selectedKeys={field.value.selectedKeys ?? []}
+      onSelect={(keys) => {
+        field.setState((s) => {
+          s.value.selectedKeys = keys;
+        });
+      }}
+      checkedKeys={field.value.checkedKeys}
+      onCheck={(keys, info) => {
+        if (!field.value) return;
+        const checkeds = Array.isArray(keys) ? keys : keys.checked;
+        const halfs = Array.isArray(keys)
+          ? info.halfCheckedKeys
+          : keys.halfChecked;
+
+        field.setState((s) => {
+          s.value.checkedKeys = checkeds;
+          s.value.halfCheckedKeys = halfs ?? [];
+        });
+      }}
+      fieldNames={fieldNames}
+      treeData={helper.dataSource}
       onDrop={onDrop}
       loadData={onLoad as any}
     ></Tree>
   );
 });
 
-export const TreeNodes = observer(
-  (props: TreeNodesProps & React.ComponentProps<typeof TreeBase>) => {
-    const field = useField<ObjectField>();
-    const fieldSchema = useFieldSchema();
+export const TreeNodes = (props: TreeNodesProps) => {
+  const {
+    onAdd,
+    value,
+    fieldNames,
+    onCopy,
+    onMove,
+    onRemove,
+    layout,
+    ...others
+  } = props;
+  const field = useField<ObjectField>();
+  const fieldSchema = useFieldSchema();
+  const names = useMemo(() => {
+    return { ...FIELD_NAMES, ...fieldNames };
+  }, [fieldNames]);
 
-    const fieldNames = useMemo(() => {
-      return { ...FIELD_NAMES, ...props.fieldNames };
-    }, [props.fieldNames]);
-    const root = field.value;
+  const methods = useRef({
+    loadData: props.loadData,
+  });
 
-    const { value, layout, onMove, onRemove, onAdd, onCopy, ...others } = props;
-
-    const onDrop = (before: NodePos, after: NodePos) => {
-      const req = onMove?.(before, after, field.value);
-      return req;
-    };
-
-    const methods = useRef({
-      loadData: props.loadData,
-    });
-
-    useEffect(() => {
-      // not re load
-      if (field.value.children) return;
-      if (!methods.current.loadData) return;
-
-      methods.current.loadData([]).then((rootList) => {
-        field.setState((s) => {
-          s.value.children = rootList;
-        });
-      });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-      if (!field) return;
-      // set default
-      field.setState((s) => {
-        s.value.children = value?.children ?? [];
-        s.value.expandKeys = value?.expanedKeys ?? [];
-        s.value.checkedKeys = value?.checkedKeys ?? [];
-        s.value.halfCheckedKeys = value?.halfCheckedKeys ?? [];
-        s.value.selectedKeys = value?.selectedKeys ?? [];
-      });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [field]);
-
-    let treeData = root.children?.slice() ?? [];
-
-    if (root.__dirty) {
-      treeData = raw(root).children.slice();
-      root.__dirty = false;
+  useEffect(() => {
+    if (!methods.current.loadData) return;
+    if (
+      Array.isArray(field.value.children) &&
+      field.value.children.length > 0
+    ) {
+      return;
     }
+    console.log('reeeeload');
+    methods.current.loadData([]).then((rootList: any) => {
+      // console.log('reloaddd');
+      field.setState((s) => {
+        s.value.children = rootList;
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return (
-      <React.Fragment>
-        <TreeBase
-          getRoot={() => field.value}
-          fieldNames={fieldNames}
-          onAdd={onAdd}
-          onRemove={onRemove}
-          onCopy={onCopy}
-          onMove={onMove}
-        >
-          <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
-          <Space size="small" {...layout}>
-            <TreeInner
-              {...others}
-              onDrop={onDrop}
-              treeData={treeData}
-            ></TreeInner>
-            <RecursionField
-              schema={fieldSchema}
-              name=""
-              onlyRenderProperties
-            ></RecursionField>
-          </Space>
-        </TreeBase>
-      </React.Fragment>
-    );
-  },
-);
+  // console.log('render');
+
+  return (
+    <React.Fragment>
+      <TreeBase
+        getRoot={() => {
+          return field.value;
+          // {
+          //   [names.children]: field.value?.dataSource,
+          // };
+        }}
+        fieldNames={names}
+        onAdd={onAdd}
+        onRemove={onRemove}
+        onCopy={onCopy}
+        onMove={onMove}
+      >
+        <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
+        <Space size="small" {...layout}>
+          <TreeInner {...others} fieldNames={names}></TreeInner>
+          <RecursionField
+            schema={fieldSchema}
+            name=""
+            onlyRenderProperties
+          ></RecursionField>
+        </Space>
+      </TreeBase>
+    </React.Fragment>
+  );
+};
 
 TreeBase.mixin(TreeNodes);
