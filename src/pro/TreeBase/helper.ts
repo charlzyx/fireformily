@@ -59,7 +59,9 @@ export const getHelper = <T extends object>(
   const copy = clone ?? ((o) => uniqueClone(o, fieldNames.key));
   // 触发一下observer
   const update = () => {
-    take(refs.root).children = [...take(refs.root).children!];
+    Promise.resolve(0).then(() =>{
+      take(refs.root).children = [...take(refs.root).children!];
+    })
   };
 
   const helper = {
@@ -86,6 +88,7 @@ export const getHelper = <T extends object>(
         pos.reverse();
         return pos;
       } else {
+        console.log('nulllll')
         return null;
       }
     },
@@ -107,9 +110,10 @@ export const getHelper = <T extends object>(
       return path;
     },
     getNodeAtPos(pos: NodePos) {
-      return pos.reduce((parent, at) => {
+      const target = pos.reduce((parent, at) => {
         return take(parent).children?.[at];
       }, refs.root);
+      return target;
     },
     append(
       pos: NodePos,

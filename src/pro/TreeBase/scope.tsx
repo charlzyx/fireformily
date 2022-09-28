@@ -1,6 +1,6 @@
 import { ExpressionScope } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
-import { useMemo, useRef, createContext, useContext } from 'react';
+import { useMemo, useRef, createContext, useContext, useEffect } from 'react';
 import { getHelper } from './helper';
 
 export type NodePos = number[];
@@ -124,6 +124,7 @@ export const NodeScope = <T extends object>(
   const methods = useRef({
     getPos,
     getNode,
+    disposer: () => {}
   });
 
   const value = useMemo(() => {
@@ -204,10 +205,20 @@ export const NodeScope = <T extends object>(
         return this.$pos ? this.$pos[this.$pos.length - 1] : -1;
       },
     };
-    $refs!.set(helper.take(scope.$record).key!, scope);
+    $refs.set(helper.take(scope.$record).key!, scope);
+    methods.current.disposer = () =>{
+      $refs.delete(helper.take(scope.$record).key!);
+    }
     return scope;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    return () => {
+      methods.current.disposer?.();
+
+    }
+  }, [])
 
   return props.ignoreRoot !== false && value?.$record === value?.$root ? null : (
     <NodeContext.Provider value={value}>
