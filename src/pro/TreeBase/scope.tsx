@@ -209,7 +209,7 @@ export const NodeScope = <T extends object>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return props.ignoreRoot && value?.$record === value?.$root ? null : (
+  return props.ignoreRoot !== false && value?.$record === value?.$root ? null : (
     <NodeContext.Provider value={value}>
       <ExpressionScope value={value}>{children}</ExpressionScope>
     </NodeContext.Provider>

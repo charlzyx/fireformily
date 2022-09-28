@@ -197,7 +197,6 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               label: {
                 type: 'string',
                 // "x-decorator": "FormItem",
-                // "x-read-pretty": true,
                 'x-component': 'Input',
                 'x-component-props': {
                   size: 'small',
@@ -260,6 +259,13 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 'x-component': 'PopActions',
                 'x-component-props': {
                   actions: '{{actions.update}}',
+                },
+                "x-reactions": {
+                  fulfill: {
+                    schema: {
+                      "x-visible": "{{$record !== $lookup}}"
+                    }
+                  }
                 },
                 properties: {
                   label: {

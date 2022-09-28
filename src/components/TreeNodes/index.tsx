@@ -133,14 +133,15 @@ const TreeInner = observer((props: any) => {
         return (
           <TreeBase.Node
             pos={() => helper.getPos(node)!}
-            getExtra={(treeRoot) => {
+            getExtra={() => {
+              const bind = field.value;
               const nodeKey = helper.take(node).key;
               const {
                 expandedKeys: expandeds = [],
                 selectedKeys: selecteds = [],
                 checkedKeys: checkeds = [],
                 halfCheckedKeys: halfCheckeds = [],
-              } = treeRoot as any;
+              } = bind as any;
 
               return {
                 checked: checkeds?.includes?.(nodeKey),
@@ -233,9 +234,6 @@ export const TreeNodes = (props: TreeNodesProps) => {
       <TreeBase
         getRoot={() => {
           return field.value;
-          // {
-          //   [names.children]: field.value?.dataSource,
-          // };
         }}
         fieldNames={names}
         onAdd={onAdd}
@@ -245,7 +243,21 @@ export const TreeNodes = (props: TreeNodesProps) => {
       >
         <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
         <Space size="small" {...layout}>
-          <TreeInner {...others} fieldNames={names}></TreeInner>
+          <div>
+            <TreeBase.Node
+                // getNode={()=> field.value}
+                ignoreRoot={false}
+                pos={() => []}
+            >
+              <RecursionField
+                schema={fieldSchema.items as any}
+                onlyRenderProperties
+                name=""
+              ></RecursionField>
+            </TreeBase.Node>
+            <TreeInner {...others} fieldNames={names}></TreeInner>
+          </div>
+
           <RecursionField
             schema={fieldSchema}
             name=""
