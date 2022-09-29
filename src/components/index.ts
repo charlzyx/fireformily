@@ -6,3 +6,4 @@ export { LongText } from './LongText';
 export { ImageView } from './ImageView';
 export { Linkage } from './Linkage';
 export { TreeNodes } from './TreeNodes';
+export { Loading } from './Loading';
