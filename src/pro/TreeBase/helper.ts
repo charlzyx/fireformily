@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { takeTake } from '../../shared';
+import { batch } from '@formily/reactive';
 
 type FieldNames = {
   title: string;
@@ -59,16 +60,18 @@ export const getHelper = <T extends object>(
   const copy = clone ?? ((o) => uniqueClone(o, fieldNames.key));
   // 触发一下observer
   const update = () => {
+    // Promise.resolve(0).then(() => {
     take(refs.root).children = [...take(refs.root).children!];
+    // });
   };
 
   const helper = {
     get dataSource() {
       const ds = take(refs.root).children;
-      console.group('ds');
-      console.log(JSON.stringify(ds));
-      console.groupEnd();
-      console.groupCollapsed();
+      // console.group('ds');
+      // console.log(JSON.stringify(ds));
+      // console.groupEnd();
+      // console.groupCollapsed();
       return ds;
     },
     take(x: any) {
@@ -103,7 +106,7 @@ export const getHelper = <T extends object>(
         return list;
       }, [] as any[]);
     },
-    posToPath(pos: NodePos) {
+    posToPath(pos: NodePos): string | undefined {
       if (!pos) return undefined;
       const path = pos.reduce((p, item) => {
         return p
@@ -127,17 +130,19 @@ export const getHelper = <T extends object>(
       const target = this.getNodeAtPos(pos);
       if (!target) return;
 
-      if (!take(target).children || method === 'replace') {
-        take(target).children = nodes;
-      } else {
-        if (method === 'push') {
-          take(target).children?.push(...nodes);
+      batch(() => {
+        if (!take(target).children || method === 'replace') {
+          take(target).children = nodes;
         } else {
-          take(target).children?.unshift(...nodes);
+          if (method === 'push') {
+            take(target).children?.push(...nodes);
+          } else {
+            take(target).children?.unshift(...nodes);
+          }
         }
-      }
-      // dirty = 'append';
-      update();
+        // dirty = 'append';
+        update();
+      });
     },
     copy(pos: NodePos, neo?: T) {
       const node = this.getNodeAtPos(pos);
@@ -145,12 +150,13 @@ export const getHelper = <T extends object>(
       const parentPos = pos.slice(0, pos.length - 1);
       const parent = this.getNodeAtPos(parentPos);
       if (!parent || !node) return;
+      batch(() => {
+        const copyTo = pos[pos.length - 1] + 1;
 
-      const copyTo = pos[pos.length - 1] + 1;
-
-      take(parent).children?.splice(copyTo, 0, copyed);
-      // dirty = 'copy';
-      update();
+        take(parent).children?.splice(copyTo, 0, copyed);
+        // dirty = 'copy';
+        update();
+      });
     },
     remove(pos: NodePos) {
       const parentPos = pos.slice(0, pos.length - 1);
@@ -158,9 +164,11 @@ export const getHelper = <T extends object>(
       if (toRemoveIndex == null) return;
       const parent = this.getNodeAtPos(parentPos);
       if (!parent) return;
-      take(parent).children?.splice(toRemoveIndex, 1);
-      // dirty = 'remove';
-      update();
+      batch(() => {
+        take(parent).children?.splice(toRemoveIndex, 1);
+        // dirty = 'remove';
+        update();
+      });
     },
     move(before: NodePos, after: NodePos) {
       if (JSON.stringify(before) === JSON.stringify(after)) return;
@@ -170,30 +178,32 @@ export const getHelper = <T extends object>(
         before.slice(0, before.length - 1).join('_') ===
           after.slice(0, after.length - 1).join('_');
 
-      if (sameLevel) {
-        const parent = this.getNodeAtPos(before.slice(0, before.length - 1));
-        const formIdx = before[before.length - 1];
-        const toIdx = after[after.length - 1];
-        // const fixToIndex = toIdx < formIdx ? toIdx + 1 : toIdx;
-        const pick = take(parent).children?.splice(formIdx, 1)[0];
-        take(parent).children?.splice(toIdx, 0, pick);
-      } else {
-        const fromParent = this.getNodeAtPos(
-          before.slice(0, before.length - 1),
-        );
-        const pick = take(fromParent).children?.splice?.(
-          before[before.length - 1],
-          1,
-        )[0];
-        console.log('move before pick', pick);
+      batch(() => {
+        if (sameLevel) {
+          const parent = this.getNodeAtPos(before.slice(0, before.length - 1));
+          const formIdx = before[before.length - 1];
+          const toIdx = after[after.length - 1];
+          // const fixToIndex = toIdx < formIdx ? toIdx + 1 : toIdx;
+          const pick = take(parent).children?.splice(formIdx, 1)[0];
+          take(parent).children?.splice(toIdx, 0, pick);
+        } else {
+          const fromParent = this.getNodeAtPos(
+            before.slice(0, before.length - 1),
+          );
+          const pick = take(fromParent).children?.splice?.(
+            before[before.length - 1],
+            1,
+          )[0];
+          console.log('move before pick', pick);
 
-        if (!pick) return;
+          if (!pick) return;
 
-        const toParent = this.getNodeAtPos(after.slice(0, after.length - 1));
-        take(toParent).children?.splice?.(after[after.length - 1], 0, pick!);
-      }
-      // dirty = 'move';
-      update();
+          const toParent = this.getNodeAtPos(after.slice(0, after.length - 1));
+          take(toParent).children?.splice?.(after[after.length - 1], 0, pick!);
+        }
+        // dirty = 'move';
+        update();
+      });
     },
   };
 

@@ -7,6 +7,7 @@ import {
 } from '@formily/react';
 import { Space, Tree } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Loading } from '../Loading';
 import { TreeBase } from '../../pro/TreeBase';
 import './style.css';
 
@@ -44,11 +45,31 @@ const FIELD_NAMES = {
   children: 'children',
 };
 
+const HACKDomToHiddenAntdNodeForFixNodeFlash = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let parent = ref.current?.parentElement;
+    let catchyou = null as null | HTMLElement;
+    while (parent && !catchyou) {
+      catchyou = /ant-tree-treenode/.test(parent.getAttribute('class') || '')
+        ? parent
+        : null;
+      parent = parent.parentElement;
+    }
+    if (catchyou) {
+      catchyou.setAttribute('style', 'display: none');
+    }
+  }, []);
+
+  return <span ref={ref}>hack</span>;
+};
+
 const TitleRender = () => {
   const tree = TreeBase.useTree();
   const node = TreeBase.useNode();
 
-  return !node?.$path ? null : (
+  return node?.$path == null ? null : (
     <div
       onClick={(e) => {
         if ((e?.target as any)?.tagName === 'INPUT') {
@@ -118,72 +139,79 @@ const TreeInner = observer((props: any) => {
   );
 
   return (
-    <Tree
-      showLine
-      blockNode
-      className={`${props.className} fireformily-tree`}
-      {...others}
-      titleRender={(node) => {
-        // const pos = helper.getPos(node);
-        // if (!pos) return null;
-        // console.log('pos of', helper.take(node).title, pos, node);
+    <React.Fragment>
+      <Loading></Loading>
+      <Tree
+        showLine
+        blockNode
+        {...others}
+        className={`${props.className} fireformily-tree`}
+        titleRender={(node) => {
+          const pos = helper.getPos(node);
+          // 不然会闪一下 ,可以注释掉看看
+          if (!pos)
+            return (
+              <HACKDomToHiddenAntdNodeForFixNodeFlash></HACKDomToHiddenAntdNodeForFixNodeFlash>
+            );
+          // console.log('pos of', helper.take(node).title, pos, node);
 
-        return (
-          <TreeBase.Node
-            // key={helper.take(node).key}
-            pos={() => helper.getPos(node)!}
-            getExtra={() => {
-              const nodeKey = helper.take(node).key;
-              const bind = field.value;
-              const {
-                expandedKeys: expandeds = [],
-                selectedKeys: selecteds = [],
-                checkedKeys: checkeds = [],
-                halfCheckedKeys: halfCheckeds = [],
-              } = bind as any;
+          return (
+            <TreeBase.Node
+              key={helper.take(node).key}
+              pos={() => helper.getPos(node)!}
+              getExtra={() => {
+                const nodeKey = helper.take(node).key;
+                const bind = field.value;
+                const {
+                  expandedKeys: expandeds = [],
+                  selectedKeys: selecteds = [],
+                  checkedKeys: checkeds = [],
+                  halfCheckedKeys: halfCheckeds = [],
+                } = bind as any;
 
-              return {
-                checked: checkeds?.includes?.(nodeKey),
-                halfChecked: halfCheckeds?.includes?.(nodeKey),
-                selecteds: selecteds?.includes?.(nodeKey),
-                expanded: expandeds?.includes?.(nodeKey),
-              };
-            }}
-          >
-            <TitleRender></TitleRender>
-          </TreeBase.Node>
-        );
-      }}
-      expandedKeys={field.value.expandedKeys ?? []}
-      onExpand={(keys) => {
-        field.setState((s) => {
-          s.value.expandedKeys = keys;
-        });
-      }}
-      selectedKeys={field.value.selectedKeys ?? []}
-      onSelect={(keys) => {
-        field.setState((s) => {
-          s.value.selectedKeys = keys;
-        });
-      }}
-      checkedKeys={field.value.checkedKeys}
-      onCheck={(keys, info) => {
-        if (!field.value) return;
-        const checkeds = Array.isArray(keys) ? keys : keys.checked;
-        const halfs = Array.isArray(keys)
-          ? info.halfCheckedKeys
-          : keys.halfChecked;
+                return {
+                  checked: checkeds?.includes?.(nodeKey),
+                  halfChecked: halfCheckeds?.includes?.(nodeKey),
+                  selecteds: selecteds?.includes?.(nodeKey),
+                  expanded: expandeds?.includes?.(nodeKey),
+                };
+              }}
+            >
+              <TitleRender></TitleRender>
+            </TreeBase.Node>
+          );
+        }}
+        expandedKeys={field.value.expandedKeys ?? []}
+        onExpand={(keys) => {
+          field.setState((s) => {
+            s.value.expandedKeys = keys;
+          });
+        }}
+        selectedKeys={field.value.selectedKeys ?? []}
+        onSelect={(keys) => {
+          field.setState((s) => {
+            s.value.selectedKeys = keys;
+          });
+        }}
+        checkedKeys={field.value.checkedKeys}
+        onCheck={(keys, info) => {
+          if (!field.value) return;
+          const checkeds = Array.isArray(keys) ? keys : keys.checked;
+          const halfs = Array.isArray(keys)
+            ? info.halfCheckedKeys
+            : keys.halfChecked;
 
-        field.setState((s) => {
-          s.value.checkedKeys = checkeds;
-          s.value.halfCheckedKeys = halfs ?? [];
-        });
-      }}
-      fieldNames={fieldNames}
-      treeData={helper.dataSource}
-      onDrop={onDrop}
-      loadData={onLoad as any}
-    ></Tree>
+          field.setState((s) => {
+            s.value.checkedKeys = checkeds;
+            s.value.halfCheckedKeys = halfs ?? [];
+          });
+        }}
+        fieldNames={fieldNames}
+        treeData={helper.dataSource}
+        onDrop={onDrop}
+        loadData={onLoad as any}
+      ></Tree>
+    </React.Fragment>
   );
 });
 
@@ -209,20 +237,23 @@ export const TreeNodes = (props: TreeNodesProps) => {
   });
 
   useEffect(() => {
-    if (!methods.current.loadData) return;
+    if (!methods.current.loadData) {
+      return;
+    }
     if (
-      Array.isArray(field.value.children) &&
-      field.value.children.length > 0
+      field.selfModified
+      // Array.isArray(field.value.children) &&
+      // field.value.children.length > 0
     ) {
       return;
     }
-    console.log('reeeeload');
     methods.current.loadData([]).then((rootList: any) => {
       // console.log('reloaddd');
       field.setState((s) => {
         s.value.children = rootList;
       });
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
