@@ -66,11 +66,18 @@ const HACKDomToHiddenAntdNodeForFixNodeFlash = () => {
   return <span ref={ref}>hack</span>;
 };
 
-const TitleRender = () => {
+const TitleRender = (props: { nodeKey: React.Key}) => {
   const tree = TreeBase.useTree();
+  const helper = TreeBase.useHelper();
   const node = TreeBase.useNode();
 
-  return node?.$path == null ? null : (
+  /**
+   * title render 拿到的node 跟 context 中的有一帧渲染的错位,
+   * 页面闪一下，暂时没有什么好办法
+   */
+  const hackableErrorRender = helper.take(node?.$record).key !== props.nodeKey;
+
+  return hackableErrorRender ? <HACKDomToHiddenAntdNodeForFixNodeFlash /> : (
     <div
       onClick={(e) => {
         if ((e?.target as any)?.tagName === 'INPUT') {
@@ -154,17 +161,17 @@ const TreeInner = observer((props: any) => {
           const pos = helper.getPos(node);
           // 不然会闪一下 ,可以注释掉看看
           if (!pos) {
-            console.log('HAKCING');
+            // console.log('HAKCING');
             return (
               <HACKDomToHiddenAntdNodeForFixNodeFlash></HACKDomToHiddenAntdNodeForFixNodeFlash>
             );
           }
 
-          console.log('pos of', node);
+          // console.log('pos of', node.label, helper.take(node).title);
 
           return (
             <TreeBase.Node
-              key={helper.take(node).key}
+              // key={helper.take(node).key}
               pos={() => helper.getPos(node)!}
               getExtra={() => {
                 const nodeKey = helper.take(node).key;
@@ -173,18 +180,18 @@ const TreeInner = observer((props: any) => {
                   selectedKeys: selecteds = [],
                   checkedKeys: checkeds = [],
                   halfCheckedKeys: halfCheckeds = [],
-                  // expandedKeys: expandeds = [],
+                  expandedKeys: expandeds = [],
                 } = bind as any;
 
                 return {
                   checked: checkeds?.includes?.(nodeKey),
                   halfChecked: halfCheckeds?.includes?.(nodeKey),
                   selecteds: selecteds?.includes?.(nodeKey),
-                  // expanded: expandeds?.includes?.(nodeKey),
+                  expanded: expandeds?.includes?.(nodeKey),
                 };
               }}
             >
-              <TitleRender></TitleRender>
+              <TitleRender nodeKey={helper.take(node).key!}></TitleRender>
             </TreeBase.Node>
           );
         }}
