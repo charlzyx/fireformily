@@ -19,6 +19,7 @@ export interface IRootScope<T extends object> {
   $root: NodeLike<T>;
   $refs: Map<React.Key, INodeScope<T>>;
   $fieldNames: typeof FIELD_NAMES;
+  $helper: ReturnType<typeof getHelper>;
 }
 
 export interface INodeScope<T extends object> {
@@ -48,26 +49,20 @@ export const useRoot = () => {
 
 export const useHelper = () => {
   const root = useRoot();
-
-  const helphelp = useMemo(() => {
-    const helper = getHelper(
-      {
-        root: root?.$root!,
-      },
-      root?.$fieldNames!,
-    );
-
-    return helper;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return helphelp;
+  return root?.$helper!;
 };
 
-export const useNode = (nodeKey?: React.Key) => {
+export const useNode = (keyOrPos?: React.Key | NodePos) => {
   const root = useRoot();
   const ctx = useContext(NodeContext);
-  return nodeKey ? root?.$refs.get(nodeKey) ?? ctx : ctx;
+
+  if (keyOrPos) {
+    const key = Array.isArray(keyOrPos)
+      ? root?.$helper.take(root?.$helper.getNodeAtPos(keyOrPos)).key
+      : keyOrPos;
+    return root?.$refs.get(key!);
+  }
+  return ctx;
 };
 
 export const RootScope = <T extends object>(
@@ -85,11 +80,19 @@ export const RootScope = <T extends object>(
   const value = useMemo(() => {
     const refs = new Map<React.Key, INodeScope<T>>();
     const names = { ...FIELD_NAMES, ...props.fieldNames };
-
+    const helper = getHelper(
+      {
+        root: methods.current.getRoot(),
+      },
+      names,
+    );
     const scope: IRootScope<T> = {
       get $root() {
         const root = methods.current.getRoot();
         return root;
+      },
+      get $helper() {
+        return helper;
       },
       get $fieldNames() {
         return names;
@@ -128,13 +131,7 @@ export const NodeScope = <T extends object>(
 
   const value = useMemo(() => {
     if (!root) return null;
-    const { $refs, $fieldNames, $root } = root;
-    const helper = getHelper(
-      {
-        root: $root,
-      },
-      $fieldNames,
-    );
+    const { $refs, $fieldNames, $helper, $root } = root;
 
     const scope: INodeScope<T> = {
       get $root() {
@@ -144,7 +141,7 @@ export const NodeScope = <T extends object>(
         return methods.current.getPos(root.$root);
       },
       get $path() {
-        return helper.posToPath(this.$pos);
+        return $helper.posToPath(this.$pos);
       },
       get $extra() {
         return props.getExtra?.(this.$root);
@@ -154,7 +151,7 @@ export const NodeScope = <T extends object>(
         const record =
           typeof methods.current.getNode === 'function'
             ? methods.current.getNode(root.$root)
-            : helper.getNodeAtPos(this.$pos);
+            : $helper.getNodeAtPos(this.$pos);
 
         const isRoot = record === this.$root;
 
@@ -179,15 +176,15 @@ export const NodeScope = <T extends object>(
       get $lookup() {
         // 去掉最后一个
         const parentPos = this.$pos?.slice(0, this.$pos.length - 1) || [];
-        const parent = helper.getNodeAtPos(parentPos);
+        const parent = $helper.getNodeAtPos(parentPos);
 
         const lookup = parent
-          ? root.$refs.get(helper.take(parent).key!)?.$record
+          ? root.$refs.get($helper.take(parent).key!)?.$record
           : undefined;
         return lookup ?? this.$root;
       },
       get $records() {
-        return helper.take(this.$lookup).children ?? [];
+        return $helper.take(this.$lookup).children ?? [];
       },
       get $parents() {
         const pos = Array.isArray(this.$pos) ? [...this.$pos] : [];
@@ -195,7 +192,7 @@ export const NodeScope = <T extends object>(
 
         pos.reduce((parent, at) => {
           parents.push(parent);
-          const child = helper.take(parent).children?.[at];
+          const child = $helper.take(parent).children?.[at];
           return child;
         }, this.$root);
         return parents;
@@ -204,9 +201,9 @@ export const NodeScope = <T extends object>(
         return this.$pos ? this.$pos[this.$pos.length - 1] : -1;
       },
     };
-    $refs.set(helper.take(scope.$record).key!, scope);
+    $refs.set($helper.take(scope.$record).key!, scope);
     methods.current.disposer = () => {
-      $refs.delete(helper.take(scope.$record).key!);
+      $refs.delete($helper.take(scope.$record).key!);
     };
     return scope;
     // eslint-disable-next-line react-hooks/exhaustive-deps

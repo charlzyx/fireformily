@@ -29,6 +29,7 @@ type TreeNodesProps = React.ComponentProps<typeof TreeBase> &
     'loadData' | 'onDrop' | 'value' | 'onChange' | 'fieldNames'
   > & {
     loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
+    loadAll?: () => Promise<TreeNode[]>;
     value?: {
       expanedKeys?: React.Key[];
       selectedKeys?: React.Key[];
@@ -86,18 +87,21 @@ const TitleRender = () => {
 };
 
 const TreeInner = observer((props: any) => {
-  const { loadData, checkedKeys, fieldNames, children, ...others } = props;
+  const { loadAll, loadData, checkedKeys, fieldNames, children, ...others } =
+    props;
 
   const helper = TreeBase.useHelper();
   const field = useField<ObjectField>();
 
   const methods = useRef({
     loadData,
+    loadAll,
     onDrop: props.onDrop,
   });
 
   const onLoad = useCallback(
     (node: any) => {
+      if (methods.current.loadAll) return;
       if (!methods.current.loadData) return;
       const pos = helper.getPos(node);
       let chain = helper.posToParents(pos!);
@@ -149,11 +153,14 @@ const TreeInner = observer((props: any) => {
         titleRender={(node) => {
           const pos = helper.getPos(node);
           // 不然会闪一下 ,可以注释掉看看
-          if (!pos)
+          if (!pos) {
+            console.log('HAKCING');
             return (
               <HACKDomToHiddenAntdNodeForFixNodeFlash></HACKDomToHiddenAntdNodeForFixNodeFlash>
             );
-          // console.log('pos of', helper.take(node).title, pos, node);
+          }
+
+          console.log('pos of', node);
 
           return (
             <TreeBase.Node
@@ -163,17 +170,17 @@ const TreeInner = observer((props: any) => {
                 const nodeKey = helper.take(node).key;
                 const bind = field.value;
                 const {
-                  expandedKeys: expandeds = [],
                   selectedKeys: selecteds = [],
                   checkedKeys: checkeds = [],
                   halfCheckedKeys: halfCheckeds = [],
+                  // expandedKeys: expandeds = [],
                 } = bind as any;
 
                 return {
                   checked: checkeds?.includes?.(nodeKey),
                   halfChecked: halfCheckeds?.includes?.(nodeKey),
                   selecteds: selecteds?.includes?.(nodeKey),
-                  expanded: expandeds?.includes?.(nodeKey),
+                  // expanded: expandeds?.includes?.(nodeKey),
                 };
               }}
             >
@@ -209,7 +216,7 @@ const TreeInner = observer((props: any) => {
         fieldNames={fieldNames}
         treeData={helper.dataSource}
         onDrop={onDrop}
-        loadData={onLoad as any}
+        loadData={loadData && !loadAll ? (onLoad as any) : undefined}
       ></Tree>
     </React.Fragment>
   );
@@ -233,11 +240,11 @@ export const TreeNodes = (props: TreeNodesProps) => {
   }, [fieldNames]);
 
   const methods = useRef({
-    loadData: props.loadData,
+    loader: props.loadAll || props.loadData,
   });
 
   useEffect(() => {
-    if (!methods.current.loadData) {
+    if (!methods.current.loader) {
       return;
     }
     if (
@@ -247,8 +254,9 @@ export const TreeNodes = (props: TreeNodesProps) => {
     ) {
       return;
     }
-    methods.current.loadData([]).then((rootList: any) => {
-      // console.log('reloaddd');
+    console.log('--------------wtf');
+    methods.current.loader([]).then((rootList: any) => {
+      console.log('reloaddd');
       field.setState((s) => {
         s.value.children = rootList;
       });
@@ -270,7 +278,7 @@ export const TreeNodes = (props: TreeNodesProps) => {
         onMove={onMove}
       >
         <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
-        <Space size="small" {...layout}>
+        <div>
           <div>
             <TreeBase.Node
               // getNode={()=> field.value}
@@ -289,7 +297,7 @@ export const TreeNodes = (props: TreeNodesProps) => {
             name=""
             onlyRenderProperties
           ></RecursionField>
-        </Space>
+        </div>
       </TreeBase>
     </React.Fragment>
   );
