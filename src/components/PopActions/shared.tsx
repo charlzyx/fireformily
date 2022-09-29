@@ -17,6 +17,7 @@ import React, {
 } from 'react';
 import { isObservable } from '@formily/reactive';
 import { useQueryList$ } from '../QueryList/shared';
+import { useLatest } from 'ahooks';
 
 const nextTick = () =>
   new Promise((resolve) => {
@@ -90,13 +91,7 @@ export const usePopAction = () => {
 
   const schema = useFieldSchema();
 
-  const methods = useRef(actions || {});
-
-  useEffect(() => {
-    methods.current.load = actions?.load;
-    methods.current.cancel = actions?.cancel;
-    methods.current.submit = actions?.submit;
-  }, [actions]);
+  const methods = useLatest(actions || {});
 
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -122,7 +117,7 @@ export const usePopAction = () => {
         calling.current.open = false;
         setLoading(false);
       });
-  }, [field, loading, scope]);
+  }, [methods, field, loading, scope]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
@@ -145,7 +140,7 @@ export const usePopAction = () => {
         calling.current.reset = false;
         setLoading(false);
       });
-  }, [field, loading, scope, visible]);
+  }, [methods, field, loading, scope, visible]);
 
   const submit = useCallback(() => {
     if (field.disabled) return;
@@ -172,7 +167,7 @@ export const usePopAction = () => {
         calling.current.submit = false;
         ctx?._refresh?.();
       });
-  }, [ctx, field, loading, scope, visible]);
+  }, [methods, ctx, field, loading, scope, visible]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;

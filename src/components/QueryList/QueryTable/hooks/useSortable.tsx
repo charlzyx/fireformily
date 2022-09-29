@@ -57,12 +57,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
           onSortEnd={({ oldIndex, newIndex }: any) => {
             const action = field.componentProps?.onSort;
             if (typeof action === 'function') {
-              const ret = action(
-                oldIndex,
-                newIndex,
-                toJS(field.value),
-                scope,
-              );
+              const ret = action(oldIndex, newIndex, toJS(field.value), scope);
               if (ret instanceof Promise) {
                 field.setLoading(true);
                 field.move(oldIndex, newIndex);
@@ -89,7 +84,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
         />
       );
     },
-    [ctx, field, parentRef, prefixCls],
+    [ctx, field, scope, parentRef, prefixCls],
   );
 
   const body = {

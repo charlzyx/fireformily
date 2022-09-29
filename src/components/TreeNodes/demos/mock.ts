@@ -1,4 +1,13 @@
-import { safeStringify, OptionData, PopActions } from 'fireformily';
+import { PopActions } from 'fireformily';
+import { stringify } from './stringify';
+
+export type OptionData = {
+  label?: string;
+  value?: React.Key;
+  isLeaf?: boolean;
+  children?: OptionData[];
+  __init?: boolean;
+};
 
 const MAX = 4;
 export const remote =
@@ -170,7 +179,7 @@ type TActions = React.ComponentProps<typeof PopActions>['actions'];
 const log = (label: string, x: any) => {
   console.log('LABEL:', label);
   try {
-    console.group(safeStringify(x));
+    console.group(stringify(x));
   } catch (error) {
     console.log('stringify error, origin: ', x);
   }

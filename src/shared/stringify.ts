@@ -1,4 +1,4 @@
-export const safeStringify = (o: any): string => {
+export const stringify = (o: any): string => {
   const seens = new WeakMap();
   const serialize = (obj: any): any => {
     if (Array.isArray(obj)) {

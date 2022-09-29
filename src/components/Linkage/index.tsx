@@ -1,10 +1,18 @@
 import { Observer } from '@formily/react';
 import { observable } from '@formily/reactive';
+import { useLatest } from 'ahooks';
 import { Cascader } from 'antd';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { OptionData } from '../../shared';
+import React, { useCallback, useMemo } from 'react';
 
-export interface LinkageOption extends OptionData {}
+export interface LinkageOption {
+  label?: string;
+  value?: React.Key;
+  isLeaf?: boolean;
+  children?: LinkageOption[];
+  disabled?: boolean;
+  __init?: boolean;
+  loading?: boolean;
+}
 
 const fullWithStyle = {
   width: '100%',
@@ -58,11 +66,7 @@ const initOptions = (labelInValue?: boolean, value?: Input[]) => {
 const useLazyeOptions = (props: MergedLinkageProps) => {
   const { loadData, loadAll, value, labelInValue } = props;
 
-  const loader = useRef(loadAll || loadData);
-
-  useEffect(() => {
-    loader.current = loadAll || loadData;
-  }, [loadAll, loadData]);
+  const loader = useLatest(loadAll || loadData);
 
   const state = useMemo(() => {
     return observable({

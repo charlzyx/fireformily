@@ -1,6 +1,6 @@
 import { ExpressionScope } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
-import { useMemo, useRef, createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { getHelper } from './helper';
 
 export type NodePos = number[];

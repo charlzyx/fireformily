@@ -1,7 +1,7 @@
 import { ObjectField } from '@formily/core';
 import {
-  observer,
   RecursionField,
+  observer,
   useField,
   useFieldSchema,
 } from '@formily/react';
@@ -10,14 +10,16 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Loading } from '../Loading';
 import { TreeBase } from '../../pro/TreeBase';
 import './style.css';
+import { useLatest } from 'ahooks';
 
 export type TreeNode = {
   label?: string;
   value?: React.Key;
-  isLeaf?: boolean;
   children?: TreeNode[];
+  disabled?: boolean;
+  checkedable?: boolean;
+  isLeaf?: boolean;
   loading?: boolean;
-  key?: React.Key;
   __init?: boolean;
 };
 
@@ -66,7 +68,7 @@ const HACKDomToHiddenAntdNodeForFixNodeFlash = () => {
   return <span ref={ref}>hack</span>;
 };
 
-const TitleRender = (props: { nodeKey: React.Key}) => {
+const TitleRender = (props: { nodeKey: React.Key }) => {
   const tree = TreeBase.useTree();
   const helper = TreeBase.useHelper();
   const node = TreeBase.useNode();
@@ -77,7 +79,9 @@ const TitleRender = (props: { nodeKey: React.Key}) => {
    */
   const hackableErrorRender = helper.take(node?.$record).key !== props.nodeKey;
 
-  return hackableErrorRender ? <HACKDomToHiddenAntdNodeForFixNodeFlash /> : (
+  return hackableErrorRender ? (
+    <HACKDomToHiddenAntdNodeForFixNodeFlash />
+  ) : (
     <div
       onClick={(e) => {
         if ((e?.target as any)?.tagName === 'INPUT') {
@@ -100,7 +104,7 @@ const TreeInner = observer((props: any) => {
   const helper = TreeBase.useHelper();
   const field = useField<ObjectField>();
 
-  const methods = useRef({
+  const methods = useLatest({
     loadData,
     loadAll,
     onDrop: props.onDrop,
@@ -123,7 +127,7 @@ const TreeInner = observer((props: any) => {
           last.loading = false;
         });
     },
-    [helper],
+    [helper, methods],
   );
 
   const onDrop = useCallback(
@@ -146,7 +150,7 @@ const TreeInner = observer((props: any) => {
 
       console.log('onDrop', { before, after });
     },
-    [helper],
+    [helper, methods],
   );
 
   return (
@@ -246,7 +250,7 @@ export const TreeNodes = (props: TreeNodesProps) => {
     return { ...FIELD_NAMES, ...fieldNames };
   }, [fieldNames]);
 
-  const methods = useRef({
+  const methods = useLatest({
     loader: props.loadAll || props.loadData,
   });
 
@@ -254,14 +258,9 @@ export const TreeNodes = (props: TreeNodesProps) => {
     if (!methods.current.loader) {
       return;
     }
-    if (
-      field.selfModified
-      // Array.isArray(field.value.children) &&
-      // field.value.children.length > 0
-    ) {
+    if (field.selfModified) {
       return;
     }
-    console.log('--------------wtf');
     methods.current.loader([]).then((rootList: any) => {
       console.log('reloaddd');
       field.setState((s) => {

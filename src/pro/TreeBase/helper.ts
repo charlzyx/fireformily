@@ -99,20 +99,6 @@ export const getHelper = <T extends object>(
         freshCache();
         return cache.pos[key];
       }
-
-      // if (key) {
-      //   let current = cache.mapping[key];
-      //   const pos: number[] | null = current ? [] : null;
-
-      //   while (current) {
-      //     pos!.unshift(current.index);
-      //     current = cache.mapping[current.parentKey];
-      //   }
-      //   return pos;
-      // } else {
-      //   console.log('nulllll');
-      //   return null;
-      // }
     },
     posToParents(pos: NodePos) {
       let parent = refs.root;
