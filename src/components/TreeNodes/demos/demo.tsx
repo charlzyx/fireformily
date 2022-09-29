@@ -197,7 +197,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               label: {
                 type: 'string',
                 // "x-decorator": "FormItem",
-                // "x-read-pretty": true,
+                'x-visible': `{{$record !== $root}}`,
                 'x-component': 'Input',
                 'x-component-props': {
                   size: 'small',
@@ -241,6 +241,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 },
               },
               add: {
+                title: "{{$record === $root ? '添加根节点': ''}}",
                 type: 'void',
                 'x-component': 'TreeNodes.Append',
                 'x-component-props': {
@@ -256,6 +257,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
               },
               edit: {
                 title: '编辑',
+                'x-visible': '{{$record !== $root}}',
                 type: 'object',
                 'x-component': 'PopActions',
                 'x-component-props': {

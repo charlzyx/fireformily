@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { takeTake } from '../../shared';
+import { batch } from '@formily/reactive';
 
 type FieldNames = {
   title: string;
@@ -59,12 +60,19 @@ export const getHelper = <T extends object>(
   const copy = clone ?? ((o) => uniqueClone(o, fieldNames.key));
   // 触发一下observer
   const update = () => {
+    // Promise.resolve(0).then(() => {
     take(refs.root).children = [...take(refs.root).children!];
+    // });
   };
 
   const helper = {
     get dataSource() {
-      return take(refs.root).children;
+      const ds = take(refs.root).children;
+      // console.group('ds');
+      // console.log(JSON.stringify(ds));
+      // console.groupEnd();
+      // console.groupCollapsed();
+      return ds;
     },
     take(x: any) {
       return take(x);
@@ -76,16 +84,16 @@ export const getHelper = <T extends object>(
       const key = take(n).key;
       const mapper = this.mapping();
       if (key) {
-        const pos: number[] = [];
         let current = mapper.get(key);
+        const pos: number[] | null = current ? [] : null;
 
         while (current) {
-          pos.push(current.index);
+          pos!.unshift(current.index);
           current = mapper.get(current.parentKey);
         }
-        pos.reverse();
         return pos;
       } else {
+        console.log('nulllll');
         return null;
       }
     },
@@ -98,7 +106,8 @@ export const getHelper = <T extends object>(
         return list;
       }, [] as any[]);
     },
-    posToPath(pos: NodePos) {
+    posToPath(pos: NodePos): string | undefined {
+      if (!pos) return undefined;
       const path = pos.reduce((p, item) => {
         return p
           ? `${p}.${fieldNames.children}.${item}`
@@ -106,116 +115,95 @@ export const getHelper = <T extends object>(
       }, '');
       return path;
     },
-    getNodeAtPos(pos: NodePos) {
-      return pos.reduce((parent, at) => {
+    getNodeAtPos(pos: NodePos | null) {
+      if (pos === null) return null;
+      const target = pos.reduce((parent, at) => {
         return take(parent).children?.[at];
       }, refs.root);
+      return target;
     },
     append(
       pos: NodePos,
       method: 'push' | 'unshift' | 'replace' = 'push',
       ...nodes: T[]
     ) {
-      pos.reduce((parent, at, index) => {
-        const isLast = index === pos.length - 1;
-        const cur = take(parent).children?.[at];
-        if (isLast) {
-          if (!take(cur).children || method === 'replace') {
-            take(cur).children = nodes;
+      const target = this.getNodeAtPos(pos);
+      if (!target) return;
+
+      batch(() => {
+        if (!take(target).children || method === 'replace') {
+          take(target).children = nodes;
+        } else {
+          if (method === 'push') {
+            take(target).children?.push(...nodes);
           } else {
-            if (method === 'push') {
-              take(cur).children?.push(...nodes);
-            } else {
-              take(cur).children?.unshift(...nodes);
-            }
+            take(target).children?.unshift(...nodes);
           }
         }
-        return cur;
-      }, refs.root);
-      // dirty = 'append';
-      update();
-      return refs.root;
+        // dirty = 'append';
+        update();
+      });
     },
     copy(pos: NodePos, neo?: T) {
       const node = this.getNodeAtPos(pos);
       const copyed = neo ?? copy(node as any);
       const parentPos = pos.slice(0, pos.length - 1);
-      const copyTo = pos[pos.length - 1] + 1;
-      parentPos.reduce((parent, at, index) => {
-        const isLast = index === parentPos.length - 1;
-        const cur = take(parent).children?.[at];
-        if (isLast) {
-          take(cur).children?.splice(copyTo, 0, copyed);
-        }
-        return cur;
-      }, refs.root);
-      // dirty = 'copy';
-      update();
-      return refs.root;
+      const parent = this.getNodeAtPos(parentPos);
+      if (!parent || !node) return;
+      batch(() => {
+        const copyTo = pos[pos.length - 1] + 1;
+
+        take(parent).children?.splice(copyTo, 0, copyed);
+        // dirty = 'copy';
+        update();
+      });
     },
     remove(pos: NodePos) {
       const parentPos = pos.slice(0, pos.length - 1);
       const toRemoveIndex = pos[pos.length - 1];
       if (toRemoveIndex == null) return;
-      parentPos.reduce((parent, at, index) => {
-        const isLast = index === parentPos.length - 1;
-        const cur = take(parent).children?.[at];
-        if (isLast) {
-          take(cur).children?.splice(toRemoveIndex, 1);
-        }
-        return cur;
-      }, refs.root);
-      // dirty = 'remove';
-      update();
-      return refs.root;
+      const parent = this.getNodeAtPos(parentPos);
+      if (!parent) return;
+      batch(() => {
+        take(parent).children?.splice(toRemoveIndex, 1);
+        // dirty = 'remove';
+        update();
+      });
     },
     move(before: NodePos, after: NodePos) {
-      if (JSON.stringify(before) === JSON.stringify(after)) return refs.root;
+      if (JSON.stringify(before) === JSON.stringify(after)) return;
 
       const sameLevel =
         before.length === after.length &&
         before.slice(0, before.length - 1).join('_') ===
           after.slice(0, after.length - 1).join('_');
 
-      if (sameLevel) {
-        before.reduce((target: any, at: number, index: number) => {
-          const isLast = index === before.length - 1;
-          const cur = take(target).children?.[at];
+      batch(() => {
+        if (sameLevel) {
+          const parent = this.getNodeAtPos(before.slice(0, before.length - 1));
+          const formIdx = before[before.length - 1];
+          const toIdx = after[after.length - 1];
+          // const fixToIndex = toIdx < formIdx ? toIdx + 1 : toIdx;
+          const pick = take(parent).children?.splice(formIdx, 1)[0];
+          take(parent).children?.splice(toIdx, 0, pick);
+        } else {
+          const fromParent = this.getNodeAtPos(
+            before.slice(0, before.length - 1),
+          );
+          const pick = take(fromParent).children?.splice?.(
+            before[before.length - 1],
+            1,
+          )[0];
+          console.log('move before pick', pick);
 
-          if (isLast) {
-            const formIdx = before[before.length - 1];
-            const toIdx = after[after.length - 1];
-            const fixToIndex = toIdx > formIdx ? toIdx + 1 : toIdx;
-            const pick = take(target).children?.splice(formIdx, 1)[0];
-            take(target).children?.splice(fixToIndex, 0, pick);
-          }
-          return cur;
-        }, refs.root);
-      } else {
-        let pick = null as any;
+          if (!pick) return;
 
-        before.reduce((target: any, at: number, index: number): any => {
-          const isLast = index === before.length - 1;
-          const cur = take(target).children?.[at];
-          if (isLast) {
-            pick = take(target).children?.splice(at, 1)[0];
-          }
-          return cur;
-        }, refs.root);
-        if (!pick) return;
-
-        after.reduce((target: any, at: number, index: number) => {
-          const isLast = index === after.length - 1;
-          const cur = take(target).children?.[at];
-          if (isLast) {
-            take(target).children?.splice(at, 0, pick!);
-          }
-          return cur;
-        }, refs.root);
-      }
-      // dirty = 'move';
-      update();
-      return refs.root;
+          const toParent = this.getNodeAtPos(after.slice(0, after.length - 1));
+          take(toParent).children?.splice?.(after[after.length - 1], 0, pick!);
+        }
+        // dirty = 'move';
+        update();
+      });
     },
   };
 

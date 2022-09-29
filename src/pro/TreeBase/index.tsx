@@ -154,7 +154,7 @@ const TreeBasic: ComposedTreeBase = (props) => {
 const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
   const { pos, children, getNode, getExtra } = props;
   return (
-    <NodeScope ignoreRoot getPos={pos} getNode={getNode} getExtra={getExtra}>
+    <NodeScope getPos={pos} getNode={getNode} getExtra={getExtra}>
       <TreeBaseNodeContext.Provider value={props}>
         {children}
       </TreeBaseNodeContext.Provider>
@@ -164,6 +164,10 @@ const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
 
 const TreeBasePos: typeof TreeBasic['Pos'] = (props) => {
   const pos = usePos();
+  const node = usePosNode(pos);
+  // not support node
+  if (node?.$record === node?.$root) return null;
+
   return <span {...props}>#{pos?.join('-')} </span>;
 };
 
@@ -174,8 +178,12 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
   const self = useField();
   const helper = useHelper();
 
+  // not support node
+  if (node?.$record === node?.$root) return null;
+
   if (!tree) return null;
   if (tree.field.pattern !== 'editable') return null;
+
   const shouldHidden =
     (props.to === 'up' && node?.$index! === 0) ||
     (props.to === 'down' &&
@@ -222,6 +230,8 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
   const helper = useHelper();
   if (!tree) return null;
   if (tree.field.pattern !== 'editable') return null;
+  // not support node
+  if (node?.$record === node?.$root) return null;
 
   return (
     <Popconfirm
@@ -250,6 +260,7 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
       }}
     >
       <Button
+        onClick={(e) => e.stopPropagation()}
         type="link"
         size="small"
         icon={<DeleteOutlined></DeleteOutlined>}
@@ -269,7 +280,6 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
   const helper = useHelper();
   if (!tree) return null;
   if (tree.field.pattern !== 'editable') return null;
-  if (!node?.$extra?.expanded) return null;
 
   return (
     <Button
@@ -314,6 +324,8 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
   const helper = useHelper();
   if (!tree) return null;
   if (tree.field.pattern !== 'editable') return null;
+  // not supported root
+  if (node?.$record === node?.$root) return null;
 
   return (
     <Button
@@ -336,10 +348,12 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
         // thenable
         if (typeof req?.then === 'function') {
           req.then((neo) => {
-            helper.copy(pos, neo);
+            const copyed = neo ?? clone?.(node.$record);
+            helper.copy(pos, copyed);
           });
         } else {
-          helper.copy(pos);
+          const copyed = clone?.(node.$record);
+          helper.copy(pos, copyed);
         }
       }}
     >
