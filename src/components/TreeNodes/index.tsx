@@ -48,7 +48,7 @@ const TitleRender = () => {
   const tree = TreeBase.useTree();
   const node = TreeBase.useNode();
 
-  return (
+  return !node?.$path ? null : (
     <div
       onClick={(e) => {
         if ((e?.target as any)?.tagName === 'INPUT') {
@@ -81,12 +81,10 @@ const TreeInner = observer((props: any) => {
       const pos = helper.getPos(node);
       let chain = helper.posToParents(pos!);
       const last = chain[chain.length - 1];
-      console.log('wtff', pos, last, chain);
       last.loading = true;
       return methods.current
         .loadData(chain)
         .then((list: any) => {
-          console.log('ans', list);
           helper.append(pos!, 'replace', ...list);
         })
         .finally(() => {
@@ -126,21 +124,23 @@ const TreeInner = observer((props: any) => {
       className={`${props.className} fireformily-tree`}
       {...others}
       titleRender={(node) => {
-        const pos = helper.getPos(node);
-        if (!pos) return null;
+        // const pos = helper.getPos(node);
+        // if (!pos) return null;
         // console.log('pos of', helper.take(node).title, pos, node);
 
         return (
           <TreeBase.Node
+            // key={helper.take(node).key}
             pos={() => helper.getPos(node)!}
-            getExtra={(treeRoot) => {
+            getExtra={() => {
               const nodeKey = helper.take(node).key;
+              const bind = field.value;
               const {
                 expandedKeys: expandeds = [],
                 selectedKeys: selecteds = [],
                 checkedKeys: checkeds = [],
                 halfCheckedKeys: halfCheckeds = [],
-              } = treeRoot as any;
+              } = bind as any;
 
               return {
                 checked: checkeds?.includes?.(nodeKey),
@@ -231,12 +231,7 @@ export const TreeNodes = (props: TreeNodesProps) => {
   return (
     <React.Fragment>
       <TreeBase
-        getRoot={() => {
-          return field.value;
-          // {
-          //   [names.children]: field.value?.dataSource,
-          // };
-        }}
+        getRoot={() => field.value}
         fieldNames={names}
         onAdd={onAdd}
         onRemove={onRemove}
@@ -245,7 +240,19 @@ export const TreeNodes = (props: TreeNodesProps) => {
       >
         <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
         <Space size="small" {...layout}>
-          <TreeInner {...others} fieldNames={names}></TreeInner>
+          <div>
+            <TreeBase.Node
+              // getNode={()=> field.value}
+              pos={() => []}
+            >
+              <RecursionField
+                schema={fieldSchema.items as any}
+                onlyRenderProperties
+                name=""
+              ></RecursionField>
+            </TreeBase.Node>
+            <TreeInner {...others} fieldNames={names}></TreeInner>
+          </div>
           <RecursionField
             schema={fieldSchema}
             name=""

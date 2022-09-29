@@ -16,7 +16,7 @@ export const Open = (
 
   const click = loading ? noop : open;
 
-  return (
+  return field.display !== 'visible' ? null : (
     <Button
       onClick={click}
       size={
