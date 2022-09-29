@@ -1,5 +1,6 @@
 import { safeStringify, OptionData, PopActions } from 'fireformily';
 
+const MAX = 4;
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
@@ -30,7 +31,6 @@ export const flat = (
 ) => {
   const flatten: { parent?: string; code: string; name: string }[] = [];
 
-  const MAX = 4;
   const tree = Object.values(json)
     .map((province, idx) => {
       if (idx > MAX) return;
@@ -83,25 +83,38 @@ export const loadAll = () => {
     .then((res) => res.json())
     .then((origin) => flat(origin))
     .then(({ tree }) => {
-      const current = tree?.map((item: any) => ({
-        label: item.name,
-        value: item.code,
-        isLeaf: false,
-        children: item.children?.map((child: any) => {
+      const current = tree
+        ?.map((item: any, idx) => {
+          if (idx > MAX) return;
+
           return {
-            label: child.name,
-            value: child.code,
+            label: item.name,
+            value: item.code,
             isLeaf: false,
-            children: child.children.map((godson: any) => {
-              return {
-                label: godson.name,
-                value: godson.code,
-                isLeaf: true,
-              };
-            }),
+            children: item.children
+              ?.map((child: any, cidx: any) => {
+                if (cidx > MAX) return;
+                return {
+                  label: child.name,
+                  value:
+                    child.code === item.code ? `${child.code}00` : child.code,
+                  isLeaf: false,
+                  children: child.children
+                    .map((godson: any, didx: any) => {
+                      if (cidx > MAX) return;
+                      return {
+                        label: godson.name,
+                        value: godson.code,
+                        isLeaf: true,
+                      };
+                    })
+                    .filter(Boolean),
+                };
+              })
+              .filter(Boolean),
           };
-        }),
-      }));
+        })
+        .filter(Boolean);
       // console.log('current', current);
       return current;
     });

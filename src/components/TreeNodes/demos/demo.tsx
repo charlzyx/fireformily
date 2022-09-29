@@ -10,7 +10,7 @@ import { Button } from 'antd';
 import { PopActions, safeStringify, TreeBase, TreeNodes } from 'fireformily';
 
 import { useMemo, useState } from 'react';
-import { actions, loadData } from './mock';
+import { actions, loadData, loadAll } from './mock';
 
 const form = createForm();
 
@@ -150,6 +150,7 @@ const SchemaField = createSchemaField({
   },
   scope: {
     loadData,
+    loadAll,
     actions,
   },
 });
@@ -174,6 +175,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
           'x-component': 'TreeNodes',
           'x-component-props': {
             loadData: '{{loadData}}',
+            loadAll: '{{loadAll}}',
             checkable: true,
             selectable: true,
             draggable: true,

@@ -10,34 +10,6 @@ type FieldNames = {
 
 export type NodePos = number[];
 
-const mapping = <T extends object>(
-  parent: T,
-  take: ReturnType<typeof takeTake>,
-  parentMap?: Map<
-    React.Key,
-    {
-      node: T;
-      index: number;
-      parentKey: React.Key;
-    }
-  >,
-) => {
-  const map = parentMap || new Map();
-  if (!Array.isArray(take(parent).children)) return map;
-
-  take(parent).children?.forEach((child: any, index) => {
-    map.set(take(child).key, {
-      node: child,
-      parentKey: take(parent).key,
-      index,
-    });
-    if (take(child).children) {
-      mapping(child, take, map);
-    }
-  });
-  return map;
-};
-
 const uniqueClone = (o: any, key: string) => {
   return JSON.parse(
     JSON.stringify(o, (k, v) => {
@@ -49,6 +21,27 @@ const uniqueClone = (o: any, key: string) => {
   );
 };
 
+const mapping = (
+  parent: any,
+  take: ReturnType<typeof takeTake>,
+  parentPos = [] as number[],
+  parentMap?: any,
+) => {
+  const map = parentMap || {};
+  take(parent).children?.forEach((node, index) => {
+    const myPos = [...parentPos, index];
+    map[take(node).key as any] = {
+      parentKey: take(parent).key,
+      index,
+      pos: myPos,
+    };
+    if (take(node).children) {
+      mapping(node, take, myPos, map);
+    }
+  });
+  return map;
+};
+
 export const getHelper = <T extends object>(
   refs: {
     root: T;
@@ -58,44 +51,71 @@ export const getHelper = <T extends object>(
 ) => {
   const take = takeTake(fieldNames);
   const copy = clone ?? ((o) => uniqueClone(o, fieldNames.key));
+
+  const cache = {
+    dirty: false,
+    pos: {} as any,
+    mapper: {} as any,
+  };
+
+  const freshCache = () => {
+    console.log('computed start');
+    let start = performance.now();
+    cache.mapper = mapping(refs.root, take);
+
+    cache.pos = Object.keys(cache.mapper).reduce((p, nk) => {
+      p[nk] = cache.mapper[nk].pos;
+      return p;
+    }, cache.pos);
+
+    let end = performance.now();
+    console.log('computed end', end - start);
+  };
   // 触发一下observer
   const update = () => {
-    // Promise.resolve(0).then(() => {
-    take(refs.root).children = [...take(refs.root).children!];
-    // });
+    freshCache();
+    Promise.resolve(0).then(() => {
+      // cache.dirty = true;
+      take(refs.root).children = [...take(refs.root).children!];
+    });
   };
+
+  freshCache();
 
   const helper = {
     get dataSource() {
       const ds = take(refs.root).children;
-      // console.group('ds');
-      // console.log(JSON.stringify(ds));
-      // console.groupEnd();
-      // console.groupCollapsed();
       return ds;
     },
     take(x: any) {
       return take(x);
     },
-    mapping() {
-      return mapping(refs.root, take);
-    },
     getPos(n: T) {
+      if (n === refs.root) return [];
       const key = take(n).key;
-      const mapper = this.mapping();
-      if (key) {
-        let current = mapper.get(key);
-        const pos: number[] | null = current ? [] : null;
+      if (!key) return null;
 
-        while (current) {
-          pos!.unshift(current.index);
-          current = mapper.get(current.parentKey);
-        }
-        return pos;
+      if (cache.pos[key!]) {
+        return cache.pos[key];
       } else {
-        console.log('nulllll');
-        return null;
+        console.log('不可能还在这吧');
+        freshCache();
+        return cache.pos[key];
       }
+
+      // if (key) {
+      //   let current = cache.mapping[key];
+      //   const pos: number[] | null = current ? [] : null;
+
+      //   while (current) {
+      //     pos!.unshift(current.index);
+      //     current = cache.mapping[current.parentKey];
+      //   }
+      //   return pos;
+      // } else {
+      //   console.log('nulllll');
+      //   return null;
+      // }
     },
     posToParents(pos: NodePos) {
       let parent = refs.root;

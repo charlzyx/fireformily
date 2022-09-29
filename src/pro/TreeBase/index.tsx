@@ -91,7 +91,6 @@ export type TreeBaseMixins = {
   useHelper?: typeof useHelper;
   useNode?: typeof useNode;
   usePos?: typeof usePos;
-  usePosNode?: typeof usePosNode;
 };
 
 const TreeBaseContext = createContext<ITreeBaseRootContext | null>(null);
@@ -115,13 +114,6 @@ const formatPos = (like?: PosLike): NodePos => {
 export const usePos = (posLike?: PosLike) => {
   const ctx = useNode();
   return posLike ? formatPos(posLike) : ctx?.$pos!;
-};
-
-export const usePosNode = (posLike?: PosLike) => {
-  const helper = useHelper();
-  const pos = usePos(posLike);
-  const node = useNode(helper.take(helper.getNodeAtPos(pos)).key);
-  return node;
 };
 
 type ComposedTreeBase = React.FC<React.PropsWithChildren<ITreeBaseRootProps>> &
@@ -163,18 +155,18 @@ const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
 };
 
 const TreeBasePos: typeof TreeBasic['Pos'] = (props) => {
-  const pos = usePos();
-  const node = usePosNode(pos);
+  const node = useNode();
   // not support node
   if (node?.$record === node?.$root) return null;
 
-  return <span {...props}>#{pos?.join('-')} </span>;
+  return <span {...props}>#{node?.$pos?.join('-')} </span>;
 };
 
 const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
   const { pos: posLike, ...others } = props;
   const tree = useTree();
-  const node = usePosNode(posLike);
+  // const node = useNode(posLike);
+  const node = useNode();
   const self = useField();
   const helper = useHelper();
 
@@ -225,7 +217,8 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
 const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
   const { pos: posLike, ...others } = props;
   const tree = useTree();
-  const node = usePosNode(posLike);
+  // const node = useNode(posLike);
+  const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -275,7 +268,8 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
 const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
   const { pos: posLike, factory, method, ...others } = props;
   const tree = useTree();
-  const node = usePosNode(posLike);
+  // const node = useNode(posLike);
+  const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -319,7 +313,8 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
 const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
   const { pos: posLike, clone, ...others } = props;
   const tree = useTree();
-  const node = usePosNode(posLike);
+  // const node = useNode(posLike);
+  const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -371,7 +366,6 @@ TreeBasic.Copy = TreeBaseCopy;
 TreeBasic.useNode = useNode;
 TreeBasic.useTree = useTree;
 TreeBasic.usePos = usePos;
-TreeBasic.usePosNode = usePosNode;
 TreeBasic.useRoot = useRoot;
 TreeBasic.useHelper = useHelper;
 
@@ -385,7 +379,6 @@ TreeBasic.mixin = (target: any) => {
   target.useNode = TreeBasic.useNode;
   target.useTree = TreeBasic.useTree;
   target.usePos = TreeBasic.usePos;
-  target.usePosNode = TreeBasic.usePosNode;
   target.useRoot = TreeBasic.useRoot;
   target.useHelper = TreeBasic.useHelper;
   return target;
