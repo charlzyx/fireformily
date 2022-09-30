@@ -1,5 +1,6 @@
 import React from 'react';
-import { QueryListProvider, QueryListProviderProps } from './shared';
+import type { QueryListProviderProps } from './shared';
+import { QueryListProvider } from './shared';
 
 export const QueryList = (
   props: React.PropsWithChildren<QueryListProviderProps>,

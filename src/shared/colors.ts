@@ -1,6 +1,6 @@
-import { BadgeProps } from 'antd';
+import type { BadgeProps } from 'antd';
 
-export type PickArrayItem<T> = T extends Array<infer P> ? P : unknown;
+export type PickArrayItem<T> = T extends (infer P)[] ? P : unknown;
 
 const statusColors = {
   // status

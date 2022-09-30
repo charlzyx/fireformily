@@ -100,6 +100,6 @@ export const Suggestion: React.FC<{
       onSearch={handleSearch}
       onChange={handleChange}
       options={data}
-    ></Select>
+     />
   );
 };

@@ -1,4 +1,4 @@
-import { ArrayField, ObjectField } from '@formily/core';
+import type { ArrayField, ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
 import { useExpressionScope, ExpressionScope, useForm } from '@formily/react';
 import { autorun, observable, batch } from '@formily/reactive';
@@ -90,8 +90,7 @@ export interface IQueryListContext<
 
 const QueryListContext = createContext<IQueryListContext | null>(null);
 
-export interface QueryListProviderProps
-  extends Pick<
+export type QueryListProviderProps = Pick<
     IQueryListContext,
     | 'service'
     | 'pageSize'
@@ -100,7 +99,7 @@ export interface QueryListProviderProps
     | 'filterRemote'
     | 'sortRemote'
     | 'size'
-  > {}
+  >
 
 export const QueryListProvider = React.memo(
   (props: React.PropsWithChildren<QueryListProviderProps>) => {
@@ -115,6 +114,7 @@ export const QueryListProvider = React.memo(
     const methods = useRef({
       service: props.service,
     });
+
 
     const _service: IQueryListContext['service'] = useCallback(
       (params: any) => {
@@ -196,6 +196,7 @@ export const QueryListProvider = React.memo(
       // do reset
       return _trigger!();
     }, [_trigger, form]);
+
 
     const $value = useRef<IQueryListContext>(
       observable({

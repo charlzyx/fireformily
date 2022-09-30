@@ -1,5 +1,5 @@
 import { usePrefixCls } from '@formily/antd/lib/__builtins__';
-import { ArrayField } from '@formily/core';
+import type { ArrayField } from '@formily/core';
 import { useExpressionScope, useField, useFieldSchema } from '@formily/react';
 import { toJS } from '@formily/reactive';
 import React, { useCallback, useMemo } from 'react';
@@ -57,12 +57,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
           onSortEnd={({ oldIndex, newIndex }: any) => {
             const action = field.componentProps?.onSort;
             if (typeof action === 'function') {
-              const ret = action(
-                oldIndex,
-                newIndex,
-                toJS(field.value),
-                scope,
-              );
+              const ret = action(oldIndex, newIndex, toJS(field.value), scope);
               if (ret instanceof Promise) {
                 field.setLoading(true);
                 field.move(oldIndex, newIndex);
@@ -89,7 +84,7 @@ export const useSortable = (parentRef: React.RefObject<HTMLDivElement>) => {
         />
       );
     },
-    [ctx, field, parentRef, prefixCls],
+    [ctx, field, parentRef, prefixCls, scope],
   );
 
   const body = {

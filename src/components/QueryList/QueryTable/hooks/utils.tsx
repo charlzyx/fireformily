@@ -1,4 +1,4 @@
-import { Schema } from '@formily/react';
+import type { Schema } from '@formily/react';
 
 export const hasSortable = (schema: Schema): any => {
   const canMap = (schema.items || (schema as any)) as Schema;

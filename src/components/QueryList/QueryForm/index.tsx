@@ -1,11 +1,11 @@
-import { SyncOutlined } from '@ant-design/icons';
-import { FormButtonGroup, FormGrid, FormLayout } from '@formily/antd';
+import type { FormLayout } from '@formily/antd';
+import { FormButtonGroup, FormGrid } from '@formily/antd';
+import type { ObjectField } from '@formily/core';
 import { observer, useField, useForm } from '@formily/react';
-import { Button, Space, Typography } from 'antd';
-import React, { useEffect, useRef } from 'react';
+import { Button } from 'antd';
+import React, { useEffect } from 'react';
 import { useQueryList$ } from '../shared';
 import { useCollapseGrid } from './useCollapseGrid';
-import { ObjectField } from '@formily/core';
 
 type QueryFormProps = React.PropsWithChildren<{
   resetText?: string;

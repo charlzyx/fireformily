@@ -1,9 +1,10 @@
 /* eslint-disable no-shadow */
-import { ArrayField } from '@formily/core';
+import type { ArrayField } from '@formily/core';
 import { useField, useFieldSchema } from '@formily/react';
 import { observable } from '@formily/reactive';
-import { TableProps } from 'antd';
-import React, { useCallback, useEffect, useRef } from 'react';
+import type { TableProps } from 'antd';
+import type React from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQueryList$ } from '../../shared';
 
 type TFieldSchema = ReturnType<typeof useFieldSchema>;

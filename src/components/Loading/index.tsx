@@ -19,6 +19,6 @@ export const Loading = (props: React.ComponentProps<typeof Skeleton>) => {
       style={{ ...absolute, display: loading ? '' : 'none' }}
       paragraph
       loading
-    ></Skeleton>
+     />
   );
 };

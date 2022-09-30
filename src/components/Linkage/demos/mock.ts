@@ -1,4 +1,13 @@
-import { OptionData } from 'fireformily';
+export interface OptionData {
+  label?: string;
+  value?: React.Key;
+  isLeaf?: boolean;
+  children?: OptionData[];
+  disabled?: boolean;
+  __init?: boolean;
+  loading?: boolean;
+}
+
 export const remote =
   'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (

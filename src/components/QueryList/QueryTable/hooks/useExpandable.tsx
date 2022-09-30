@@ -1,8 +1,8 @@
 import { ArrayBase as AntdArrayBase } from '@formily/antd';
-import { ArrayField } from '@formily/core';
+import type { ArrayField } from '@formily/core';
 import { RecursionField, useField, useFieldSchema } from '@formily/react';
-import { Table } from 'antd';
-import React, { useMemo, useState } from 'react';
+import type { Table } from 'antd';
+import React, { useMemo } from 'react';
 
 import { isExpandComponent } from './utils';
 

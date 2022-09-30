@@ -33,7 +33,7 @@ export const ImageView = (props: {
       <Image.PreviewGroup>
         {uris.map((uri) => {
           return (
-            <Image style={mergedStyle} key={uri} src={uri} preview></Image>
+            <Image style={mergedStyle} key={uri} src={uri} preview />
           );
         })}
       </Image.PreviewGroup>

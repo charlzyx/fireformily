@@ -1,8 +1,10 @@
-import { ArrayBase, ArrayBaseMixins } from '@formily/antd';
+import type { ArrayBaseMixins } from '@formily/antd';
+import { ArrayBase } from '@formily/antd';
 import { usePrefixCls } from '@formily/antd/esm/__builtins__';
-import { ArrayField } from '@formily/core';
+import type { ArrayField } from '@formily/core';
 import { observer, useField } from '@formily/react';
-import { PaginationProps, Table } from 'antd';
+import type { PaginationProps} from 'antd';
+import { Table } from 'antd';
 import React, { Fragment, useEffect, useRef } from 'react';
 import { useQueryList$ } from '../shared';
 import {
@@ -14,7 +16,7 @@ import {
 import { useExpandable } from './hooks/useExpandable';
 import { Titlebar } from './TitleBar';
 
-interface IQueryTableProps extends React.ComponentProps<typeof Table> {}
+type IQueryTableProps = React.ComponentProps<typeof Table>
 
 export const showTotal = (total: number, range: number[]) =>
   `第 ${range[-1]}-${range[1]} 条, 共 ${total} 条数据`;
@@ -134,7 +136,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
               ctx?._trigger?.();
             }
           }}
-        ></Table>
+         />
         {renderSources()}
         {addtion}
       </ArrayBase>

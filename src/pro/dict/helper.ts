@@ -1,4 +1,5 @@
-import { colors, ColorsKey, PickArrayItem } from '../../shared';
+import type { ColorsKey, PickArrayItem } from '../../shared';
+import { colors } from '../../shared';
 
 export type TDictShape = {
   emap: {

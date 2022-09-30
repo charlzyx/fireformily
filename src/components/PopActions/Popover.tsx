@@ -1,7 +1,8 @@
 import { Popover as AntdPopover } from 'antd';
 import React from 'react';
 import { Open } from './Open';
-import { Actions, IButtonType, usePopAction } from './shared';
+import type { Actions, IButtonType} from './shared';
+import { usePopAction } from './shared';
 
 export const Popover = (
   props: React.ComponentProps<typeof AntdPopover> &
@@ -31,7 +32,7 @@ export const Popover = (
         }
       }}
     >
-      <Open open={open} field={field} loading={loading} scope={scope}></Open>
+      <Open open={open} field={field} loading={loading} scope={scope} />
     </AntdPopover>
   );
 };

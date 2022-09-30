@@ -1,26 +1,22 @@
-import { Form, onFieldMount, onFieldReact } from '@formily/core';
+import type { Form} from '@formily/core';
+import { onFieldMount, onFieldReact } from '@formily/core';
 import { observable } from '@formily/reactive';
-import { TDictShape, convertListToDict, convertToOptionList } from './helper';
+import type { TDictShape} from './helper';
+import { convertListToDict, convertToOptionList } from './helper';
 import { Dict } from '../../components';
-import React from 'react';
+import type React from 'react';
 
 export type TDictLoaderFactory = (
   converter: typeof convertToOptionList,
 ) => Promise<ReturnType<typeof convertToOptionList>>;
 
-export const memo: {
-  [namespace: string]: TDictShape;
-} = observable({});
+export const memo: Record<string, TDictShape> = observable({});
 
 export const dict = memo;
 
-const loaders: {
-  [namespace: string]: () => Promise<TDictShape>;
-} = {};
+const loaders: Record<string, () => Promise<TDictShape>> = {};
 
-const pendings: {
-  [namespace: string]: Promise<TDictShape> | undefined;
-} = {};
+const pendings: Record<string, Promise<TDictShape> | undefined> = {};
 
 /**
  *
