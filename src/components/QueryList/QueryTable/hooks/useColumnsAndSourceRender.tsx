@@ -1,11 +1,12 @@
 /* eslint-disable no-shadow */
 import DownOutlined from '@ant-design/icons/DownOutlined';
 import { ArrayBase as AntdArrayBase } from '@formily/antd';
-import { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
-import { RecursionField, Schema, useFieldSchema } from '@formily/react';
+import type { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
+import type { Schema} from '@formily/react';
+import { RecursionField, useFieldSchema } from '@formily/react';
 import { isArr } from '@formily/shared';
 import { Dropdown, Menu, Space } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
+import type { ColumnProps } from 'antd/lib/table';
 import React from 'react';
 import { useQueryList$ } from '../../shared';
 
@@ -32,8 +33,8 @@ const parseArrayItems = (
   if (!schema) return [];
   const sources: ObservableColumnSource[] = [];
   const items = isArr(schema) ? schema : [schema];
-  return items.reduce((columns, schema) => {
-    const item = parser(schema);
+  return items.reduce((columns, subSchema) => {
+    const item = parser(subSchema);
     if (item) {
       return columns.concat(item);
     }
@@ -64,7 +65,7 @@ const renderOperations = (
             };
           })
           .filter(Boolean)}
-      ></Menu>
+       />
     ) : undefined;
 
   return (
@@ -95,36 +96,36 @@ const renderOperations = (
 export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
   const ctx = useQueryList$();
   const schema = useFieldSchema();
-  const parseSources = (schema: Schema): ObservableColumnSource[] => {
+  const parseSources = (subSchema: Schema): ObservableColumnSource[] => {
     if (
-      isColumnComponent(schema) ||
-      isOperationsComponent(schema) ||
-      isAdditionComponent(schema)
+      isColumnComponent(subSchema) ||
+      isOperationsComponent(subSchema) ||
+      isAdditionComponent(subSchema)
     ) {
-      if (!schema['x-component-props']?.['dataIndex'] && !schema['name'])
+      if (!subSchema['x-component-props']?.dataIndex && !subSchema.name)
         return [];
 
-      const name = schema['x-component-props']?.['dataIndex'] || schema['name'];
+      const name = subSchema['x-component-props']?.dataIndex || subSchema.name;
 
       const field = arrayField.query(arrayField.address.concat(name)).take();
 
       const columnProps =
-        (field?.component as any)?.[1] || schema['x-component-props'] || {};
+        (field?.component as any)?.[1] || subSchema['x-component-props'] || {};
 
-      const display = field?.display || schema['x-display'];
+      const display = field?.display || subSchema['x-display'];
 
       return [
         {
           name,
           display,
           field,
-          schema,
+          schema: subSchema,
           columnProps,
         },
       ];
-    } else if (schema.properties) {
-      return schema.reduceProperties((buf, schema) => {
-        return buf.concat(parseSources(schema));
+    } else if (subSchema.properties) {
+      return subSchema.reduceProperties((buf, childSchema) => {
+        return buf.concat(parseSources(childSchema));
       }, [] as ObservableColumnSource[]);
     } else {
       return [];
@@ -136,7 +137,7 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
   const sources = parseArrayItems(schema.items as any, parseSources);
 
   const columns = sources.reduce(
-    (buf, { name, columnProps, schema, display }, key) => {
+    (buf, { name, columnProps, schema: subSchema, display }, key) => {
       // hidden by user select
       if (
         ctx &&
@@ -149,7 +150,7 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
         return buf;
       }
       if (display === 'hidden') return buf;
-      if (isOperationsComponent(schema)) {
+      if (isOperationsComponent(subSchema)) {
         return buf.concat({
           fixed: true,
           ...columnProps,
@@ -157,12 +158,12 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
           dataIndex: name,
           render: (value: any, record: any) => {
             const index = arrayField?.value?.indexOf(record);
-            return renderOperations(columnProps, schema, index, arrayField);
+            return renderOperations(columnProps, subSchema, index, arrayField);
           },
         });
       }
 
-      if (!isColumnComponent(schema)) return buf;
+      if (!isColumnComponent(subSchema)) return buf;
 
       return buf.concat({
         ...columnProps,
@@ -179,7 +180,7 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
               record={() => arrayField?.value?.[index]}
             >
               <RecursionField
-                schema={schema}
+                schema={subSchema}
                 name={index}
                 onlyRenderProperties
               />

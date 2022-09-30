@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { isColorStatus } from '../../shared';
-import { TDictShape } from '../../pro';
+import type { TDictShape } from '../../pro';
 import { Space, Tag, Badge } from 'antd';
 import { useMemo } from 'react';
 
@@ -48,7 +48,7 @@ export const Dict = (props: {
             }
             color={isColorStatus(item?.color) ? undefined : item?.color}
             text={item?.label}
-          ></Badge>
+           />
         ) : type === 'tag' ? (
           <Tag key={item?.key} color={item?.color}>
             {item?.label}

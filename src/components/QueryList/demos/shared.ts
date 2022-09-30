@@ -1,9 +1,10 @@
 import moment from 'moment';
-import { registerDictLoader, PopActions } from 'fireformily';
+import type { PopActions } from 'fireformily';
+import { registerDictLoader } from 'fireformily';
 
 import { faker } from '@faker-js/faker';
 
-import React from 'react';
+import type React from 'react';
 
 type TActions = React.ComponentProps<typeof PopActions>['actions'];
 
@@ -98,9 +99,7 @@ export const onSort = (
   return Promise.resolve();
 };
 
-export const actions: {
-  [k: string]: TActions;
-} = {
+export const actions: Record<string, TActions> = {
   batch: {
     load: (scope) => {
       log('batch load args', scope);

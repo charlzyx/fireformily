@@ -1,6 +1,6 @@
 import { Button } from 'antd';
 import React from 'react';
-import { usePopAction } from './shared';
+import type { usePopAction } from './shared';
 
 const noop = () => {};
 

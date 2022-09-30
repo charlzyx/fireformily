@@ -7,10 +7,10 @@ import {
   useExpressionScope,
 } from '@formily/react';
 import { Button } from 'antd';
-import { PopActions, safeStringify, TreeBase, TreeNodes } from 'fireformily';
-
+import { PopActions, TreeBase, TreeNodes } from 'fireformily';
 import { useMemo, useState } from 'react';
 import { actions, loadData, loadAll } from './mock';
+import { stringify } from './stringify';
 
 const form = createForm();
 
@@ -23,7 +23,7 @@ const Debug = (props: { value: any }) => {
       .map(Number)
       .filter((n) => !Number.isNaN(n));
   }, [posInput]);
-  const node = TreeBase.usePosNode?.(pos);
+  const node = TreeBase.useNode?.(pos);
   return (
     <div>
       <div>Input Node Pos</div>
@@ -31,7 +31,7 @@ const Debug = (props: { value: any }) => {
         placeholder="例如: 2-0-1"
         value={posInput}
         onChange={(e) => setPosInput(e.target.value)}
-      ></Input>
+       />
       <Button
         type={node && pos.length > 0 ? 'primary' : 'dashed'}
         onClick={() => {
@@ -41,27 +41,27 @@ const Debug = (props: { value: any }) => {
           }
           console.groupCollapsed('点击查看 node scope');
           console.group('---node.$pos');
-          console.log(safeStringify(node.$pos));
+          console.log(stringify(node.$pos));
           console.groupEnd();
 
           console.group('---node.$record');
-          console.log(safeStringify(node.$record));
+          console.log(stringify(node.$record));
           console.groupEnd();
 
           console.group('---node.$index');
-          console.log(safeStringify(node.$index));
+          console.log(stringify(node.$index));
           console.groupEnd();
 
           console.group('---node.$records');
-          console.log(safeStringify(node.$records));
+          console.log(stringify(node.$records));
           console.groupEnd();
 
           console.group('---node.$extra');
-          console.log(safeStringify(node.$extra));
+          console.log(stringify(node.$extra));
           console.groupEnd();
 
           console.group('---node.$root');
-          console.log(safeStringify(node.$root));
+          console.log(stringify(node.$root));
           console.groupEnd();
         }}
       >
@@ -79,27 +79,27 @@ const ScopeLogger = () => {
         console.groupCollapsed('点击查看 scope');
 
         console.group('---scope.$pos');
-        console.log(safeStringify(scope.$pos));
+        console.log(stringify(scope.$pos));
         console.groupEnd();
 
         console.group('---scope.$record');
-        console.log(safeStringify(scope.$record));
+        console.log(stringify(scope.$record));
         console.groupEnd();
 
         console.group('---scope.$index');
-        console.log(safeStringify(scope.$index));
+        console.log(stringify(scope.$index));
         console.groupEnd();
 
         console.group('---scope.$records');
-        console.log(safeStringify(scope.$records));
+        console.log(stringify(scope.$records));
         console.groupEnd();
 
         console.group('---scope.$extra');
-        console.log(safeStringify(scope.$extra));
+        console.log(stringify(scope.$extra));
         console.groupEnd();
 
         console.group('---scope.$root');
-        console.log(safeStringify(scope.$root));
+        console.log(stringify(scope.$root));
         console.groupEnd();
       }}
     />
@@ -305,7 +305,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
 const TreeNodesDemo = () => {
   return (
     <FormProvider form={form}>
-      <SchemaField schema={schema}></SchemaField>
+      <SchemaField schema={schema} />
     </FormProvider>
   );
 };

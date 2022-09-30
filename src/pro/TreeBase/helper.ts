@@ -53,31 +53,28 @@ export const getHelper = <T extends object>(
   const copy = clone ?? ((o) => uniqueClone(o, fieldNames.key));
 
   const cache = {
-    dirty: false,
     pos: {} as any,
     mapper: {} as any,
   };
 
   const freshCache = () => {
     console.log('computed start');
-    let start = performance.now();
+    const start = performance.now();
     cache.mapper = mapping(refs.root, take);
 
     cache.pos = Object.keys(cache.mapper).reduce((p, nk) => {
-      p[nk] = cache.mapper[nk].pos;
+      const npos = cache.mapper[nk].pos;
+      p[nk] = npos;
       return p;
     }, cache.pos);
 
-    let end = performance.now();
+    const end = performance.now();
     console.log('computed end', end - start);
   };
   // 触发一下observer
   const update = () => {
     freshCache();
-    Promise.resolve(0).then(() => {
-      // cache.dirty = true;
-      take(refs.root).children = [...take(refs.root).children!];
-    });
+    take(refs.root).children = [...take(refs.root).children!];
   };
 
   freshCache();
@@ -98,24 +95,9 @@ export const getHelper = <T extends object>(
       if (cache.pos[key!]) {
         return cache.pos[key];
       } else {
-        console.log('不可能还在这吧');
         freshCache();
         return cache.pos[key];
       }
-
-      // if (key) {
-      //   let current = cache.mapping[key];
-      //   const pos: number[] | null = current ? [] : null;
-
-      //   while (current) {
-      //     pos!.unshift(current.index);
-      //     current = cache.mapping[current.parentKey];
-      //   }
-      //   return pos;
-      // } else {
-      //   console.log('nulllll');
-      //   return null;
-      // }
     },
     posToParents(pos: NodePos) {
       let parent = refs.root;

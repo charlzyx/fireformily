@@ -1,6 +1,6 @@
 import { ExpressionScope } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
-import { useMemo, useRef, createContext, useContext, useEffect } from 'react';
+import { useMemo, useRef, createContext, useContext } from 'react';
 import { getHelper } from './helper';
 
 export type NodePos = number[];
@@ -11,9 +11,7 @@ export const FIELD_NAMES = {
   children: 'children',
 };
 
-export type NodeLike<T extends object = object> = {
-  [childField: string]: NodeLike<T>[];
-} & T;
+export type NodeLike<T extends object = object> = Record<string, NodeLike<T>[]> & T;
 
 export interface IRootScope<T extends object> {
   $root: NodeLike<T>;
@@ -49,7 +47,7 @@ export const useRoot = () => {
 
 export const useHelper = () => {
   const root = useRoot();
-  return root?.$helper!;
+  return root?.$helper;
 };
 
 export const useNode = (keyOrPos?: React.Key | NodePos) => {
@@ -106,9 +104,9 @@ export const RootScope = <T extends object>(
   }, []);
 
   return (
-    <RootContext.Provider value={value}>
-      <ExpressionScope value={value}>{children}</ExpressionScope>
-    </RootContext.Provider>
+    <ExpressionScope value={value}>
+      <RootContext.Provider value={value}>{children}</RootContext.Provider>
+    </ExpressionScope>
   );
 };
 
@@ -131,7 +129,7 @@ export const NodeScope = <T extends object>(
 
   const value = useMemo(() => {
     if (!root) return null;
-    const { $refs, $fieldNames, $helper, $root } = root;
+    const { $refs,  $helper } = root;
 
     const scope: INodeScope<T> = {
       get $root() {
@@ -201,19 +199,11 @@ export const NodeScope = <T extends object>(
         return this.$pos ? this.$pos[this.$pos.length - 1] : -1;
       },
     };
-    $refs.set($helper.take(scope.$record).key!, scope);
-    methods.current.disposer = () => {
-      $refs.delete($helper.take(scope.$record).key!);
-    };
+    const nodeKey = $helper.take(scope.$record).key!;
+    $refs.set(nodeKey, scope);
+
     return scope;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const ref = methods.current;
-    return () => {
-      ref.disposer?.();
-    };
   }, []);
 
   return (

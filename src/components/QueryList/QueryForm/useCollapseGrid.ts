@@ -1,5 +1,6 @@
 import { FormGrid } from '@formily/antd';
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 
 export const useCollapseGrid = (
   conf: React.ComponentProps<typeof FormGrid> = {},

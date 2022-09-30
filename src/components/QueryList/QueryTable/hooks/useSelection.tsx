@@ -24,7 +24,7 @@ export const useSelection = () => {
               return -1;
             }}
           >
-            <Space split={<Divider type="vertical"></Divider>}>
+            <Space split={<Divider type="vertical" />}>
               {subSchema.mapProperties((propSchema, propKey) => {
                 return (
                   <RecursionField
