@@ -36,7 +36,7 @@ export const Titlebar = observer((props: any) => {
         { label: '中等', key: 'middle' },
         { label: '紧凑', key: 'small' },
       ]}
-    ></Menu>
+     />
   );
 
   const selections = useSelection();
@@ -60,14 +60,14 @@ export const Titlebar = observer((props: any) => {
         return {
           label: (
             <Space onClick={onClick}>
-              <Checkbox checked={checked}></Checkbox>
+              <Checkbox checked={checked} />
               {item.label}
             </Space>
           ),
           key: item.key,
         };
       })}
-    ></Menu>
+     />
   );
 
   return (
@@ -87,7 +87,7 @@ export const Titlebar = observer((props: any) => {
             style={{ padding: '3px 4px' }}
             type="info"
             message={
-              <Space size="small" split={<Divider type="vertical"></Divider>}>
+              <Space size="small" split={<Divider type="vertical" />}>
                 <Button type="text" size="small">
                   选中 {conf._selectedRowKeys.length} 项
                 </Button>
@@ -112,7 +112,7 @@ export const Titlebar = observer((props: any) => {
                 {selections}
               </Space>
             }
-          ></Alert>
+           />
         ) : null}
       </Space>
       <Space size="small">

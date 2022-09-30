@@ -1,4 +1,4 @@
-import { ObjectField } from '@formily/core';
+import type { ObjectField } from '@formily/core';
 import {
   observer,
   RecursionField,
@@ -10,14 +10,15 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Loading } from '../Loading';
 import { TreeBase } from '../../pro/TreeBase';
 import './style.css';
+import { useLatest } from 'ahooks';
 
 export type TreeNode = {
   label?: string;
   value?: React.Key;
   isLeaf?: boolean;
   children?: TreeNode[];
+  disabled?: boolean;
   loading?: boolean;
-  key?: React.Key;
   __init?: boolean;
 };
 
@@ -66,11 +67,20 @@ const HACKDomToHiddenAntdNodeForFixNodeFlash = () => {
   return <span ref={ref}>hack</span>;
 };
 
-const TitleRender = () => {
+const TitleRender = (props: { dataKey?: React.Key }) => {
   const tree = TreeBase.useTree();
+  const helper = TreeBase.useHelper();
   const node = TreeBase.useNode();
 
-  return node?.$path == null ? null : (
+  /**
+   * title render 拿到的node 跟 context 中的有一帧渲染的错位,
+   * 页面闪一下，暂时没有什么好办法
+   */
+  const errorKeyRender = helper?.take(node?.$record).key !== props.dataKey;
+
+  return errorKeyRender ? (
+    <HACKDomToHiddenAntdNodeForFixNodeFlash />
+  ) : (
     <div
       onClick={(e) => {
         if ((e?.target as any)?.tagName === 'INPUT') {
@@ -81,7 +91,7 @@ const TitleRender = () => {
       <RecursionField
         name={node?.$path}
         schema={tree?.schema.items as any}
-      ></RecursionField>
+       />
     </div>
   );
 };
@@ -93,7 +103,7 @@ const TreeInner = observer((props: any) => {
   const helper = TreeBase.useHelper();
   const field = useField<ObjectField>();
 
-  const methods = useRef({
+  const methods = useLatest({
     loadData,
     loadAll,
     onDrop: props.onDrop,
@@ -103,8 +113,9 @@ const TreeInner = observer((props: any) => {
     (node: any) => {
       if (methods.current.loadAll) return;
       if (!methods.current.loadData) return;
+      if (!helper) return;
       const pos = helper.getPos(node);
-      let chain = helper.posToParents(pos!);
+      const chain = helper.posToParents(pos!);
       const last = chain[chain.length - 1];
       last.loading = true;
       return methods.current
@@ -116,7 +127,7 @@ const TreeInner = observer((props: any) => {
           last.loading = false;
         });
     },
-    [helper],
+    [helper, methods],
   );
 
   const onDrop = useCallback(
@@ -131,60 +142,57 @@ const TreeInner = observer((props: any) => {
       // thenable
       if (typeof ret?.then === 'function') {
         ret.then(() => {
-          helper.move(before, after);
+          helper?.move(before, after);
         });
       } else {
-        helper.move(before, after);
+        helper?.move(before, after);
       }
 
-      console.log('onDrop', { before, after });
+      // console.log('onDrop', { before, after });
     },
-    [helper],
+    [helper, methods],
   );
 
   return (
     <React.Fragment>
-      <Loading></Loading>
+      <Loading />
       <Tree
         showLine
         blockNode
         {...others}
         className={`${props.className} fireformily-tree`}
-        titleRender={(node) => {
-          const pos = helper.getPos(node);
-          // 不然会闪一下 ,可以注释掉看看
+        titleRender={(dataNode) => {
+          if (!helper) return null;
+          const pos = helper.getPos(dataNode);
           if (!pos) {
-            console.log('HAKCING');
             return (
-              <HACKDomToHiddenAntdNodeForFixNodeFlash></HACKDomToHiddenAntdNodeForFixNodeFlash>
+              <HACKDomToHiddenAntdNodeForFixNodeFlash />
             );
           }
 
-          console.log('pos of', node);
-
           return (
             <TreeBase.Node
-              key={helper.take(node).key}
-              pos={() => helper.getPos(node)!}
+              key={helper.take(dataNode).key}
+              pos={() => helper.getPos(dataNode)!}
               getExtra={() => {
-                const nodeKey = helper.take(node).key;
+                const nodeKey = helper.take(dataNode).key;
                 const bind = field.value;
                 const {
                   selectedKeys: selecteds = [],
                   checkedKeys: checkeds = [],
                   halfCheckedKeys: halfCheckeds = [],
-                  // expandedKeys: expandeds = [],
+                  expandedKeys: expandeds = [],
                 } = bind as any;
 
                 return {
                   checked: checkeds?.includes?.(nodeKey),
                   halfChecked: halfCheckeds?.includes?.(nodeKey),
                   selecteds: selecteds?.includes?.(nodeKey),
-                  // expanded: expandeds?.includes?.(nodeKey),
+                  expanded: expandeds?.includes?.(nodeKey),
                 };
               }}
             >
-              <TitleRender></TitleRender>
+              <TitleRender dataKey={helper.take(dataNode).key} />
             </TreeBase.Node>
           );
         }}
@@ -214,10 +222,10 @@ const TreeInner = observer((props: any) => {
           });
         }}
         fieldNames={fieldNames}
-        treeData={helper.dataSource}
+        treeData={helper?.dataSource}
         onDrop={onDrop}
         loadData={loadData && !loadAll ? (onLoad as any) : undefined}
-      ></Tree>
+       />
     </React.Fragment>
   );
 });
@@ -239,7 +247,7 @@ export const TreeNodes = (props: TreeNodesProps) => {
     return { ...FIELD_NAMES, ...fieldNames };
   }, [fieldNames]);
 
-  const methods = useRef({
+  const methods = useLatest({
     loader: props.loadAll || props.loadData,
   });
 
@@ -247,14 +255,9 @@ export const TreeNodes = (props: TreeNodesProps) => {
     if (!methods.current.loader) {
       return;
     }
-    if (
-      field.selfModified
-      // Array.isArray(field.value.children) &&
-      // field.value.children.length > 0
-    ) {
+    if (field.selfModified) {
       return;
     }
-    console.log('--------------wtf');
     methods.current.loader([]).then((rootList: any) => {
       console.log('reloaddd');
       field.setState((s) => {
@@ -277,27 +280,24 @@ export const TreeNodes = (props: TreeNodesProps) => {
         onCopy={onCopy}
         onMove={onMove}
       >
-        <RecursionField schema={fieldSchema} onlyRenderSelf></RecursionField>
-        <div>
-          <div>
-            <TreeBase.Node
-              // getNode={()=> field.value}
-              pos={() => []}
-            >
+        <RecursionField schema={fieldSchema} onlyRenderSelf />
+        <Space size="small" {...layout}>
+          <Space direction="vertical" size="small">
+            <TreeBase.Node getNode={() => field.value} pos={() => []}>
               <RecursionField
                 schema={fieldSchema.items as any}
                 onlyRenderProperties
                 name=""
-              ></RecursionField>
+               />
             </TreeBase.Node>
-            <TreeInner {...others} fieldNames={names}></TreeInner>
-          </div>
+            <TreeInner {...others} fieldNames={names} />
+          </Space>
           <RecursionField
             schema={fieldSchema}
             name=""
             onlyRenderProperties
-          ></RecursionField>
-        </div>
+           />
+        </Space>
       </TreeBase>
     </React.Fragment>
   );

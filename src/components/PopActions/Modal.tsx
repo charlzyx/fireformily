@@ -1,7 +1,8 @@
 import { Modal as AntdModal } from 'antd';
 import React from 'react';
 import { Open } from './Open';
-import { Actions, IButtonType, usePopAction } from './shared';
+import type { Actions, IButtonType} from './shared';
+import { usePopAction } from './shared';
 
 export const Modal = (
   props: React.ComponentProps<typeof AntdModal> &
@@ -30,7 +31,7 @@ export const Modal = (
         {header}
         {body}
       </AntdModal>
-      <Open open={open} field={field} loading={loading} scope={scope}></Open>
+      <Open open={open} field={field} loading={loading} scope={scope} />
     </>
   );
 };

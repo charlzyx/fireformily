@@ -1,21 +1,16 @@
 import { isVoidField } from '@formily/core';
+import type {
+  Schema} from '@formily/react';
 import {
   RecursionField,
-  Schema,
   useExpressionScope,
   useField,
   useFieldSchema,
 } from '@formily/react';
 import { Button, Space } from 'antd';
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { isObservable } from '@formily/reactive';
+import { useLatest } from 'ahooks';
 import { useQueryList$ } from '../QueryList/shared';
 
 const nextTick = () =>
@@ -74,6 +69,7 @@ export interface IAction<Record = any, Data = Record> {
 }
 
 const noop = () => Promise.resolve({});
+const clone = (x: any) => Promise.resolve({ ...x });
 
 export const usePopAction = () => {
   const scope = useExpressionScope();
@@ -90,13 +86,7 @@ export const usePopAction = () => {
 
   const schema = useFieldSchema();
 
-  const methods = useRef(actions || {});
-
-  useEffect(() => {
-    methods.current.load = actions?.load;
-    methods.current.cancel = actions?.cancel;
-    methods.current.submit = actions?.submit;
-  }, [actions]);
+  const methods = useLatest(actions || {});
 
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -108,7 +98,7 @@ export const usePopAction = () => {
     if (calling.current.open) return;
     calling.current.open = true;
 
-    const loader = methods.current.load || noop;
+    const loader = methods.current.load || clone;
     setLoading(true);
 
     return loader(scope)
@@ -122,7 +112,7 @@ export const usePopAction = () => {
         calling.current.open = false;
         setLoading(false);
       });
-  }, [field, loading, scope]);
+  }, [field, loading, methods, scope]);
 
   const reset = useCallback(() => {
     if (field.disabled) return;
@@ -145,7 +135,7 @@ export const usePopAction = () => {
         calling.current.reset = false;
         setLoading(false);
       });
-  }, [field, loading, scope, visible]);
+  }, [field, loading, methods, scope, visible]);
 
   const submit = useCallback(() => {
     if (field.disabled) return;
@@ -172,7 +162,7 @@ export const usePopAction = () => {
         calling.current.submit = false;
         ctx?._refresh?.();
       });
-  }, [ctx, field, loading, scope, visible]);
+  }, [ctx, field, loading, methods, scope, visible]);
 
   const header = useMemo(() => {
     return field.content ? field.content : null;
@@ -181,7 +171,7 @@ export const usePopAction = () => {
   const body = useMemo(() => {
     return schema ? (
       <Fragment>
-        <RecursionField schema={schema}></RecursionField>
+        <RecursionField schema={schema} />
       </Fragment>
     ) : null;
   }, [schema]);

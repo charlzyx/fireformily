@@ -1,4 +1,4 @@
-export const safeStringify = (o: any): string => {
+export const stringify = (o: any): string => {
   const seens = new WeakMap();
   const serialize = (obj: any): any => {
     if (Array.isArray(obj)) {
@@ -20,7 +20,7 @@ export const safeStringify = (o: any): string => {
       } else {
         seens.set(obj, true);
         const result = {};
-        for (let key in obj) {
+        for (const key in obj) {
           (result as any)[key] = serialize(obj[key]);
         }
         seens.set(obj, false);

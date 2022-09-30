@@ -4,17 +4,19 @@ import {
   PlusOutlined,
   ToTopOutlined,
 } from '@ant-design/icons';
-import { ObjectField } from '@formily/core';
-import { JSXComponent, Schema, useField, useFieldSchema } from '@formily/react';
+import type { ObjectField } from '@formily/core';
+import type { JSXComponent, Schema} from '@formily/react';
+import { useField, useFieldSchema } from '@formily/react';
 import { Button, Popconfirm } from 'antd';
 import React, { createContext, useContext, useMemo } from 'react';
-import {
+import type {
   NodeLike,
+  NodePos} from './scope';
+import {
   NodeScope,
   RootScope,
   useNode,
   useRoot,
-  NodePos,
   useHelper,
 } from './scope';
 
@@ -113,7 +115,7 @@ const formatPos = (like?: PosLike): NodePos => {
 
 export const usePos = (posLike?: PosLike) => {
   const ctx = useNode();
-  return posLike ? formatPos(posLike) : ctx?.$pos!;
+  return posLike ? formatPos(posLike) : ctx?.$pos;
 };
 
 type ComposedTreeBase = React.FC<React.PropsWithChildren<ITreeBaseRootProps>> &
@@ -155,7 +157,7 @@ const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
 };
 
 const TreeBasePos: typeof TreeBasic['Pos'] = (props) => {
-  const node = useNode();
+  const node = useNode(props.pos);
   // not support node
   if (node?.$record === node?.$root) return null;
 
@@ -165,8 +167,7 @@ const TreeBasePos: typeof TreeBasic['Pos'] = (props) => {
 const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
   const { pos: posLike, ...others } = props;
   const tree = useTree();
-  // const node = useNode(posLike);
-  const node = useNode();
+  const node = useNode(posLike);
   const self = useField();
   const helper = useHelper();
 
@@ -177,7 +178,7 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
   if (tree.field.pattern !== 'editable') return null;
 
   const shouldHidden =
-    (props.to === 'up' && node?.$index! === 0) ||
+    (props.to === 'up' && node?.$index === 0) ||
     (props.to === 'down' &&
       node?.$index === (node?.$records?.length ?? -1) - 1);
   if (shouldHidden) return null;
@@ -198,14 +199,14 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
         after[after.length - 1] =
           props.to === 'down' ? nowIndex + 1 : Math.max(nowIndex - 1, 0);
 
-        const req = tree.props.onMove?.(pos, after, node?.$root!);
+        const req = tree.props.onMove?.(pos, after, node?.$root);
         // thenable
         if (typeof req?.then === 'function') {
           req.then(() => {
-            helper.move(pos, after);
+            helper?.move(pos, after);
           });
         } else {
-          helper.move(pos, after);
+          helper?.move(pos, after);
         }
       }}
     >
@@ -217,8 +218,8 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
 const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
   const { pos: posLike, ...others } = props;
   const tree = useTree();
-  // const node = useNode(posLike);
-  const node = useNode();
+  const node = useNode(posLike);
+  // const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -240,15 +241,15 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
           pos,
           node.$record,
           node.$lookup,
-          node?.$root!,
+          node?.$root,
         );
         // thenable
         if (typeof req?.then === 'function') {
           req.then(() => {
-            helper.remove(pos);
+            helper?.remove(pos);
           });
         } else {
-          helper.remove(pos);
+          helper?.remove(pos);
         }
       }}
     >
@@ -256,7 +257,7 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
         onClick={(e) => e.stopPropagation()}
         type="link"
         size="small"
-        icon={<DeleteOutlined></DeleteOutlined>}
+        icon={<DeleteOutlined />}
         {...others}
       >
         {self.props.title || self.title}
@@ -268,8 +269,8 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
 const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
   const { pos: posLike, factory, method, ...others } = props;
   const tree = useTree();
-  // const node = useNode(posLike);
-  const node = useNode();
+  const node = useNode(posLike);
+  // const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -279,7 +280,7 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
     <Button
       type="dashed"
       size="small"
-      icon={<PlusOutlined></PlusOutlined>}
+      icon={<PlusOutlined />}
       {...others}
       onClick={(e) => {
         e.stopPropagation();
@@ -297,11 +298,11 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
         if (typeof req?.then === 'function') {
           req.then((neo) => {
             setTimeout(() => {
-              helper.append(pos, method, neo ?? factory?.(node.$record));
+              helper?.append(pos, method, neo ?? factory?.(node.$record));
             });
           });
         } else {
-          helper.append(pos, method, factory?.(node.$record) || {});
+          helper?.append(pos, method, factory?.(node.$record) || {});
         }
       }}
     >
@@ -313,8 +314,8 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
 const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
   const { pos: posLike, clone, ...others } = props;
   const tree = useTree();
-  // const node = useNode(posLike);
-  const node = useNode();
+  const node = useNode(posLike);
+  // const node = useNode();
   const self = useField();
   const helper = useHelper();
   if (!tree) return null;
@@ -326,7 +327,7 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
     <Button
       type="link"
       size="small"
-      icon={<CopyOutlined></CopyOutlined>}
+      icon={<CopyOutlined />}
       {...others}
       onClick={(e) => {
         e.stopPropagation();
@@ -344,11 +345,11 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
         if (typeof req?.then === 'function') {
           req.then((neo) => {
             const copyed = neo ?? clone?.(node.$record);
-            helper.copy(pos, copyed);
+            helper?.copy(pos, copyed);
           });
         } else {
           const copyed = clone?.(node.$record);
-          helper.copy(pos, copyed);
+          helper?.copy(pos, copyed);
         }
       }}
     >
