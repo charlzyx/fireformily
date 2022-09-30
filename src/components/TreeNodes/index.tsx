@@ -76,7 +76,7 @@ const TitleRender = (props: { dataKey?: React.Key }) => {
    * title render 拿到的node 跟 context 中的有一帧渲染的错位,
    * 页面闪一下，暂时没有什么好办法
    */
-  const errorKeyRender = helper.take(node?.$record).key !== props.dataKey;
+  const errorKeyRender = helper?.take(node?.$record).key !== props.dataKey;
 
   return errorKeyRender ? (
     <HACKDomToHiddenAntdNodeForFixNodeFlash />
@@ -113,6 +113,7 @@ const TreeInner = observer((props: any) => {
     (node: any) => {
       if (methods.current.loadAll) return;
       if (!methods.current.loadData) return;
+      if (!helper) return;
       const pos = helper.getPos(node);
       const chain = helper.posToParents(pos!);
       const last = chain[chain.length - 1];
@@ -141,10 +142,10 @@ const TreeInner = observer((props: any) => {
       // thenable
       if (typeof ret?.then === 'function') {
         ret.then(() => {
-          helper.move(before, after);
+          helper?.move(before, after);
         });
       } else {
-        helper.move(before, after);
+        helper?.move(before, after);
       }
 
       // console.log('onDrop', { before, after });
@@ -161,6 +162,7 @@ const TreeInner = observer((props: any) => {
         {...others}
         className={`${props.className} fireformily-tree`}
         titleRender={(dataNode) => {
+          if (!helper) return null;
           const pos = helper.getPos(dataNode);
           if (!pos) {
             return (
@@ -220,7 +222,7 @@ const TreeInner = observer((props: any) => {
           });
         }}
         fieldNames={fieldNames}
-        treeData={helper.dataSource}
+        treeData={helper?.dataSource}
         onDrop={onDrop}
         loadData={loadData && !loadAll ? (onLoad as any) : undefined}
        />
