@@ -4,6 +4,7 @@ import { FormProvider, createSchemaField } from '@formily/react';
 import { Suggestion } from 'fireformily';
 import React from 'react';
 import { suggest } from './mock';
+import 'antd/dist/antd.min.css';
 
 const Code = (props: { value: any }) => {
   return (

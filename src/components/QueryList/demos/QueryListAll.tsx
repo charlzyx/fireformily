@@ -25,6 +25,7 @@ import {
   dictEffects,
 } from 'fireformily';
 import { actions, loaders, onSort, service } from './shared';
+import 'antd/dist/antd.min.css';
 
 const SchemaField = createSchemaField({
   components: {

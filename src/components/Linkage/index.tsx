@@ -3,6 +3,7 @@ import { observable } from '@formily/reactive';
 import { useLatest } from 'ahooks';
 import { Cascader } from 'antd';
 import React, { useCallback, useMemo } from 'react';
+import 'antd/dist/antd.min.css';
 
 export interface LinkageOption {
   label?: string;
