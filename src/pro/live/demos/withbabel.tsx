@@ -5,11 +5,7 @@ const App = () => {
   const data = useLive({ count: 1, input: '' });
   return (
     <div live>
-      <input
-        type="text"
-        value={data.input}
-        onChange={(e) => (data.input = e.target.value)}
-      />
+      <input type="text" value={data.input} onChange={(e) => (data.input = e.target.value)} />
 
       <div live>
         <div>{data.input}</div>

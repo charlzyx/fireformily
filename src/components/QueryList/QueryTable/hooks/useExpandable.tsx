@@ -10,9 +10,7 @@ const ArrayBase = AntdArrayBase as Required<typeof AntdArrayBase>;
 
 type TExpandable = React.ComponentProps<typeof Table>['expandable'];
 
-export const useExpandable = (
-  props?: Omit<TExpandable, 'expandedRowRender'>,
-) => {
+export const useExpandable = (props?: Omit<TExpandable, 'expandedRowRender'>) => {
   const arrayField = useField<ArrayField>();
   const arraySchema = useFieldSchema();
   const expandSchema = arraySchema.reduceProperties((addition, schema, key) => {
@@ -34,11 +32,7 @@ export const useExpandable = (
             index={index}
             record={() => arrayField?.value?.[index]}
           >
-            <RecursionField
-              schema={expandSchema}
-              name={index}
-              onlyRenderProperties
-            />
+            <RecursionField schema={expandSchema} name={index} onlyRenderProperties />
           </ArrayBase.Item>
         );
       },

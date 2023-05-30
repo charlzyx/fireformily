@@ -1,20 +1,12 @@
 import type { ArrayField, ObjectField } from '@formily/core';
 import useUrlState from '@ahooksjs/use-url-state';
-import { useExpressionScope, ExpressionScope, useForm } from '@formily/react';
-import { autorun, observable, batch } from '@formily/reactive';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-} from 'react';
+import { ExpressionScope, useForm } from '@formily/react';
+import { autorun, batch, observable } from '@formily/reactive';
+import React, { createContext, useCallback, useContext, useEffect, useRef } from 'react';
+import { useExpressionScope } from '../../compatible';
 
 const noop = () => {};
-export interface IQueryListContext<
-  Record extends any = any,
-  Params extends any = any,
-> {
+export interface IQueryListContext<Record extends any = any, Params extends any = any> {
   /** 查询请求, Promise */
   service?: (params: {
     pagination?: {
@@ -91,15 +83,9 @@ export interface IQueryListContext<
 const QueryListContext = createContext<IQueryListContext | null>(null);
 
 export type QueryListProviderProps = Pick<
-    IQueryListContext,
-    | 'service'
-    | 'pageSize'
-    | 'syncUrl'
-    | 'autoload'
-    | 'filterRemote'
-    | 'sortRemote'
-    | 'size'
-  >
+  IQueryListContext,
+  'service' | 'pageSize' | 'syncUrl' | 'autoload' | 'filterRemote' | 'sortRemote' | 'size'
+>;
 
 export const QueryListProvider = React.memo(
   (props: React.PropsWithChildren<QueryListProviderProps>) => {
@@ -114,7 +100,6 @@ export const QueryListProvider = React.memo(
     const methods = useRef({
       service: props.service,
     });
-
 
     const _service: IQueryListContext['service'] = useCallback(
       (params: any) => {
@@ -197,7 +182,6 @@ export const QueryListProvider = React.memo(
       return _trigger!();
     }, [_trigger, form]);
 
-
     const $value = useRef<IQueryListContext>(
       observable({
         ...props,
@@ -262,11 +246,7 @@ export const QueryListProvider = React.memo(
       if (!methods.current.service) return;
       const disposer = autorun(() => {
         const tableAddress = $value.current._address?.table;
-        if (
-          autoloaded.current === false &&
-          tableAddress &&
-          $value.current.autoload !== false
-        ) {
+        if (autoloaded.current === false && tableAddress && $value.current.autoload !== false) {
           setTimeout(() => {
             _trigger();
             autoloaded.current = true;
@@ -301,15 +281,11 @@ export const QueryListProvider = React.memo(
           value={{
             get $query() {
               const queryAddress = $value.current._address?.query;
-              return queryAddress
-                ? (form.query(queryAddress).take() as ObjectField).value
-                : null;
+              return queryAddress ? (form.query(queryAddress).take() as ObjectField).value : null;
             },
             get $list() {
               const tableAdress = $value.current._address?.table;
-              return tableAdress
-                ? (form.query(tableAdress).take() as ArrayField).value
-                : null;
+              return tableAdress ? (form.query(tableAdress).take() as ArrayField).value : null;
             },
           }}
         >

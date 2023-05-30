@@ -1,11 +1,7 @@
 import { Select } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-type Input =
-  | string
-  | number
-  | { label: string; value: string | number }
-  | Input[];
+type Input = string | number | { label: string; value: string | number } | Input[];
 
 const getInit = (multiple?: boolean, value?: Input): Input => {
   let ret = value;
@@ -28,12 +24,8 @@ export const Suggestion: React.FC<{
     parmas: object & { kw: string },
   ) => Promise<{ label: string; value: string | number }[]>;
 }> = (props) => {
-  const [data, setData] = useState<{ label: string; value: string | number }[]>(
-    [],
-  );
-  const [value, setValue] = useState<Input>(
-    getInit(props.multiple, props.value),
-  );
+  const [data, setData] = useState<{ label: string; value: string | number }[]>([]);
+  const [value, setValue] = useState<Input>(getInit(props.multiple, props.value));
 
   const [loading, setLoading] = useState(false);
 
@@ -100,6 +92,6 @@ export const Suggestion: React.FC<{
       onSearch={handleSearch}
       onChange={handleChange}
       options={data}
-     />
+    />
   );
 };

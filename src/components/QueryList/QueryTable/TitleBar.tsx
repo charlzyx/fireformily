@@ -1,19 +1,6 @@
-import {
-  ColumnHeightOutlined,
-  ReloadOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { ColumnHeightOutlined, ReloadOutlined, SettingOutlined } from '@ant-design/icons';
 import { observer, useField } from '@formily/react';
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Divider,
-  Dropdown,
-  Menu,
-  Space,
-  Typography,
-} from 'antd';
+import { Alert, Button, Checkbox, Divider, Dropdown, Menu, Space, Typography } from 'antd';
 import React from 'react';
 import { useQueryList$ } from '../shared';
 import { useSelection } from './hooks';
@@ -36,7 +23,7 @@ export const Titlebar = observer((props: any) => {
         { label: '中等', key: 'middle' },
         { label: '紧凑', key: 'small' },
       ]}
-     />
+    />
   );
 
   const selections = useSelection();
@@ -67,7 +54,7 @@ export const Titlebar = observer((props: any) => {
           key: item.key,
         };
       })}
-     />
+    />
   );
 
   return (
@@ -79,9 +66,7 @@ export const Titlebar = observer((props: any) => {
       }}
     >
       <Space size="small">
-        <Typography.Title level={5}>
-          {field.title || props.title}
-        </Typography.Title>
+        <Typography.Title level={5}>{field.title || props.title}</Typography.Title>
         {conf._selectedRowKeys.length ? (
           <Alert
             style={{ padding: '3px 4px' }}
@@ -112,7 +97,7 @@ export const Titlebar = observer((props: any) => {
                 {selections}
               </Space>
             }
-           />
+          />
         ) : null}
       </Space>
       <Space size="small">

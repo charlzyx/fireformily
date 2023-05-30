@@ -1,6 +1,6 @@
 import { FormGrid, FormItem, FormLayout } from '@formily/antd';
 import { createForm } from '@formily/core';
-import { createSchemaField, FormProvider } from '@formily/react';
+import { FormProvider, createSchemaField } from '@formily/react';
 import { Suggestion } from 'fireformily';
 import React from 'react';
 import { suggest } from './mock';

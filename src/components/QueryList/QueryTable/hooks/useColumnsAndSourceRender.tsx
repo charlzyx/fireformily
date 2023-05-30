@@ -2,7 +2,7 @@
 import DownOutlined from '@ant-design/icons/DownOutlined';
 import { ArrayBase as AntdArrayBase } from '@formily/antd';
 import type { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
-import type { Schema} from '@formily/react';
+import type { Schema } from '@formily/react';
 import { RecursionField, useFieldSchema } from '@formily/react';
 import { isArr } from '@formily/shared';
 import { Dropdown, Menu, Space } from 'antd';
@@ -10,11 +10,7 @@ import type { ColumnProps } from 'antd/lib/table';
 import React from 'react';
 import { useQueryList$ } from '../../shared';
 
-import {
-  isAdditionComponent,
-  isColumnComponent,
-  isOperationsComponent,
-} from './utils';
+import { isAdditionComponent, isColumnComponent, isOperationsComponent } from './utils';
 
 const ArrayBase = AntdArrayBase as Required<typeof AntdArrayBase>;
 
@@ -42,12 +38,7 @@ const parseArrayItems = (
   }, sources);
 };
 
-const renderOperations = (
-  props: any,
-  schema: Schema,
-  index: number,
-  field: ArrayField,
-) => {
+const renderOperations = (props: any, schema: Schema, index: number, field: ArrayField) => {
   const propLength = Object.keys(schema.properties || {}).length;
   const max = props.maxItems || 2;
   const menu =
@@ -59,13 +50,11 @@ const renderOperations = (
             if (idx < max) return null;
             return {
               key: idx,
-              label: (
-                <RecursionField schema={propSchema} name={`${index}.${key}`} />
-              ),
+              label: <RecursionField schema={propSchema} name={`${index}.${key}`} />,
             };
           })
           .filter(Boolean)}
-       />
+      />
     ) : undefined;
 
   return (
@@ -74,11 +63,7 @@ const renderOperations = (
         {schema.mapProperties((propSchema, key, idx) => {
           if (idx >= max) return null;
           return (
-            <RecursionField
-              key={`${index}.${key}`}
-              schema={propSchema}
-              name={`${index}.${key}`}
-            />
+            <RecursionField key={`${index}.${key}`} schema={propSchema} name={`${index}.${key}`} />
           );
         })}
         {propLength > max ? (
@@ -102,15 +87,13 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
       isOperationsComponent(subSchema) ||
       isAdditionComponent(subSchema)
     ) {
-      if (!subSchema['x-component-props']?.dataIndex && !subSchema.name)
-        return [];
+      if (!subSchema['x-component-props']?.dataIndex && !subSchema.name) return [];
 
       const name = subSchema['x-component-props']?.dataIndex || subSchema.name;
 
       const field = arrayField.query(arrayField.address.concat(name)).take();
 
-      const columnProps =
-        (field?.component as any)?.[1] || subSchema['x-component-props'] || {};
+      const columnProps = (field?.component as any)?.[1] || subSchema['x-component-props'] || {};
 
       const display = field?.display || subSchema['x-display'];
 
@@ -136,76 +119,55 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
 
   const sources = parseArrayItems(schema.items as any, parseSources);
 
-  const columns = sources.reduce(
-    (buf, { name, columnProps, schema: subSchema, display }, key) => {
-      // hidden by user select
-      if (
-        ctx &&
-        ctx._cofnig &&
-        ctx?._cofnig._showColumns!.length > 0 &&
-        ctx?._cofnig._showColumns?.findIndex(
-          (dataIndex) => dataIndex === name,
-        ) === -1
-      ) {
-        return buf;
-      }
-      if (display === 'hidden') return buf;
-      if (isOperationsComponent(subSchema)) {
-        return buf.concat({
-          fixed: true,
-          ...columnProps,
-          key,
-          dataIndex: name,
-          render: (value: any, record: any) => {
-            const index = arrayField?.value?.indexOf(record);
-            return renderOperations(columnProps, subSchema, index, arrayField);
-          },
-        });
-      }
-
-      if (!isColumnComponent(subSchema)) return buf;
-
+  const columns = sources.reduce((buf, { name, columnProps, schema: subSchema, display }, key) => {
+    // hidden by user select
+    if (
+      ctx &&
+      ctx._cofnig &&
+      ctx?._cofnig._showColumns!.length > 0 &&
+      ctx?._cofnig._showColumns?.findIndex((dataIndex) => dataIndex === name) === -1
+    ) {
+      return buf;
+    }
+    if (display === 'hidden') return buf;
+    if (isOperationsComponent(subSchema)) {
       return buf.concat({
+        fixed: true,
         ...columnProps,
-        filters: Array.isArray(columnProps.filters)
-          ? columnProps.filters
-          : undefined,
-        key: name,
+        key,
         dataIndex: name,
         render: (value: any, record: any) => {
           const index = arrayField?.value?.indexOf(record);
-          const children = (
-            <ArrayBase.Item
-              index={index}
-              record={() => arrayField?.value?.[index]}
-            >
-              <RecursionField
-                schema={subSchema}
-                name={index}
-                onlyRenderProperties
-              />
-            </ArrayBase.Item>
-          );
-          return children;
+          return renderOperations(columnProps, subSchema, index, arrayField);
         },
       });
-    },
-    [] as ColumnProps<any>[],
-  );
+    }
+
+    if (!isColumnComponent(subSchema)) return buf;
+
+    return buf.concat({
+      ...columnProps,
+      filters: Array.isArray(columnProps.filters) ? columnProps.filters : undefined,
+      key: name,
+      dataIndex: name,
+      render: (value: any, record: any) => {
+        const index = arrayField?.value?.indexOf(record);
+        const children = (
+          <ArrayBase.Item index={index} record={() => arrayField?.value?.[index]}>
+            <RecursionField schema={subSchema} name={index} onlyRenderProperties />
+          </ArrayBase.Item>
+        );
+        return children;
+      },
+    });
+  }, [] as ColumnProps<any>[]);
 
   const renderSources = () => {
     return sources.map((column, key) => {
       //专门用来承接对Column的状态管理
       if (!isColumnComponent(column.schema)) return null;
 
-      return (
-        <RecursionField
-          key={key}
-          schema={column.schema}
-          name={column.name}
-          onlyRenderSelf
-        />
-      );
+      return <RecursionField key={key} schema={column.schema} name={column.name} onlyRenderSelf />;
     });
   };
 

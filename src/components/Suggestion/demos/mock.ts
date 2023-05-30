@@ -11,14 +11,12 @@ export const suggest = (params: object & { kw: string }) => {
     .then((response: any) => response.json())
     .then((d: any) => {
       const { result } = d;
-      const data: { label: string; value: string }[] = result.map(
-        (item: any) => {
-          return {
-            value: item[0] as string,
-            label: item[0] as string,
-          };
-        },
-      );
+      const data: { label: string; value: string }[] = result.map((item: any) => {
+        return {
+          value: item[0] as string,
+          label: item[0] as string,
+        };
+      });
       return data;
     });
 };

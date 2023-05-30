@@ -2,15 +2,13 @@ import { Drawer as AntdDrawer } from 'antd';
 import React from 'react';
 import { Open } from './Open';
 
-import type { Actions, IButtonType} from './shared';
+import type { Actions, IButtonType } from './shared';
 import { usePopAction } from './shared';
 
 export const Drawer = (
-  props: React.ComponentProps<typeof AntdDrawer> &
-    IButtonType & { actions: Actions },
+  props: React.ComponentProps<typeof AntdDrawer> & IButtonType & { actions: Actions },
 ) => {
-  const { body, field, footer, header, loading, scope, open, reset, visible } =
-    usePopAction();
+  const { body, field, footer, header, loading, scope, open, reset, visible } = usePopAction();
 
   return (
     <>

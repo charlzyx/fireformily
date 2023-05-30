@@ -1,6 +1,6 @@
 import { ExpressionScope } from '@formily/react';
 import { lazyMerge } from '@formily/shared';
-import { useMemo, useRef, createContext, useContext } from 'react';
+import { createContext, useContext, useMemo, useRef } from 'react';
 import { getHelper } from './helper';
 
 export type NodePos = number[];
@@ -129,7 +129,7 @@ export const NodeScope = <T extends object>(
 
   const value = useMemo(() => {
     if (!root) return null;
-    const { $refs,  $helper } = root;
+    const { $refs, $helper } = root;
 
     const scope: INodeScope<T> = {
       get $root() {
@@ -176,9 +176,7 @@ export const NodeScope = <T extends object>(
         const parentPos = this.$pos?.slice(0, this.$pos.length - 1) || [];
         const parent = $helper.getNodeAtPos(parentPos);
 
-        const lookup = parent
-          ? root.$refs.get($helper.take(parent).key!)?.$record
-          : undefined;
+        const lookup = parent ? root.$refs.get($helper.take(parent).key!)?.$record : undefined;
         return lookup ?? this.$root;
       },
       get $records() {

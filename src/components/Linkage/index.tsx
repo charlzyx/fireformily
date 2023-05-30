@@ -40,10 +40,7 @@ export interface LinkageProps {
 }
 
 interface MergedLinkageProps
-  extends Omit<
-      React.ComponentProps<typeof Cascader>,
-      'loadData' | 'value' | 'onChange'
-    >,
+  extends Omit<React.ComponentProps<typeof Cascader>, 'loadData' | 'value' | 'onChange'>,
     LinkageProps {}
 
 const initOptions = (labelInValue?: boolean, value?: Input[]) => {
@@ -133,16 +130,7 @@ const useLazyeOptions = (props: MergedLinkageProps) => {
 };
 
 export const Linkage = (props: MergedLinkageProps) => {
-  const {
-    value,
-    loadAll,
-    labelInValue,
-    disabled,
-    multiple,
-    onChange,
-    loadData,
-    ...others
-  } = props;
+  const { value, loadAll, labelInValue, disabled, multiple, onChange, loadData, ...others } = props;
 
   const state = useLazyeOptions(props);
 
@@ -188,7 +176,7 @@ export const Linkage = (props: MergedLinkageProps) => {
             options={[...state.options]}
             loadData={loadAll ? undefined : (state.load as any)}
             onChange={onChangeFn as any}
-           />
+          />
         );
       }}
     </Observer>

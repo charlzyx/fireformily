@@ -34,10 +34,7 @@ const Overview = (props: {
             </Title>
             <Row gutter={[24, 24]}>
               {components.map((component) => {
-                const uri = `${group.prefix}/${component.link}`.replace(
-                  '//',
-                  '/',
-                );
+                const uri = `${group.prefix}/${component.link}`.replace('//', '/');
 
                 return (
                   <Col xs={24} sm={12} lg={8} xl={6} key={component.title}>
