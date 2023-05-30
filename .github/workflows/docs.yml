@@ -1,4 +1,3 @@
-
 name: Deploy GitHub Pages
 
 # 触发条件：在 push 到 master/docs 分支后
@@ -15,9 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # 拉取代码
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
+          node-version: 16
           persist-credentials: false
 
       # 生成静态文件
