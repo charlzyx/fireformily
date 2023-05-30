@@ -10,11 +10,7 @@ const App = () => {
       {() => {
         return (
           <div>
-            <input
-              type="text"
-              value={data.input}
-              onChange={(e) => (data.input = e.target.value)}
-            />
+            <input type="text" value={data.input} onChange={(e) => (data.input = e.target.value)} />
 
             <div>
               <div>{data.input}</div>

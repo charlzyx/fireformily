@@ -20,13 +20,7 @@ const log = (label: string, x: any) => {
   console.groupEnd();
 };
 
-export const service = ({
-  params,
-  pagination,
-  sorter,
-  filters,
-  extra,
-}: any) => {
+export const service = ({ params, pagination, sorter, filters, extra }: any) => {
   log('search sevice args ', { params, pagination, sorter, filters, extra });
 
   const {
@@ -48,9 +42,7 @@ export const service = ({
           return {
             id: current * pageSize + idx,
             status: status ?? +faker.random.numeric(1) % 5,
-            domain: `${
-              domain ? `${domain}.` : ''
-            }${faker.internet.domainName()}`,
+            domain: `${domain ? `${domain}.` : ''}${faker.internet.domainName()}`,
             subdomains: Array.from(
               new Set(
                 Array.from({
@@ -88,12 +80,7 @@ export const service = ({
   });
 };
 
-export const onSort = (
-  oldIndex: number,
-  neoIndex: number,
-  array: any[],
-  scope: any,
-) => {
+export const onSort = (oldIndex: number, neoIndex: number, array: any[], scope: any) => {
   log('on sort args ', { oldIndex, neoIndex, array, scope });
 
   return Promise.resolve();

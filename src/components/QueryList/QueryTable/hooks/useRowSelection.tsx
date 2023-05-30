@@ -23,22 +23,19 @@ const hasSelection = (queryListSchema?: TFieldSchema | null): boolean => {
   if (!queryListSchema) {
     return false;
   } else {
-    const ret: boolean = queryListSchema.reduceProperties(
-      (buf: boolean, schema) => {
-        if (buf) return buf;
-        const is = schema['x-component'] === 'QueryTable.Selection';
-        if (is) {
-          // console.log('schema', schema);
-          return true;
-        }
-        if (schema.properties) {
-          return hasSelection(schema);
-        } else {
-          return false;
-        }
-      },
-      false,
-    );
+    const ret: boolean = queryListSchema.reduceProperties((buf: boolean, schema) => {
+      if (buf) return buf;
+      const is = schema['x-component'] === 'QueryTable.Selection';
+      if (is) {
+        // console.log('schema', schema);
+        return true;
+      }
+      if (schema.properties) {
+        return hasSelection(schema);
+      } else {
+        return false;
+      }
+    }, false);
     return ret;
   }
 };
@@ -79,14 +76,10 @@ export const useRowSelection = (
       },
       reverse: () => {
         const array = field.value;
-        const reverseRows = array.filter(
-          (x) => !conf._selectedRows.find((r) => r === x),
-        );
+        const reverseRows = array.filter((x) => !conf._selectedRows.find((r) => r === x));
         const resverKeys = reverseRows.map((x) => {
           const key =
-            typeof rowKeyRef.current == 'function'
-              ? rowKeyRef.current(x)
-              : x[rowKeyRef.current!];
+            typeof rowKeyRef.current == 'function' ? rowKeyRef.current(x) : x[rowKeyRef.current!];
           return key;
         });
         conf._selectedRowKeys = resverKeys;

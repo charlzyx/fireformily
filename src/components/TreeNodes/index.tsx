@@ -1,10 +1,5 @@
 import type { ObjectField } from '@formily/core';
-import {
-  observer,
-  RecursionField,
-  useField,
-  useFieldSchema,
-} from '@formily/react';
+import { RecursionField, observer, useField, useFieldSchema } from '@formily/react';
 import { Space, Tree } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Loading } from '../Loading';
@@ -25,10 +20,7 @@ export type TreeNode = {
 type AntdTreeProps = React.ComponentProps<typeof Tree>;
 
 type TreeNodesProps = React.ComponentProps<typeof TreeBase> &
-  Omit<
-    AntdTreeProps,
-    'loadData' | 'onDrop' | 'value' | 'onChange' | 'fieldNames'
-  > & {
+  Omit<AntdTreeProps, 'loadData' | 'onDrop' | 'value' | 'onChange' | 'fieldNames'> & {
     loadData?: (options: TreeNode[]) => Promise<TreeNode[]>;
     loadAll?: () => Promise<TreeNode[]>;
     value?: {
@@ -54,9 +46,7 @@ const HACKDomToHiddenAntdNodeForFixNodeFlash = () => {
     let parent = ref.current?.parentElement;
     let catchyou = null as null | HTMLElement;
     while (parent && !catchyou) {
-      catchyou = /ant-tree-treenode/.test(parent.getAttribute('class') || '')
-        ? parent
-        : null;
+      catchyou = /ant-tree-treenode/.test(parent.getAttribute('class') || '') ? parent : null;
       parent = parent.parentElement;
     }
     if (catchyou) {
@@ -88,17 +78,13 @@ const TitleRender = (props: { dataKey?: React.Key }) => {
         }
       }}
     >
-      <RecursionField
-        name={node?.$path}
-        schema={tree?.schema.items as any}
-       />
+      <RecursionField name={node?.$path} schema={tree?.schema.items as any} />
     </div>
   );
 };
 
 const TreeInner = observer((props: any) => {
-  const { loadAll, loadData, checkedKeys, fieldNames, children, ...others } =
-    props;
+  const { loadAll, loadData, checkedKeys, fieldNames, children, ...others } = props;
 
   const helper = TreeBase.useHelper();
   const field = useField<ObjectField>();
@@ -165,9 +151,7 @@ const TreeInner = observer((props: any) => {
           if (!helper) return null;
           const pos = helper.getPos(dataNode);
           if (!pos) {
-            return (
-              <HACKDomToHiddenAntdNodeForFixNodeFlash />
-            );
+            return <HACKDomToHiddenAntdNodeForFixNodeFlash />;
           }
 
           return (
@@ -212,9 +196,7 @@ const TreeInner = observer((props: any) => {
         onCheck={(keys, info) => {
           if (!field.value) return;
           const checkeds = Array.isArray(keys) ? keys : keys.checked;
-          const halfs = Array.isArray(keys)
-            ? info.halfCheckedKeys
-            : keys.halfChecked;
+          const halfs = Array.isArray(keys) ? info.halfCheckedKeys : keys.halfChecked;
 
           field.setState((s) => {
             s.value.checkedKeys = checkeds;
@@ -225,22 +207,13 @@ const TreeInner = observer((props: any) => {
         treeData={helper?.dataSource}
         onDrop={onDrop}
         loadData={loadData && !loadAll ? (onLoad as any) : undefined}
-       />
+      />
     </React.Fragment>
   );
 });
 
 export const TreeNodes = (props: TreeNodesProps) => {
-  const {
-    onAdd,
-    value,
-    fieldNames,
-    onCopy,
-    onMove,
-    onRemove,
-    layout,
-    ...others
-  } = props;
+  const { onAdd, value, fieldNames, onCopy, onMove, onRemove, layout, ...others } = props;
   const field = useField<ObjectField>();
   const fieldSchema = useFieldSchema();
   const names = useMemo(() => {
@@ -284,19 +257,11 @@ export const TreeNodes = (props: TreeNodesProps) => {
         <Space size="small" {...layout}>
           <Space direction="vertical" size="small">
             <TreeBase.Node getNode={() => field.value} pos={() => []}>
-              <RecursionField
-                schema={fieldSchema.items as any}
-                onlyRenderProperties
-                name=""
-               />
+              <RecursionField schema={fieldSchema.items as any} onlyRenderProperties name="" />
             </TreeBase.Node>
             <TreeInner {...others} fieldNames={names} />
           </Space>
-          <RecursionField
-            schema={fieldSchema}
-            name=""
-            onlyRenderProperties
-           />
+          <RecursionField schema={fieldSchema} name="" onlyRenderProperties />
         </Space>
       </TreeBase>
     </React.Fragment>

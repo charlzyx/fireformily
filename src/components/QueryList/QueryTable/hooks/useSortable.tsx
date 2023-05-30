@@ -1,11 +1,12 @@
 import { usePrefixCls } from '@formily/antd/lib/__builtins__';
 import type { ArrayField } from '@formily/core';
-import { useExpressionScope, useField, useFieldSchema } from '@formily/react';
+import { useField, useFieldSchema } from '@formily/react';
 import { toJS } from '@formily/reactive';
 import React, { useCallback, useMemo } from 'react';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { useQueryList$ } from '../../shared';
 import { hasSortable } from './utils';
+import { useExpressionScope } from '../../../../compatible';
 
 const SortableRow = SortableElement((props: any) => <tr {...props} />);
 const SortableBody = SortableContainer((props: any) => <tbody {...props} />);

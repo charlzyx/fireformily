@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { isColorStatus } from '../../shared';
 import type { TDictShape } from '../../pro';
-import { Space, Tag, Badge } from 'antd';
+import { Badge, Space, Tag } from 'antd';
 import { useMemo } from 'react';
 
 type Input = string | number | Input[];
@@ -43,12 +43,10 @@ export const Dict = (props: {
         return type === 'badge' ? (
           <Badge
             key={item?.key}
-            status={
-              isColorStatus(item?.color) ? (item?.color as any) : undefined
-            }
+            status={isColorStatus(item?.color) ? (item?.color as any) : undefined}
             color={isColorStatus(item?.color) ? undefined : item?.color}
             text={item?.label}
-           />
+          />
         ) : type === 'tag' ? (
           <Tag key={item?.key} color={item?.color}>
             {item?.label}

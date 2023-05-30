@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 
 const absolute: React.CSSProperties = {
@@ -14,11 +14,5 @@ export const Loading = (props: React.ComponentProps<typeof Skeleton>) => {
       setLoading(false);
     }, 67);
   }, []);
-  return (
-    <Skeleton
-      style={{ ...absolute, display: loading ? '' : 'none' }}
-      paragraph
-      loading
-     />
-  );
+  return <Skeleton style={{ ...absolute, display: loading ? '' : 'none' }} paragraph loading />;
 };

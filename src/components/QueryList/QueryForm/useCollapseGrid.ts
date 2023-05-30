@@ -2,9 +2,7 @@ import { FormGrid } from '@formily/antd';
 import type React from 'react';
 import { useMemo } from 'react';
 
-export const useCollapseGrid = (
-  conf: React.ComponentProps<typeof FormGrid> = {},
-) => {
+export const useCollapseGrid = (conf: React.ComponentProps<typeof FormGrid> = {}) => {
   const maxRows = conf.maxRows || 1;
   const grid = useMemo(() => {
     return FormGrid.createFormGrid({
@@ -19,12 +17,9 @@ export const useCollapseGrid = (
     });
   }, [conf.maxColumns, conf.maxWidth, maxRows]);
 
-  const computeRows = grid.fullnessLastColumn
-    ? grid.shadowRows - 1
-    : grid.shadowRows;
+  const computeRows = grid.fullnessLastColumn ? grid.shadowRows - 1 : grid.shadowRows;
 
-  const expanded =
-    computeRows <= maxRows ? undefined : grid.maxRows === Infinity;
+  const expanded = computeRows <= maxRows ? undefined : grid.maxRows === Infinity;
 
   const toggle = () => {
     if (grid.maxRows === Infinity) {

@@ -1,16 +1,16 @@
 import {
+  Checkbox,
   FormGrid,
   FormItem,
   FormLayout,
   Input,
+  Radio,
   Select,
   Space,
-  Radio,
-  Checkbox,
 } from '@formily/antd';
 import { createForm } from '@formily/core';
-import { createSchemaField, FormProvider } from '@formily/react';
-import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
+import { FormProvider, createSchemaField } from '@formily/react';
+import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily';
 import React from 'react';
 
 const loaders = {

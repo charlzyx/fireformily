@@ -4,14 +4,12 @@ import { useLive } from 'fireformily';
 const TodoList = () => {
   const $todos = useLive<{ title: string; done: boolean }[]>([]);
 
-  const getCount = () =>
-    `${$todos.filter((x) => x.done).length}/${$todos.length}`;
+  const getCount = () => `${$todos.filter((x) => x.done).length}/${$todos.length}`;
 
   return (
     <div live>
       <h1>
-        土豆丝 {getCount()}{' '}
-        {$todos.length > 0 && $todos.every((x) => x.done) ? '🎉' : ''}
+        土豆丝 {getCount()} {$todos.length > 0 && $todos.every((x) => x.done) ? '🎉' : ''}
       </h1>
 
       <div>

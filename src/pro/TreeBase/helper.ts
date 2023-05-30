@@ -111,9 +111,7 @@ export const getHelper = <T extends object>(
     posToPath(pos: NodePos): string | undefined {
       if (!pos) return undefined;
       const path = pos.reduce((p, item) => {
-        return p
-          ? `${p}.${fieldNames.children}.${item}`
-          : `${fieldNames.children}.${item}`;
+        return p ? `${p}.${fieldNames.children}.${item}` : `${fieldNames.children}.${item}`;
       }, '');
       return path;
     },
@@ -124,11 +122,7 @@ export const getHelper = <T extends object>(
       }, refs.root);
       return target;
     },
-    append(
-      pos: NodePos,
-      method: 'push' | 'unshift' | 'replace' = 'push',
-      ...nodes: T[]
-    ) {
+    append(pos: NodePos, method: 'push' | 'unshift' | 'replace' = 'push', ...nodes: T[]) {
       const target = this.getNodeAtPos(pos);
       if (!target) return;
 
@@ -177,8 +171,7 @@ export const getHelper = <T extends object>(
 
       const sameLevel =
         before.length === after.length &&
-        before.slice(0, before.length - 1).join('_') ===
-          after.slice(0, after.length - 1).join('_');
+        before.slice(0, before.length - 1).join('_') === after.slice(0, after.length - 1).join('_');
 
       batch(() => {
         if (sameLevel) {
@@ -189,13 +182,8 @@ export const getHelper = <T extends object>(
           const pick = take(parent).children?.splice(formIdx, 1)[0];
           take(parent).children?.splice(toIdx, 0, pick);
         } else {
-          const fromParent = this.getNodeAtPos(
-            before.slice(0, before.length - 1),
-          );
-          const pick = take(fromParent).children?.splice?.(
-            before[before.length - 1],
-            1,
-          )[0];
+          const fromParent = this.getNodeAtPos(before.slice(0, before.length - 1));
+          const pick = take(fromParent).children?.splice?.(before[before.length - 1], 1)[0];
           console.log('move before pick', pick);
 
           if (!pick) return;

@@ -1,29 +1,15 @@
-import {
-  CopyOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  ToTopOutlined,
-} from '@ant-design/icons';
+import { CopyOutlined, DeleteOutlined, PlusOutlined, ToTopOutlined } from '@ant-design/icons';
 import type { ObjectField } from '@formily/core';
-import type { JSXComponent, Schema} from '@formily/react';
+import type { JSXComponent, Schema } from '@formily/react';
 import { useField, useFieldSchema } from '@formily/react';
 import { Button, Popconfirm } from 'antd';
 import React, { createContext, useContext, useMemo } from 'react';
-import type {
-  NodeLike,
-  NodePos} from './scope';
-import {
-  NodeScope,
-  RootScope,
-  useNode,
-  useRoot,
-  useHelper,
-} from './scope';
+import type { NodeLike, NodePos } from './scope';
+import { NodeScope, RootScope, useHelper, useNode, useRoot } from './scope';
 
 type PosLike = string | number[];
 
-export interface ITreeBaseRootProps
-  extends React.ComponentProps<typeof RootScope> {
+export interface ITreeBaseRootProps extends React.ComponentProps<typeof RootScope> {
   disabled?: boolean;
   onAdd?: (
     pos: NodePos,
@@ -43,11 +29,7 @@ export interface ITreeBaseRootProps
     parent: NodeLike,
     root: NodeLike,
   ) => void | Promise<void>;
-  onMove?: (
-    before: NodePos,
-    after: NodePos,
-    root: NodeLike,
-  ) => void | Promise<void>;
+  onMove?: (before: NodePos, after: NodePos, root: NodeLike) => void | Promise<void>;
 }
 
 export interface ITreeBaseRootContext {
@@ -149,9 +131,7 @@ const TreeBaseNode: typeof TreeBasic['Node'] = (props) => {
   const { pos, children, getNode, getExtra } = props;
   return (
     <NodeScope getPos={pos} getNode={getNode} getExtra={getExtra}>
-      <TreeBaseNodeContext.Provider value={props}>
-        {children}
-      </TreeBaseNodeContext.Provider>
+      <TreeBaseNodeContext.Provider value={props}>{children}</TreeBaseNodeContext.Provider>
     </NodeScope>
   );
 };
@@ -179,8 +159,7 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
 
   const shouldHidden =
     (props.to === 'up' && node?.$index === 0) ||
-    (props.to === 'down' &&
-      node?.$index === (node?.$records?.length ?? -1) - 1);
+    (props.to === 'down' && node?.$index === (node?.$records?.length ?? -1) - 1);
   if (shouldHidden) return null;
 
   return (
@@ -196,8 +175,7 @@ const TreeBaseMove: typeof TreeBasic['Move'] = (props) => {
         const pos = node.$pos;
         const after = [...pos];
         const nowIndex = pos[pos.length - 1];
-        after[after.length - 1] =
-          props.to === 'down' ? nowIndex + 1 : Math.max(nowIndex - 1, 0);
+        after[after.length - 1] = props.to === 'down' ? nowIndex + 1 : Math.max(nowIndex - 1, 0);
 
         const req = tree.props.onMove?.(pos, after, node?.$root);
         // thenable
@@ -237,12 +215,7 @@ const TreeBaseRemove: typeof TreeBasic['Remove'] = (props) => {
         if (self?.disabled) return;
         if (!node) return;
         const pos = node.$pos;
-        const req = tree.props.onRemove?.(
-          pos,
-          node.$record,
-          node.$lookup,
-          node?.$root,
-        );
+        const req = tree.props.onRemove?.(pos, node.$record, node.$lookup, node?.$root);
         // thenable
         if (typeof req?.then === 'function') {
           req.then(() => {
@@ -287,12 +260,7 @@ const TreeBaseAppend: typeof TreeBasic['Append'] = (props) => {
         if (self?.disabled) return;
         if (!node) return;
         const pos = node.$pos;
-        const req = tree.props?.onAdd?.(
-          pos,
-          node.$record,
-          node.$lookup,
-          node.$root,
-        );
+        const req = tree.props?.onAdd?.(pos, node.$record, node.$lookup, node.$root);
 
         // thenable
         if (typeof req?.then === 'function') {
@@ -334,12 +302,7 @@ const TreeBaseCopy: typeof TreeBasic['Copy'] = (props) => {
         if (self?.disabled) return;
         if (!node) return;
         const pos = node.$pos;
-        const req = tree.props?.onCopy?.(
-          pos,
-          node.$record,
-          node.$lookup,
-          node.$root,
-        );
+        const req = tree.props?.onCopy?.(pos, node.$record, node.$lookup, node.$root);
 
         // thenable
         if (typeof req?.then === 'function') {
@@ -385,7 +348,6 @@ TreeBasic.mixin = (target: any) => {
   return target;
 };
 
-export const TreeBase = TreeBasic as typeof TreeBasic &
-  Required<ComposedTreeBase>;
+export const TreeBase = TreeBasic as typeof TreeBasic & Required<ComposedTreeBase>;
 
 export { getHelper as getTreeHelper } from './helper';

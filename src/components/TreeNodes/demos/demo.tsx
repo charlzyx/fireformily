@@ -1,16 +1,13 @@
 import { RobotOutlined } from '@ant-design/icons';
 import { FormItem, Input, Space } from '@formily/antd';
 import { createForm } from '@formily/core';
-import {
-  createSchemaField,
-  FormProvider,
-  useExpressionScope,
-} from '@formily/react';
+import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';
 import { PopActions, TreeBase, TreeNodes } from 'fireformily';
 import { useMemo, useState } from 'react';
-import { actions, loadData, loadAll } from './mock';
+import { actions, loadAll, loadData } from './mock';
 import { stringify } from './stringify';
+import { useExpressionScope } from '../../../compatible';
 
 const form = createForm();
 
@@ -31,7 +28,7 @@ const Debug = (props: { value: any }) => {
         placeholder="例如: 2-0-1"
         value={posInput}
         onChange={(e) => setPosInput(e.target.value)}
-       />
+      />
       <Button
         type={node && pos.length > 0 ? 'primary' : 'dashed'}
         onClick={() => {
@@ -128,8 +125,7 @@ const NodeFooter = (props: any) => {
         // icon={<FileAddOutlined></FileAddOutlined>}
         type="primary"
       >
-        index: {scope.$index} | length: {scope.$records.length} | pos:{' '}
-        {scope.$pos.join(',')}
+        index: {scope.$index} | length: {scope.$records.length} | pos: {scope.$pos.join(',')}
         {props.hidden ? 'true' : 'false'}
       </Button>
     </div>
@@ -249,9 +245,7 @@ const schema: React.ComponentProps<typeof SchemaField>['schema'] = {
                 'x-component-props': {
                   factory: (parent: any) => {
                     return {
-                      label: `${parent.label}之 ${
-                        parent.children?.length ?? 0
-                      } 子`,
+                      label: `${parent.label}之 ${parent.children?.length ?? 0} 子`,
                       value: `${parent.value}${parent.children?.length ?? 0}`,
                     };
                   },

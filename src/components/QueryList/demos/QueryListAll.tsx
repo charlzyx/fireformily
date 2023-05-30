@@ -13,18 +13,18 @@ import { ConfigProvider } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 import React from 'react';
 import { createForm } from '@formily/core';
-import { createSchemaField, FormProvider } from '@formily/react';
+import { FormProvider, createSchemaField } from '@formily/react';
 import {
+  Dict,
+  ImageView,
+  LongText,
   PopActions,
   QueryForm,
-  ImageView,
   QueryList,
-  LongText,
   QueryTable,
-  Dict,
   dictEffects,
 } from 'fireformily';
-import { actions, service, loaders, onSort } from './shared';
+import { actions, loaders, onSort, service } from './shared';
 
 const SchemaField = createSchemaField({
   components: {
@@ -287,8 +287,7 @@ const list: SchemaShape = {
               list.push({ text: '.'+parts[parts.length - 1],  value: '.'+parts[parts.length - 1] });
               return list;
             }, []): []}}`,
-          onFilter: (value: string, record: any) =>
-            record.domain.includes(value),
+          onFilter: (value: string, record: any) => record.domain.includes(value),
         },
         properties: {
           domain: {

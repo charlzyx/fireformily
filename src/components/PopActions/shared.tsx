@@ -1,17 +1,12 @@
 import { isVoidField } from '@formily/core';
-import type {
-  Schema} from '@formily/react';
-import {
-  RecursionField,
-  useExpressionScope,
-  useField,
-  useFieldSchema,
-} from '@formily/react';
+import type { Schema } from '@formily/react';
+import { RecursionField, useField, useFieldSchema } from '@formily/react';
 import { Button, Space } from 'antd';
 import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { isObservable } from '@formily/reactive';
 import { useLatest } from 'ahooks';
 import { useQueryList$ } from '../QueryList/shared';
+import { useExpressionScope } from '../../compatible';
 
 const nextTick = () =>
   new Promise((resolve) => {
@@ -72,8 +67,8 @@ const noop = () => Promise.resolve({});
 const clone = (x: any) => Promise.resolve({ ...x });
 
 export const usePopAction = () => {
-  const scope = useExpressionScope();
   const field = useField();
+  const scope = useExpressionScope();
   const ctx = useQueryList$();
 
   const actions = field?.componentProps?.actions as Actions;

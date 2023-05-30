@@ -20,8 +20,7 @@ export type TDictShape = {
 
 export type TDictItem = Omit<PickArrayItem<TDictShape['options']>, 'key'>;
 
-const getColorByIdx = (idx: number) =>
-  colors[(idx % colors.length) as keyof typeof colors];
+const getColorByIdx = (idx: number) => colors[(idx % colors.length) as keyof typeof colors];
 
 export const listToDict = (list: TDictItem[] = []): TDictShape => {
   const dict = {

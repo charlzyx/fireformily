@@ -3,20 +3,15 @@ import { ArrayBase } from '@formily/antd';
 import { usePrefixCls } from '@formily/antd/esm/__builtins__';
 import type { ArrayField } from '@formily/core';
 import { observer, useField } from '@formily/react';
-import type { PaginationProps} from 'antd';
+import type { PaginationProps } from 'antd';
 import { Table } from 'antd';
 import React, { Fragment, useEffect, useRef } from 'react';
 import { useQueryList$ } from '../shared';
-import {
-  useAddition,
-  useColumnsAndSourceRender,
-  useRowSelection,
-  useSortable,
-} from './hooks';
+import { useAddition, useColumnsAndSourceRender, useRowSelection, useSortable } from './hooks';
 import { useExpandable } from './hooks/useExpandable';
 import { Titlebar } from './TitleBar';
 
-type IQueryTableProps = React.ComponentProps<typeof Table>
+type IQueryTableProps = React.ComponentProps<typeof Table>;
 
 export const showTotal = (total: number, range: number[]) =>
   `第 ${range[-1]}-${range[1]} 条, 共 ${total} 条数据`;
@@ -49,10 +44,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
 
   const expandable = useExpandable(props.expandable);
 
-  const selection = useRowSelection(
-    props.rowKey || defaultRowKey,
-    props.rowSelection,
-  );
+  const selection = useRowSelection(props.rowKey || defaultRowKey, props.rowSelection);
 
   useEffect(() => {
     if (!ctx) return;
@@ -136,7 +128,7 @@ export const QueryTable: React.FC<IQueryTableProps> &
               ctx?._trigger?.();
             }
           }}
-         />
+        />
         {renderSources()}
         {addtion}
       </ArrayBase>

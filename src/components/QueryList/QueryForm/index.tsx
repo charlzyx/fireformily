@@ -25,11 +25,9 @@ export const QueryForm = observer((props: QueryFormProps) => {
   const onReset = () => {
     if (_loading) return;
     if (ctx) {
-      form
-        .reset(ctx._address?.query, { forceClear: true, validate: false })
-        .then(() => {
-          _reset?.();
-        });
+      form.reset(ctx._address?.query, { forceClear: true, validate: false }).then(() => {
+        _reset?.();
+      });
     } else {
       // next tick
       setTimeout(() => {

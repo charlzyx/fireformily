@@ -10,8 +10,7 @@ export type OptionData = {
 };
 
 const MAX = 4;
-export const remote =
-  'https://unpkg.com/china-location@2.1.0/dist/location.json';
+export const remote = 'https://unpkg.com/china-location@2.1.0/dist/location.json';
 export const flat = (
   json: Record<
     string,
@@ -48,8 +47,7 @@ export const flat = (
         .map((city, cidx) => {
           if (cidx > MAX) return null as any;
           // 拍平的结构要求 parentId 不能重复, 这个数据里面直辖市是一样的, 搞一下
-          const cityCode =
-            city.code === province.code ? `${city.code}00` : city.code;
+          const cityCode = city.code === province.code ? `${city.code}00` : city.code;
 
           flatten.push({
             code: cityCode,
@@ -61,10 +59,7 @@ export const flat = (
             .map(([code, name], didx) => {
               if (didx > MAX) return;
 
-              const distCode =
-                code === cityCode || code == province.code
-                  ? `${code}0000`
-                  : code;
+              const distCode = code === cityCode || code == province.code ? `${code}0000` : code;
               flatten.push({ code: distCode, name, parent: cityCode });
               return { code, name } as any;
             })
@@ -105,8 +100,7 @@ export const loadAll = () => {
                 if (cidx > MAX) return;
                 return {
                   label: child.name,
-                  value:
-                    child.code === item.code ? `${child.code}00` : child.code,
+                  value: child.code === item.code ? `${child.code}00` : child.code,
                   isLeaf: false,
                   children: child.children
                     .map((godson: any, didx: any) => {
@@ -134,9 +128,7 @@ export const loadData = (options: OptionData[]) => {
   const keys = [undefined, ...options.map((x) => x.value)];
   const last = options[options.length - 1];
   // 没有label 或者 __init 标签表明是初始值, 就全部加载
-  const shouldLoadAll = Boolean(
-    options.find((x) => x.label === undefined || x.__init),
-  );
+  const shouldLoadAll = Boolean(options.find((x) => x.label === undefined || x.__init));
   if (shouldLoadAll) {
     return Promise.all(keys.map(getById)).then((optionsList) => {
       const ret = optionsList.reduceRight((children: any, opts: any, idx) => {

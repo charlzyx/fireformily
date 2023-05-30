@@ -1,7 +1,7 @@
-import type { Form} from '@formily/core';
+import type { Form } from '@formily/core';
 import { onFieldMount, onFieldReact } from '@formily/core';
 import { observable } from '@formily/reactive';
-import type { TDictShape} from './helper';
+import type { TDictShape } from './helper';
 import { convertListToDict, convertToOptionList } from './helper';
 import { Dict } from '../../components';
 import type React from 'react';
@@ -31,10 +31,7 @@ registerDictLoader('bool', boolLoader);
 
  */
 
-export const registerDictLoader = (
-  name: string,
-  loaderFactory: TDictLoaderFactory,
-) => {
+export const registerDictLoader = (name: string, loaderFactory: TDictLoaderFactory) => {
   loaders[name] = () => {
     return loaderFactory(convertToOptionList).then((list) => {
       const mydict = convertListToDict(list);
