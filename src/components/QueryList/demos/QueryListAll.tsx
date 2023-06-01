@@ -9,11 +9,10 @@ import {
   Select,
   Space,
 } from '@formily/antd';
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/es/locale/zh_CN';
-import React from 'react';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/es/locale/zh_CN';
 import {
   Dict,
   ImageView,
@@ -24,6 +23,7 @@ import {
   QueryTable,
   dictEffects,
 } from 'fireformily';
+import React from 'react';
 import { actions, loaders, onSort, service } from './shared';
 
 const SchemaField = createSchemaField({

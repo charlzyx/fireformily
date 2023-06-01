@@ -3,16 +3,27 @@ import { defineConfig } from 'dumi';
 const base = process.env.NODE_ENV === 'production' ? '/fireformily/' : '/';
 
 export default defineConfig({
-  title: 'fireformily',
+  themeConfig: {
+    name: 'fireformily',
+    logo: base + 'images/fireformily.svg',
+    nav: [{
+      title: 'formily',
+      link: 'https://github.com/alibaba/formily',
+    }]
+  },
   mfsu: {},
- favicon: base + 'images/fireformily.svg',
-  logo: base + 'images/fireformily.svg',
-  mode: 'site',
+  apiParser: {},
+  favicons: [base + 'images/fireformily.svg'],
   outputPath: './doc-site',
   publicPath: base,
-  dynamicImport: {},
   base,
-  runtimePublicPath: true,
+  resolve: {
+    entryFile: "./src/index.ts",
+    atomDirs: [
+      {type: 'components', dir: 'src/components'},
+      {type: 'components', dir: 'src/pro'},
+    ]
+  },
   extraBabelPlugins: [
     './babel/plugin-jsx-wrapper-with-observer-by-attr',
   ],
@@ -47,13 +58,6 @@ export default defineConfig({
       text-decoration: none !important;
     }
     `,
-  ],
-  navs: [
-    null,
-    {
-      title: 'formily',
-      path: 'https://github.com/alibaba/formily',
-    },
   ],
   // more config: https://d.umijs.org/config
 });

@@ -1,6 +1,6 @@
-import moment from 'moment';
 import type { PopActions } from 'fireformily';
 import { registerDictLoader } from 'fireformily';
+import moment from 'moment';
 
 import { faker } from '@faker-js/faker';
 
@@ -8,7 +8,7 @@ import type React from 'react';
 
 type TActions = React.ComponentProps<typeof PopActions>['actions'];
 
-faker.setLocale('zh_CN');
+// faker.setLocale('zh_CN');
 
 const log = (label: string, x: any) => {
   console.log('LABEL:', label);

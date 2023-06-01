@@ -18,14 +18,14 @@ formily 自带 `enum` 字段能够满足本地的枚举词典的需求, 但远�
 
 ### 代码演示
 
-<code src="../../components/Dict/demos/DictDemo.tsx" />
+<code src="../../components/Dict/demos/DictDemo.tsx" ></code>
 
 ### 使用注意
 
 1. 注册词典加载器
 2. 注入 `effects`
 
-```tsx pure
+```tsx | pure
 import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
 import { createForm } from '@formily/core';
 

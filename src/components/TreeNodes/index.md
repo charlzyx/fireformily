@@ -21,7 +21,7 @@ export type TreeNode = {
 };
 
 ```
-<code src="./demos/demo.tsx" />
+<code src="./demos/demo.tsx" ></code>
 
 ## API
 

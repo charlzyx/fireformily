@@ -5,9 +5,9 @@ import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';
 import { PopActions, TreeBase, TreeNodes } from 'fireformily';
 import { useMemo, useState } from 'react';
+import { useExpressionScope } from '../../../compatible';
 import { actions, loadAll, loadData } from './mock';
 import { stringify } from './stringify';
-import { useExpressionScope } from '../../../compatible';
 
 const form = createForm();
 

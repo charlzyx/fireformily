@@ -7,6 +7,6 @@ group:
 ## 🪄 Suggestion - 联想搜索
 
 
-<code src="./demos/SuggestionDemo.tsx" />
+<code src="./demos/SuggestionDemo.tsx" ></code>
 
 <API />

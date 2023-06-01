@@ -23,7 +23,8 @@ footer: Open-source MIT Licensed | Copyright © 2020<br />Powered by [dumi](http
  * inline: true
  */
 import React from 'react';
-import Overview from '@/Overview';
+import 'antd/dist/antd.min.css';
+import Overview from '../src/Overview';
 
 const prefix = process.env.NODE_ENV === 'development' ? '/components' : '/fireformily/components';
 const prefixPro = process.env.NODE_ENV === 'development' ? '/pro' : '/fireformily/pro';

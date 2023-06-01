@@ -17,7 +17,7 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 > 这个结构可以照这样来理解, 至于 Toolbar 为什么在 QueryTbale 上, 是因为它跟 QueryTable 联动更多一些
 
-```tsx pure
+```tsx | pure
 <QueryList service={service}>
   <QueryForm />
   <QueryTable.Titlebar />
