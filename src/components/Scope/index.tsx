@@ -1,27 +1,26 @@
-import React from 'react'
-import {
-  FormItem,
-  Input,
-  ArrayTable,
-  Editable,
-  FormButtonGroup,
-  Submit,
-} from '@formily/antd'
-import { createForm } from '@formily/core'
-import { FormProvider, createSchemaField, useField } from '@formily/react'
+import React from 'react';
+import { ArrayTable, Editable, FormButtonGroup, FormItem, Input, Submit } from '@formily/antd';
+import { createForm } from '@formily/core';
+import { FormProvider, createSchemaField, useField } from '@formily/react';
 const LookField = () => {
   const field = useField();
-  return <div onClick={() => {
-    console.log({
-      index: field.index,
-      indexes: field.indexes,
-      record: field.record,
-      records: field.records,
-      field,
-      parent: field.parent
-    })
-  }}>{field.address.toString()}</div>
-}
+  return (
+    <div
+      onClick={() => {
+        console.log({
+          index: field.index,
+          indexes: field.indexes,
+          record: field.record,
+          records: field.records,
+          field,
+          parent: field.parent,
+        });
+      }}
+    >
+      {field.address.toString()}
+    </div>
+  );
+};
 
 const SchemaField = createSchemaField({
   components: {
@@ -30,15 +29,15 @@ const SchemaField = createSchemaField({
     Input,
     ArrayTable,
   },
-})
+});
 
-const form = createForm()
+const form = createForm();
 
 const schema = {
   type: 'object',
   properties: {
     obj: {
-      type: "object",
+      type: 'object',
       properties: {
         a1: {
           type: 'string',
@@ -58,7 +57,7 @@ const schema = {
               'x-decorator': 'Editable',
               'x-component': 'Input',
             },
-          }
+          },
         },
       },
     },
@@ -172,7 +171,7 @@ const schema = {
       },
     },
   },
-}
+};
 
 export default () => {
   return (
@@ -182,5 +181,5 @@ export default () => {
         <Submit onSubmit={console.log}>提交</Submit>
       </FormButtonGroup>
     </FormProvider>
-  )
-}
+  );
+};

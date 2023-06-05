@@ -6,10 +6,11 @@ export default defineConfig({
   themeConfig: {
     name: 'fireformily',
     logo: base + 'images/fireformily.svg',
-    nav: [{
-      title: 'formily',
-      link: 'https://github.com/alibaba/formily',
-    }]
+    // nav: [
+    //   {
+    //   title: 'formily',
+    //   link: 'https://github.com/alibaba/formily',
+    // }]
   },
   mfsu: {},
   apiParser: {},
@@ -37,25 +38,13 @@ export default defineConfig({
     },
   ],
   styles: [
-    `.__dumi-default-navbar-logo{
-      height: 60px !important;
-      width: 150px !important;
-      padding-left:0 !important;
-      color: transparent !important;
+    `
+    .dumi-default-logo {
+      font-size: 16px !important;
     }
-    .__dumi-default-navbar{
-      padding: 0 28px !important;
-    }
-    .__dumi-default-layout-hero h1{
-      color:#45124e !important;
-      font-size:80px !important;
-      padding-bottom: 30px !important;
-    }
-    .__dumi-default-dark-switch {
-      display:none
-    }
-    nav a{
-      text-decoration: none !important;
+    .dumi-default-logo img{
+      height: 48px !important;
+      width: 100px !important;
     }
     `,
   ],
