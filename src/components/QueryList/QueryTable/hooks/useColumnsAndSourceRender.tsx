@@ -42,10 +42,8 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
   const propLength = Object.keys(schema.properties || {}).length;
   const max = props.maxItems || 2;
   const menu =
-    propLength > max ? (
-      <Menu
-        mode="vertical"
-        items={schema
+    propLength > max
+      ? schema
           .mapProperties((propSchema, key, idx) => {
             if (idx < max) return null;
             return {
@@ -53,9 +51,8 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
               label: <RecursionField schema={propSchema} name={`${index}.${key}`} />,
             };
           })
-          .filter(Boolean)}
-      />
-    ) : undefined;
+          .filter(Boolean)
+      : undefined;
 
   return (
     <ArrayBase.Item index={index} record={() => field?.value?.[index]}>
@@ -67,7 +64,7 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
           );
         })}
         {propLength > max ? (
-          <Dropdown overlay={menu!}>
+          <Dropdown menu={{ items: menu }}>
             <a>
               <DownOutlined />
             </a>
