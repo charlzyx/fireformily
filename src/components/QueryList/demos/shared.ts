@@ -1,10 +1,15 @@
 import type { PopActions } from 'fireformily';
 import { registerDictLoader } from 'fireformily';
-import moment from 'moment';
-
+import dayjs, { updateLocale } from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import 'dayjs/plugin/updateLocale';
 import { faker } from '@faker-js/faker';
 
 import type React from 'react';
+
+// updateLocale('zh-cn', {
+//   weekStart: 0,
+// });
 
 type TActions = React.ComponentProps<typeof PopActions>['actions'];
 
@@ -24,8 +29,8 @@ export const service = ({ params, pagination, sorter, filters, extra }: any) => 
   log('search sevice args ', { params, pagination, sorter, filters, extra });
 
   const {
-    start = moment().toDate(),
-    end = moment().add(1, 'year').toDate(),
+    start = dayjs().toDate(),
+    end = dayjs().add(1, 'year').toDate(),
     classify,
     status,
     domain,
@@ -64,7 +69,7 @@ export const service = ({ params, pagination, sorter, filters, extra }: any) => 
                   ),
                 ),
               ),
-            date: moment(faker.date.between(start, end)).format('YYYY-MM-DD'),
+            date: dayjs(faker.date.between(start, end)).format('YYYY-MM-DD'),
             img: faker.image.avatar(),
             desc: faker.lorem.paragraph(),
           };

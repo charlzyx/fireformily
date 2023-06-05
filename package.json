@@ -22,19 +22,22 @@
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.1",
     "@ant-design/icons": "^5.1.4",
-    "@formily/antd": "^2.2.24",
+    "@formily/antd": "npm:@formily/antd-v5",
     "@formily/core": "^2.2.24",
     "@formily/react": "^2.2.24",
     "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
     "ahooks": "^3.7.7",
-    "antd": "4.x",
+    "antd": "5.x",
+    "dayjs": "^1.11.8",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.2",
     "qs": "^6.11.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-sortable-hoc": "^2.0.0"
   },
+  "resolutions": {},
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",
     "@testing-library/jest-dom": "^5.16.5",
