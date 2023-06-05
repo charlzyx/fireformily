@@ -10,7 +10,7 @@ import {
 } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
-import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily';
+import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily-v5';
 import React from 'react';
 
 const loaders = {

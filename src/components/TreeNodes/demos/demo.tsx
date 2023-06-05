@@ -3,7 +3,7 @@ import { FormItem, Input, Space } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';
-import { PopActions, TreeBase, TreeNodes } from 'fireformily';
+import { PopActions, TreeBase, TreeNodes } from 'fireformily-v5';
 import { useMemo, useState } from 'react';
 import { useExpressionScope } from '../../../compatible';
 import { actions, loadAll, loadData } from './mock';

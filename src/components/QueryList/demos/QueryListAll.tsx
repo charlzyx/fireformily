@@ -22,7 +22,7 @@ import {
   QueryList,
   QueryTable,
   dictEffects,
-} from 'fireformily';
+} from 'fireformily-v5';
 import React from 'react';
 import { actions, loaders, onSort, service } from './shared';
 

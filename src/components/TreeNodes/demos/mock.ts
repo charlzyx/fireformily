@@ -1,4 +1,4 @@
-import type { PopActions } from 'fireformily';
+import type { PopActions } from 'fireformily-v5';
 import { stringify } from './stringify';
 
 export type OptionData = {

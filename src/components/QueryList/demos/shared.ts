@@ -1,5 +1,5 @@
-import type { PopActions } from 'fireformily';
-import { registerDictLoader } from 'fireformily';
+import type { PopActions } from 'fireformily-v5';
+import { registerDictLoader } from 'fireformily-v5';
 import dayjs, { updateLocale } from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import 'dayjs/plugin/updateLocale';

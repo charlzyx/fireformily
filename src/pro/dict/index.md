@@ -26,7 +26,7 @@ formily 自带 `enum` 字段能够满足本地的枚举词典的需求, 但远�
 2. 注入 `effects`
 
 ```tsx | pure
-import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
+import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily-v5';
 import { createForm } from '@formily/core';
 
 // 举个例子
