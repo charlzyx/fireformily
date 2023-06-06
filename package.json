@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "father build",
+    "pub": "npm publish --tag next",
     "deploy": "npm run docs:build && npm run docs:deploy",
     "docs:build": "dumi build",
     "docs:deploy": "gh-pages -d docs-dist",
@@ -21,24 +22,22 @@
   },
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.1",
-    "@ant-design/icons": "^5.1.4",
+    "nanoid": "^4.0.2",
+    "ahooks": "^3.7.7"
+  },
+  "peerDependencies": {
     "@formily/antd-v5": "^1.1.0-beta.3",
     "@formily/core": "^2.x",
     "@formily/react": "^2.x",
-    "@types/react": "^18.2.7",
-    "@types/react-dom": "^18.2.4",
-    "ahooks": "^3.7.7",
+    "@ant-design/icons": "^5.1.4",
     "antd": "5.x",
-    "dayjs": "^1.11.8",
-    "lodash": "^4.17.21",
-    "nanoid": "^4.0.2",
-    "qs": "^6.11.2",
     "react": "^16.x || ^17.x || ^18.2.0",
     "react-dom": "^16.x || ^17.x || ^18.2.0",
     "react-sortable-hoc": "^2.0.0"
   },
-  "resolutions": {},
   "devDependencies": {
+    "qs": "^6.11.2",
+    "dayjs": "^1.11.8",
     "@faker-js/faker": "^8.0.2",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
@@ -51,6 +50,8 @@
     "fetch-jsonp": "^1.2.3",
     "gh-pages": "^5.0.0",
     "lint-staged": "^13.2.2",
+    "@types/react": "^18.2.7",
+    "@types/react-dom": "^18.2.4",
     "prettier": "^2.8.8",
     "yorkie": "^2.0.0"
   }
