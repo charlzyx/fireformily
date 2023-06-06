@@ -1,4 +1,4 @@
-import { usePrefixCls } from '@formily/antd-v5/lib/__builtins__';
+import { usePrefixCls } from '@formily/antd/lib/__builtins__';
 import type { ArrayField } from '@formily/core';
 import { useField, useFieldSchema } from '@formily/react';
 import { toJS } from '@formily/reactive';

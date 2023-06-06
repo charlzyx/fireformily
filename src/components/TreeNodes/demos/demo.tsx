@@ -1,5 +1,5 @@
 import { RobotOutlined } from '@ant-design/icons';
-import { FormItem, Input, Space } from '@formily/antd-v5';
+import { FormItem, Input, Space } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';

@@ -1,4 +1,4 @@
-import { FormGrid, FormItem, FormLayout } from '@formily/antd-v5';
+import { FormGrid, FormItem, FormLayout } from '@formily/antd';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Suggestion } from 'fireformily';

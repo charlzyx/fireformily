@@ -1,6 +1,6 @@
 {
   "name": "fireformily",
-  "version": "5.0.0-beta.0",
+  "version": "4.0.0",
   "module": "dist/esm/index.js",
   "main": "dist/cjs/index.js",
   "typings": "dist/esm/index.d.ts",
@@ -33,21 +33,21 @@
     "ahooks": "^3.7.7"
   },
   "peerDependencies": {
-    "@formily/antd-v5": "^1.1.0-beta.3",
+    "@formily/antd": "^2.x",
     "@formily/core": "^2.x",
     "@formily/react": "^2.x",
     "@ant-design/icons": "^5.1.4",
-    "antd": "5.x",
+    "antd": "4.x",
     "react": "^16.x || ^17.x || ^18.2.0",
     "react-dom": "^16.x || ^17.x || ^18.2.0",
     "react-sortable-hoc": "^2.0.0"
   },
   "devDependencies": {
-    "@formily/antd-v5": "^1.1.0-beta.3",
+    "@formily/antd": "^2.x",
     "@formily/core": "^2.x",
     "@formily/react": "^2.x",
     "@ant-design/icons": "^5.1.4",
-    "antd": "5.x",
+    "antd": "4.x",
     "react": "^16.x || ^17.x || ^18.2.0",
     "react-dom": "^16.x || ^17.x || ^18.2.0",
     "react-sortable-hoc": "^2.0.0",

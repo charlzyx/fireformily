@@ -34,7 +34,7 @@ export default defineConfig({
   links: [
     {
       rel: 'stylesheet',
-      href: 'https://unpkg.com/antd/dist/reset.css',
+      href: 'https://unpkg.com/antd@4/dist/antd.min.css',
     },
   ],
   styles: [
