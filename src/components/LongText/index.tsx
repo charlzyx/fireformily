@@ -9,7 +9,7 @@ export const LongText = (
   } & React.ComponentProps<typeof Paragraph>,
 ) => {
   return (
-    <Paragraph copyable ellipsis {...props}>
+    <Paragraph copyable ellipsis {...props} style={{ marginBottom: 0 }}>
       {props.value}
     </Paragraph>
   );

@@ -3,7 +3,7 @@ nav:
   title: 最佳?实践
 group:
   title: 响应式编程 in React
-  sort: 1
+  order: 100
 ---
 
 ## useLive - 响应式 in React

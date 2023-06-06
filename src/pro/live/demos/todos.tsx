@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLive } from 'fireformily-v5';
+import { useLive } from 'fireformily';
 
 const TodoList = () => {
   const $todos = useLive<{ title: string; done: boolean }[]>([]);

@@ -8,7 +8,7 @@ import {
   Input,
   Select,
   Space,
-} from '@formily/antd';
+} from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { ConfigProvider } from 'antd';
@@ -22,7 +22,7 @@ import {
   QueryList,
   QueryTable,
   dictEffects,
-} from 'fireformily-v5';
+} from 'fireformily';
 import React from 'react';
 import { actions, loaders, onSort, service } from './shared';
 

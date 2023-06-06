@@ -1,4 +1,4 @@
-import { ArrayBase as AntdArrayBase } from '@formily/antd';
+import { ArrayBase as AntdArrayBase } from '@formily/antd-v5';
 import type { ArrayField } from '@formily/core';
 import { RecursionField, useField, useFieldSchema } from '@formily/react';
 import type { Table } from 'antd';

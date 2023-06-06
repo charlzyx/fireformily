@@ -10,7 +10,7 @@ group:
 
 ```tsx
 import React from 'react';
-import { LongText } from 'fireformily-v5';
+import { LongText } from 'fireformily';
 
 const App = () => {
   return <LongText value={`

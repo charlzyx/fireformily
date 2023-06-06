@@ -1,9 +1,9 @@
 import { RobotOutlined } from '@ant-design/icons';
-import { FormItem, Input, Space } from '@formily/antd';
+import { FormItem, Input, Space } from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';
-import { PopActions, TreeBase, TreeNodes } from 'fireformily-v5';
+import { PopActions, TreeBase, TreeNodes } from 'fireformily';
 import { useMemo, useState } from 'react';
 import { useExpressionScope } from '../../../compatible';
 import { actions, loadAll, loadData } from './mock';

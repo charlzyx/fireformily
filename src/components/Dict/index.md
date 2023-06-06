@@ -9,7 +9,7 @@ group:
 [先看这里#Dict](/pro/dict)
 
 ```tsx | pure
-import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily-v5';
+import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
 ```
 
 <hr />

@@ -1,20 +1,20 @@
 ---
 hero:
   title: ''
-  desc: '![fireformily](/fireformily/images/fireformily.svg)<br /> fireformily! <br /> @formily/antd Pro?'
+  description: '<p><img src="/images/fireformily.svg" /> <br /> fireformily! <br /> @formily/antd Pro?</p>'
   actions:
     - text: 查看组件 →
       link: ./components
 features:
-  - icon: https://gw.alipayobjects.com/zos/bmw-prod/881dc458-f20b-407b-947a-95104b5ec82b/k79dm8ih_w144_h144.png
+  - emoji: 📋
     title: 方便CV
-    desc: With Demo
-  - icon: https://gw.alipayobjects.com/zos/bmw-prod/d60657df-0822-4631-9d7c-e7a869c2f21c/k79dmz3q_w126_h126.png
+    description: With Demo
+  - emoji: 🐙
     title: 原汁原味
-    desc: 尽可能符合 AntD × formily 直觉习惯
-  - icon: https://gw.alipayobjects.com/zos/bmw-prod/d1ee0c6f-5aed-4a45-a507-339a4bfe076c/k7bjsocq_w144_h144.png
-    title: Desginable 支持
-    desc: WIP...
+    description: 尽可能符合 AntD × formily 直觉习惯
+  - emoji: 🚀
+    title: 拓展强大
+    description: 枚举词典/查询表单/多选/行展开/导出操作栏等
 footer: Open-source MIT Licensed | Copyright © 2020<br />Powered by [dumi](https://d.umijs.org)
 ---
 
@@ -24,7 +24,6 @@ footer: Open-source MIT Licensed | Copyright © 2020<br />Powered by [dumi](http
  */
 import React from 'react';
 import Overview from '../src/Overview';
-import 'antd/dist/reset.css';
 
 const prefix = process.env.NODE_ENV === 'development' ? '/components' : '/fireformily/components';
 const prefixPro = process.env.NODE_ENV === 'development' ? '/pro' : '/fireformily/pro';

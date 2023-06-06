@@ -34,11 +34,14 @@ export default defineConfig({
   links: [
     {
       rel: 'stylesheet',
-      href: 'https://unpkg.com/antd/dist/antd.css',
+      href: 'https://unpkg.com/antd/dist/reset.css',
     },
   ],
   styles: [
     `
+    .dumi-default-header-left {
+      width: 200px !important;
+    }
     .dumi-default-logo {
       font-size: 16px !important;
     }

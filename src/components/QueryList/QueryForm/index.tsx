@@ -1,5 +1,5 @@
-import type { FormLayout } from '@formily/antd';
-import { FormButtonGroup, FormGrid } from '@formily/antd';
+import type { FormLayout } from '@formily/antd-v5';
+import { FormButtonGroup, FormGrid } from '@formily/antd-v5';
 import type { ObjectField } from '@formily/core';
 import { observer, useField, useForm } from '@formily/react';
 import { Button } from 'antd';

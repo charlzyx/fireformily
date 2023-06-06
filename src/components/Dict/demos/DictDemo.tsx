@@ -7,10 +7,10 @@ import {
   Radio,
   Select,
   Space,
-} from '@formily/antd';
+} from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
-import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily-v5';
+import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily';
 import React from 'react';
 
 const loaders = {

@@ -1,4 +1,4 @@
-import { useLive } from 'fireformily-v5';
+import { useLive } from 'fireformily';
 import { Observer } from '@formily/react';
 import React from 'react';
 

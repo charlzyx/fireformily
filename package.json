@@ -1,6 +1,6 @@
 {
-  "name": "fireformily-v5",
-  "version": "0.1.0-beta.3",
+  "name": "fireformily",
+  "version": "5.0.0-beta.0",
   "module": "dist/esm/index.js",
   "main": "dist/cjs/index.js",
   "typings": "dist/esm/index.d.ts",
@@ -22,9 +22,9 @@
   "dependencies": {
     "@ahooksjs/use-url-state": "^3.5.1",
     "@ant-design/icons": "^5.1.4",
-    "@formily/antd": "npm:@formily/antd-v5",
-    "@formily/core": "^2.2.24",
-    "@formily/react": "^2.2.24",
+    "@formily/antd-v5": "^1.1.0-beta.3",
+    "@formily/core": "^2.x",
+    "@formily/react": "^2.x",
     "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
     "ahooks": "^3.7.7",

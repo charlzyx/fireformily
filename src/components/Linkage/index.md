@@ -17,7 +17,7 @@ group:
  * title: Cascader like
  */
 import React, { useEffect, useState } from 'react';
-import { Linkage } from 'fireformily-v5'
+import { Linkage } from 'fireformily'
 import { loadData } from './demos/mock'
 
 export default () => {
@@ -42,7 +42,7 @@ export default () => {
  * title: loadAll & 反显
  */
 import React, { useEffect, useState } from 'react';
-import { Linkage } from 'fireformily-v5'
+import { Linkage } from 'fireformily'
 import { loadAll } from './demos/mock'
 
 export default () => {
@@ -68,7 +68,7 @@ export default () => {
  * title: loadData & 反显
  */
 import React, { useEffect, useState } from 'react';
-import { Linkage } from 'fireformily-v5'
+import { Linkage } from 'fireformily'
 import { loadData } from './demos/mock'
 
 export default () => {
@@ -94,7 +94,7 @@ export default () => {
  * title: labelInValue & 反显
  */
 import React, { useEffect, useState } from 'react';
-import { Linkage } from 'fireformily-v5'
+import { Linkage } from 'fireformily'
 import { loadData } from './demos/mock'
 
 export default () => {
