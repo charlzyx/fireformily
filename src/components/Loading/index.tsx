@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { Skeleton } from 'antd';
-import 'antd/dist/antd.min.css';
 
 const absolute: React.CSSProperties = {
   position: 'absolute',

@@ -8,7 +8,7 @@ group:
 
 [先看这里#Dict](/pro/dict)
 
-```tsx pure
+```tsx | pure
 import { dict, Dict, dictEffects, registerDictLoader } from 'fireformily';
 ```
 

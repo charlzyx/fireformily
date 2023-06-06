@@ -1,4 +1,4 @@
-import { FormGrid } from '@formily/antd';
+import { FormGrid } from '@formily/antd-v5';
 import type React from 'react';
 import { useMemo } from 'react';
 

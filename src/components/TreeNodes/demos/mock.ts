@@ -1,6 +1,5 @@
 import type { PopActions } from 'fireformily';
 import { stringify } from './stringify';
-import 'antd/dist/antd.min.css';
 
 export type OptionData = {
   label?: string;

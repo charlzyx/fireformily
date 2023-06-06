@@ -8,12 +8,11 @@ import {
   Input,
   Select,
   Space,
-} from '@formily/antd';
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/es/locale/zh_CN';
-import React from 'react';
+} from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/es/locale/zh_CN';
 import {
   Dict,
   ImageView,
@@ -24,8 +23,8 @@ import {
   QueryTable,
   dictEffects,
 } from 'fireformily';
+import React, { useMemo } from 'react';
 import { actions, loaders, onSort, service } from './shared';
-import 'antd/dist/antd.min.css';
 
 const SchemaField = createSchemaField({
   components: {
@@ -50,12 +49,6 @@ const SchemaField = createSchemaField({
     service,
     onSort,
     actions,
-  },
-});
-
-const form = createForm({
-  effects(fform) {
-    dictEffects(fform);
   },
 });
 
@@ -528,6 +521,13 @@ const schema: SchemaShape = {
 };
 
 export const QueryListAll = () => {
+  const form = useMemo(() => {
+    return createForm({
+      effects(fform) {
+        dictEffects(fform);
+      },
+    });
+  }, []);
   return (
     <div style={{ padding: '20px' }}>
       <ConfigProvider locale={zhCN}>

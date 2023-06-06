@@ -10,7 +10,15 @@
     "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "fireformily": ["src/index.ts"]
+      "@@/*": [
+        ".dumi/tmp/*"
+      ],
+      "@/*": [
+        "src/*"
+      ],
+      "fireformily": [
+        "src/index.ts"
+      ]
     }
   }
 }

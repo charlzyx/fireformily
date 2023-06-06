@@ -2,7 +2,6 @@ import { Drawer } from './Drawer';
 import { Modal } from './Modal';
 import { Popconfirm } from './Popconfirm';
 import { Popover } from './Popover';
-import 'antd/dist/antd.min.css';
 
 export const PopActions = Modal as typeof Modal & {
   Popover: typeof Popover;

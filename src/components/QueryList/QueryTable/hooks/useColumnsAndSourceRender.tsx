@@ -1,6 +1,6 @@
 /* eslint-disable no-shadow */
 import DownOutlined from '@ant-design/icons/DownOutlined';
-import { ArrayBase as AntdArrayBase } from '@formily/antd';
+import { ArrayBase as AntdArrayBase } from '@formily/antd-v5';
 import type { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
 import type { Schema } from '@formily/react';
 import { RecursionField, useFieldSchema } from '@formily/react';
@@ -42,10 +42,8 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
   const propLength = Object.keys(schema.properties || {}).length;
   const max = props.maxItems || 2;
   const menu =
-    propLength > max ? (
-      <Menu
-        mode="vertical"
-        items={schema
+    propLength > max
+      ? schema
           .mapProperties((propSchema, key, idx) => {
             if (idx < max) return null;
             return {
@@ -53,9 +51,8 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
               label: <RecursionField schema={propSchema} name={`${index}.${key}`} />,
             };
           })
-          .filter(Boolean)}
-      />
-    ) : undefined;
+          .filter(Boolean)
+      : undefined;
 
   return (
     <ArrayBase.Item index={index} record={() => field?.value?.[index]}>
@@ -67,7 +64,7 @@ const renderOperations = (props: any, schema: Schema, index: number, field: Arra
           );
         })}
         {propLength > max ? (
-          <Dropdown overlay={menu!}>
+          <Dropdown menu={{ items: menu }}>
             <a>
               <DownOutlined />
             </a>
@@ -91,7 +88,7 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
 
       const name = subSchema['x-component-props']?.dataIndex || subSchema.name;
 
-      const field = arrayField.query(arrayField.address.concat(name)).take();
+      const field = arrayField.query(arrayField.address.concat(name)).take()!;
 
       const columnProps = (field?.component as any)?.[1] || subSchema['x-component-props'] || {};
 

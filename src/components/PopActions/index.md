@@ -84,7 +84,7 @@ interface Action<Record = any, Data = Record> {
   ```
 
 - 也可以将 `data` 抽象作为 `record`, 使之能能够在 `ArrayField#ArrayItem` 的 `scope` 之外访问到;可以用这样的伪代码来理解
-  ```tsx pure
+  ```tsx | pure
   <RecordScope getRecord={() => data}>
     <ObjectField name="info"></ObjectField>
     <ObjectField name="actions.add">新增</ObjectField>
@@ -107,7 +107,7 @@ interface Action<Record = any, Data = Record> {
 
 - rowSelection - 列选择:
 
-  ```tsx pure
+  ```tsx | pure
   <RecordScope gerRecord={() => ({ selectedRows, selectedRowKeys })}>
     <Actions.Popconfirm>批量删除</Actions.Popconfirm>
     <Actions.Modal>批量导出</Actions.Modal>
@@ -174,7 +174,7 @@ export type Actions<Record = any, Data = Record> = {
 
 默认为 Popconfirm
 
-```tsx pure
+```tsx | pure
 export const PopActions = Modal as typeof Modal & {
   Popover: typeof Popover;
   Popconfirm: typeof Popconfirm;

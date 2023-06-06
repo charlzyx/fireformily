@@ -7,11 +7,11 @@ import {
   Radio,
   Select,
   Space,
-} from '@formily/antd';
+} from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Dict, dict, dictEffects, registerDictLoader } from 'fireformily';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const loaders = {
   bool: () => {
@@ -67,12 +67,6 @@ const SchemaField = createSchemaField({
   },
   scope: {
     dict,
-  },
-});
-
-const form = createForm({
-  effects(fform) {
-    dictEffects(fform);
   },
 });
 
@@ -249,6 +243,13 @@ const schema: SchemaShape = {
 };
 
 const DictDemo = () => {
+  const form = useMemo(() => {
+    return createForm({
+      effects(fform) {
+        dictEffects(fform);
+      },
+    });
+  }, []);
   return (
     <FormProvider form={form}>
       <SchemaField schema={schema} />

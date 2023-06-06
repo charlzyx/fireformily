@@ -3,7 +3,7 @@ nav:
   title: 最佳?实践
 group:
   title: 响应式编程 in React
-  sort: 1
+  order: 100
 ---
 
 ## useLive - 响应式 in React
@@ -12,15 +12,15 @@ group:
 ![haha](./demos/haha.jpeg)
 
 ### 万能 🥔 丝
-<code src="./demos/todos.tsx" title="土豆丝" />
+<code src="./demos/todos.tsx" title="土豆丝" ></code>
 
 
 ### 代码演示
-<code src="./demos/nobabel.tsx" title="不用 babel 插件" />
+<code src="./demos/nobabel.tsx" title="不用 babel 插件" ></code>
 
 ### 使用 babel 插件省略 `<Observer >` 标签嵌套
 
-```tsx pure
+```tsx | pure
 // from
 <Observer>{() => <div>xxx</div>}</Observer>;
 // to
@@ -40,7 +40,7 @@ group:
 
 ### 代码演示 - with babel
 
-<code src="./demos/withbabel.tsx" title="使用 babel 插件" />
+<code src="./demos/withbabel.tsx" title="使用 babel 插件" ></code>
 
 
 > 注意!: 使用 typescript 的情况下, 需要手动给 JSXElement / HTMLElement 打一个类型补丁, 使 jsx 中的标签支持 live 属性

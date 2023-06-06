@@ -1,6 +1,5 @@
 import { Typography } from 'antd';
 import React from 'react';
-import 'antd/dist/antd.min.css';
 
 const { Paragraph } = Typography;
 
@@ -10,7 +9,7 @@ export const LongText = (
   } & React.ComponentProps<typeof Paragraph>,
 ) => {
   return (
-    <Paragraph copyable ellipsis {...props}>
+    <Paragraph copyable ellipsis {...props} style={{ marginBottom: 0 }}>
       {props.value}
     </Paragraph>
   );

@@ -3,7 +3,6 @@ import { isColorStatus } from '../../shared';
 import type { TDictShape } from '../../pro';
 import { Badge, Space, Tag } from 'antd';
 import { useMemo } from 'react';
-import 'antd/dist/antd.min.css';
 
 type Input = string | number | Input[];
 

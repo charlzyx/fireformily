@@ -1,5 +1,5 @@
 import { RobotOutlined } from '@ant-design/icons';
-import { FormItem, Input, Space } from '@formily/antd';
+import { FormItem, Input, Space } from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Button } from 'antd';
@@ -7,7 +7,6 @@ import { PopActions, TreeBase, TreeNodes, useExpressionScope } from 'fireformily
 import { useMemo, useState } from 'react';
 import { actions, loadAll, loadData } from './mock';
 import { stringify } from './stringify';
-import 'antd/dist/antd.min.css';
 
 const form = createForm();
 

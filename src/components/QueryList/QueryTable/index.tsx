@@ -1,6 +1,6 @@
-import type { ArrayBaseMixins } from '@formily/antd';
-import { ArrayBase } from '@formily/antd';
-import { usePrefixCls } from '@formily/antd/esm/__builtins__';
+import type { ArrayBaseMixins } from '@formily/antd-v5';
+import { ArrayBase } from '@formily/antd-v5';
+import { usePrefixCls } from '@formily/antd-v5/esm/__builtins__';
 import type { ArrayField } from '@formily/core';
 import { observer, useField } from '@formily/react';
 import type { PaginationProps } from 'antd';
@@ -134,9 +134,9 @@ export const QueryTable: React.FC<IQueryTableProps> &
       </ArrayBase>
     </div>
   );
-});
+}) as any;
 
-ArrayBase?.mixin?.(QueryTable);
+ArrayBase?.mixin?.(QueryTable as ArrayBaseMixins);
 
 QueryTable.Operations = () => {
   return <Fragment />;

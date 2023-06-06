@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import { Image } from 'antd';
 import { useMemo } from 'react';
-import 'antd/dist/antd.min.css';
 
 const size: React.CSSProperties = {
   width: '60px',

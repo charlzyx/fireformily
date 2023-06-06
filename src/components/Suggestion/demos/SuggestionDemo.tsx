@@ -1,10 +1,9 @@
-import { FormGrid, FormItem, FormLayout } from '@formily/antd';
+import { FormGrid, FormItem, FormLayout } from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { Suggestion } from 'fireformily';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { suggest } from './mock';
-import 'antd/dist/antd.min.css';
 
 const Code = (props: { value: any }) => {
   return (
@@ -27,10 +26,6 @@ const SchemaField = createSchemaField({
   scope: {
     suggest,
   },
-});
-
-const form = createForm({
-  effects(fform) {},
 });
 
 type SchemaShape = React.ComponentProps<typeof SchemaField>['schema'];
@@ -116,6 +111,11 @@ const schema: SchemaShape = {
 };
 
 const SuggestDemo = () => {
+  const form = useMemo(() => {
+    return createForm({
+      effects(fform) {},
+    });
+  }, []);
   return (
     <FormProvider form={form}>
       <SchemaField schema={schema} />
