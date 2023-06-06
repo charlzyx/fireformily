@@ -88,7 +88,7 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
 
       const name = subSchema['x-component-props']?.dataIndex || subSchema.name;
 
-      const field = arrayField.query(arrayField.address.concat(name)).take();
+      const field = arrayField.query(arrayField.address.concat(name)).take()!;
 
       const columnProps = (field?.component as any)?.[1] || subSchema['x-component-props'] || {};
 
