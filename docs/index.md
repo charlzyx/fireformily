@@ -1,7 +1,7 @@
 ---
 hero:
   title: ''
-  description: '<p><img src="/images/fireformily.svg" /> <br /> fireformily! <br /> @formily/antd Pro? <br /> @latest (default) for antd@4, @next for antd@5 </p>'
+  description: '<p><img src="/fireformily/images/fireformily.svg" /> <br /> fireformily! <br /> @formily/antd Pro? <br /> @latest (default) for antd@4, @next for antd@5 </p>'
   actions:
     - text: 查看组件 →
       link: ./components
