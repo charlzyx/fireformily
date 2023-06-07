@@ -28,6 +28,10 @@ export const isOperationsComponent = (schema: Schema) => {
   return schema['x-component']?.indexOf('Operations') > -1;
 };
 
+export const isActionsComponent = (schema: Schema) => {
+  return schema['x-component']?.indexOf('Actions') > -1;
+};
+
 export const isAdditionComponent = (schema: Schema) => {
   return schema['x-component']?.indexOf('Addition') > -1;
 };

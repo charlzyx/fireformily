@@ -10,7 +10,12 @@ import type { ColumnProps } from 'antd/lib/table';
 import React from 'react';
 import { useQueryList$ } from '../../shared';
 
-import { isAdditionComponent, isColumnComponent, isOperationsComponent } from './utils';
+import {
+  isActionsComponent,
+  isAdditionComponent,
+  isColumnComponent,
+  isOperationsComponent,
+} from './utils';
 
 const ArrayBase = AntdArrayBase as Required<typeof AntdArrayBase>;
 
@@ -115,6 +120,12 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
   if (!schema) throw new Error('can not found schema object');
 
   const sources = parseArrayItems(schema.items as any, parseSources);
+  const actions = schema.reduceProperties((buf, childSchema) => {
+    if (isActionsComponent(childSchema)) {
+      return childSchema;
+    }
+    return buf;
+  }, null as null | Schema);
 
   const columns = sources.reduce((buf, { name, columnProps, schema: subSchema, display }, key) => {
     // hidden by user select
@@ -159,6 +170,24 @@ export const useColumnsAndSourceRender = (arrayField: ArrayField) => {
     });
   }, [] as ColumnProps<any>[]);
 
+  if (actions) {
+    const act: ColumnProps<any> = {
+      ...actions['x-component-props'],
+      key: '_act_',
+      title: actions.title,
+      dataIndex: '操作',
+      render: (value: any, record: any) => {
+        const index = arrayField?.value?.indexOf(record);
+        const children = (
+          <ArrayBase.Item index={index} record={() => arrayField?.value?.[index]}>
+            <RecursionField schema={actions} name={index} onlyRenderProperties />
+          </ArrayBase.Item>
+        );
+        return children;
+      },
+    };
+    columns.push(act);
+  }
   const renderSources = () => {
     return sources.map((column, key) => {
       //专门用来承接对Column的状态管理

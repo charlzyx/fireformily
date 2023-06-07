@@ -19,7 +19,9 @@ export const showTotal = (total: number, range: number[]) =>
 export const QueryTable: React.FC<IQueryTableProps> &
   ArrayBaseMixins & {
     Titlebar?: React.FC<React.PropsWithChildren<{}>>;
+    /** @deprecated please use QueryTable.Actions */
     Operations?: React.FC<React.PropsWithChildren<{}>>;
+    Actions?: React.FC<React.PropsWithChildren<{}>>;
     Expand?: React.FC<React.PropsWithChildren<{}>>;
     Column?: React.FC<React.PropsWithChildren<{}>>;
     Selection?: React.FC<React.PropsWithChildren<{}>>;
@@ -136,9 +138,13 @@ export const QueryTable: React.FC<IQueryTableProps> &
   );
 }) as any;
 
-ArrayBase?.mixin?.(QueryTable as ArrayBaseMixins);
+ArrayBase?.mixin?.(QueryTable);
 
 QueryTable.Operations = () => {
+  return <Fragment />;
+};
+
+QueryTable.Actions = () => {
   return <Fragment />;
 };
 
