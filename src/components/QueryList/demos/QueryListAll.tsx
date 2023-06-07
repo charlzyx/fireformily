@@ -8,7 +8,7 @@ import {
   Input,
   Select,
   Space,
-} from '@formily/antd';
+} from '@formily/antd-v5';
 import { createForm } from '@formily/core';
 import { FormProvider, createSchemaField } from '@formily/react';
 import { ConfigProvider } from 'antd';

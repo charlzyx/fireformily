@@ -1,6 +1,6 @@
 /* eslint-disable no-shadow */
 import DownOutlined from '@ant-design/icons/DownOutlined';
-import { ArrayBase as AntdArrayBase } from '@formily/antd';
+import { ArrayBase as AntdArrayBase } from '@formily/antd-v5';
 import type { ArrayField, FieldDisplayTypes, GeneralField } from '@formily/core';
 import type { Schema } from '@formily/react';
 import { RecursionField, useFieldSchema } from '@formily/react';
