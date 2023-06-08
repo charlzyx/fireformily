@@ -19,8 +19,9 @@ export const showTotal = (total: number, range: number[]) =>
 export const QueryTable: React.FC<IQueryTableProps> &
   ArrayBaseMixins & {
     Titlebar?: React.FC<React.PropsWithChildren<{}>>;
-    /** @deprecated please use QueryTable.Actions */
+    /** @deprecated please use QueryTable.Column */
     Operations?: React.FC<React.PropsWithChildren<{}>>;
+    /** @deprecated please use QueryTable.Column */
     Actions?: React.FC<React.PropsWithChildren<{}>>;
     Expand?: React.FC<React.PropsWithChildren<{}>>;
     Column?: React.FC<React.PropsWithChildren<{}>>;
