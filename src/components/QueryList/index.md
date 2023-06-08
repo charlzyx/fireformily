@@ -26,11 +26,14 @@ QueryList 是为了解决常见的 CRUD 查询列表的样板代码的问题。
 
 ```
 ## 代码演示
+### QueryList
 
-### QueryTable.Actions
+<code src="./demos/QueryList.tsx"></code>
+
+### ~~QueryList With QueryTable.Actions~~
 <code src="./demos/QueryListActions.tsx"></code>
 
-### ~~QueryTable.Operations~~
+### ~~QueryList With QueryTable.Operations~~
 <code src="./demos/QueryListAll.tsx"></code>
 
 ## API
