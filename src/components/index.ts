@@ -7,3 +7,4 @@ export { PopActions } from './PopActions';
 export { QueryForm, QueryList, QueryTable } from './QueryList';
 export { Suggestion } from './Suggestion';
 export { TreeNodes } from './TreeNodes';
+export { Popup } from './Popup';
