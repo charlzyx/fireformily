@@ -21,12 +21,12 @@ export const Drawer = (
           reset()
           props?.onClose?.(...args)
         }}
-        visible={visible}
-        afterVisibleChange={(show) => {
+        open={visible}
+        afterOpenChange={(show) => {
           if (!show) {
             reset()
           }
-          props.afterVisibleChange(show)
+          props.afterOpenChange?.(show)
         }}
       >
         {header}
